@@ -1,8 +1,10 @@
 {
   "name": "sai-gc-mvp",
   "version": "0.3.0",
+  "private": true,
   "description": "SAI-GC: Sistema de Asistencia Inteligente y Gestión de Capacidad - MVP Académico Funcional",
   "scripts": {
+    "build": "echo Static site ready",
     "test": "node --test tests/logic.test.mjs"
   },
   "keywords": [
