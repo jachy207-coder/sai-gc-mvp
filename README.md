@@ -3,7 +3,8 @@
 *Tesis para la Carrera de Ingeniería Industrial / Sistemas · UPC*  
 *Fecha de corte: Octubre 2026*  
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjachy207-coder%2Fsai-gc-mvp)
+[![🌐 Demo Online (GitHub Pages)](https://img.shields.io/badge/Demo%20Online-Probar%20MVP-success?style=for-the-badge&logo=googlechrome)](https://jachy207-coder.github.io/sai-gc-mvp/)  
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/import?s=https%3A%2F%2Fgithub.com%2Fjachy207-coder%2Fsai-gc-mvp)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/jachy207-coder/sai-gc-mvp)
 
 ---
