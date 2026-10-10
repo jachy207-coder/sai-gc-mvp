@@ -1,0 +1,17 @@
+# Dependencias y entornos
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Bases de datos y archivos locales
+*.db
+*.sqlite3
+
+# Vercel
+.vercel/
+
+# Archivos de respaldo comprimidos
+*.zip
+SAI_GC_MVP_R01_COMPLETO.zip

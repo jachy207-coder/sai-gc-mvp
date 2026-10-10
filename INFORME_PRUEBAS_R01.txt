@@ -1,0 +1,65 @@
+SAI-GC R01 — REGISTRO FORMAL DE VERIFICACIÓN TÉCNICA DEL PROTOTIPO
+=============================================================================
+Fecha de ejecución: 09/10/2026
+Artefacto evaluado: SAI-GC — Sistema de Asistencia Inteligente y Gestión de Capacidad
+Versión: v0.3-r01-demo
+Entorno de prueba: Windows 11 / Node.js v24.19.0 / Chromium Headless / SQLite 3
+
+1. RESUMEN DE PRUEBAS UNITARIAS DE LÓGICA (Node.js)
+-----------------------------------------------------------------------------
+Comando: node --test tests/logic.test.mjs
+Total de pruebas ejecutadas: 16
+Aprobadas (PASS): 16 (100%)
+Fallidas (FAIL): 0
+Tiempo de ejecución: 524.98 ms
+
+Detalle de Casos de Prueba Verificados:
+[PASS] 01. DEMO-001 clasifica como Clase A (constancia informativa, riesgo bajo)
+[PASS] 02. DEMO-002 clasifica como Clase B (deuda / estado de cuenta, riesgo medio)
+[PASS] 03. DEMO-003 clasifica como Clase C (siniestro e indemnización, riesgo alto)
+[PASS] 04. DEMO-004 clasifica como Clase C (anulación por excepción, sensible)
+[PASS] 05. DEMO-005 texto desconocido aplica escalamiento precautorio a Clase C
+[PASS] 06. Texto vacío o nulo aplica escalamiento precautorio a Clase C
+[PASS] 07. Regla actual confirmada: peso WhatsApp = 5 independientemente de la clase
+[PASS] 08. Política experimental: pesos hipotéticos A=4, B=5, C=7
+[PASS] 09. Routing selecciona al asesor disponible con menor carga y skill compatible
+[PASS] 10. Routing excluye asesores en estado Ocupado o Refrigerio
+[PASS] 11. Routing respeta el límite estricto de capacidad máxima de 10 unidades
+[PASS] 12. DEMO-006: Saturación en cola retiene caso sin forzar asignación
+[PASS] 13. DEMO-007: Exclusión de agente en pausa preserva cola si no hay otro con skill
+[PASS] 14. Asistencia diferencia validación completada por bot vs pendiente por asesor
+[PASS] 15. DEMO-005 en processCase no inventa fuente y exige escalamiento
+[PASS] 16. log_event y export_evidence generan trazabilidad JSON y CSV estructurada
+
+2. PRUEBAS DE INTERACCIÓN EN NAVEGADOR
+-----------------------------------------------------------------------------
+- Navegación entre las seis pestañas: P1 (Atención asistida), P2 (Representantes),
+  P3 (Retraso de colas), P4 (Trabajo en curso), P5 (Bitácora), P6 (Configuración).
+- Procesamiento reactivo en P1 con actualización de chips de clase, sugerencias y routing.
+- Edición de plantillas sugeridas mediante botón 'Editar'.
+- Registro de decisión 'Escalar' en casos sensibles clase C.
+- Confirmación de asignación demostrativa con actualización inmediata de utilización (P2)
+  y tabla de trabajo en curso (P4).
+- Exportación descargable de la bitácora a archivos .json y .csv.
+- Conmutación en caliente entre regla real (peso 5) y experimental (pesos 4/5/7).
+
+3. EVIDENCIAS GRÁFICAS OBTENIDAS
+-----------------------------------------------------------------------------
+Se verificaron y almacenaron 9 capturas reales en la carpeta 'evidencias/':
+- 00_VISTA_GENERAL_PANELES.png : Vista panorámica de la consola de trabajo.
+- 01_atencion_triaje_A.png     : Caso DEMO-001 (constancia, Clase A, fuente KB).
+- 02_atencion_triaje_B.png     : Caso DEMO-002 (deuda, Clase B, validación pendiente).
+- 03_atencion_triaje_C.png     : Caso DEMO-003 (siniestro, Clase C, botón Escalar).
+- 04_supervision_agentes.png   : Tablero de supervisión de agentes, estado y carga.
+- 05_retraso_colas.png         : Tablero analítico de colas de WhatsApp y correo.
+- 06_trabajo_en_curso.png      : Casos activos asignados a los asesores.
+- 07_bitacora.png              : Registro inmutable de eventos con opción de exportación.
+- 08_configuracion.png         : Panel de control de regla actual vs experimental.
+
+4. DECLARACIÓN DE LÍMITES ACADÉMICOS
+-----------------------------------------------------------------------------
+Esta verificación técnica demuestra la estabilidad, corrección algorítmica y
+reproducibilidad del prototipo local. NO constituye validación estadística de
+precisión del modelo de NLP ni piloto operacional en producción, y NO certifica
+reducción causal del TMO, la cual será evaluada formalmente en el Capítulo V.
+=============================================================================

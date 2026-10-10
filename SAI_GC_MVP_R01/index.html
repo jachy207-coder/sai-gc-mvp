@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SAI-GC | Centro de Atención y Gestión de Capacidad (MVP R01)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="global">
+  <div class="brand">
+    <span class="brand-logo">S</span>
+    <div>
+      <strong>SAI-GC</strong>
+      <small>Sistema de Asistencia Inteligente y Gestión de Capacidad</small>
+    </div>
+  </div>
+  <div class="global-meta">
+    <span class="env">DEMO · DATOS SINTÉTICOS</span>
+    <span>Prototipo Académico · v0.3-r01</span>
+    <span class="avatar" title="Usuario Demostrativo">VD</span>
+  </div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab active" data-tab="atencion">Atención asistida</button>
+  <button class="tab" data-tab="supervision">Representantes de atención al cliente</button>
+  <button class="tab" data-tab="colas">Retraso de colas</button>
+  <button class="tab" data-tab="curso">Trabajo en curso</button>
+  <button class="tab" data-tab="bitacora">Bitácora</button>
+  <button class="tab" data-tab="config">Configuración</button>
+</div>
+
+<main>
+  <!-- P1. ATENCIÓN ASISTIDA -->
+  <section class="page active" id="page-atencion">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">SAI-GC / Experimento Funcional</span>
+        <h1>Atención asistida del canal WhatsApp Postventa</h1>
+        <p>Flujo propuesto: IVR existente → captura motivo → triaje A/B/C → routing por capacidad → asistencia KB → decisión humana (HITL)</p>
+      </div>
+      <span class="label-demo">NO CONECTADO A SALESFORCE</span>
+    </div>
+
+    <div class="metricstrip">
+      <div class="metric">
+        <small>Histórico corporativo (ene–jul 2026)</small>
+        <b>16.76 <em>min</em></b>
+        <span>TMO As-Is observado (55,924 chats)</span>
+      </div>
+      <div class="metric">
+        <small>Meta interna corporativa</small>
+        <b>14.50 <em>min</em></b>
+        <span>Referencia oficial de gestión</span>
+      </div>
+      <div class="metric">
+        <small>TMO de atenciones efectivas</small>
+        <b>18.45 <em>min</em></b>
+        <span>Línea base ajustada (sin abandonos)</span>
+      </div>
+      <div class="metric">
+        <small>Tasa histórica de abandono</small>
+        <b>16.93<em>%</em></b>
+        <span>Línea base de diagnóstico</span>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <!-- PANEL IZQUIERDO: CONVERSACIÓN -->
+      <article class="panel conversation">
+        <div class="panelbar">
+          <div>
+            <span class="wa-mark">◉</span>
+            <b>Conversación</b>
+            <span class="light-text">/ Casos sintéticos controlados</span>
+          </div>
+          <span class="tiny-status">Canal: WhatsApp</span>
+        </div>
+
+        <div class="case-tools">
+          <label for="case-select">Caso demo</label>
+          <select id="case-select"></select>
+
+          <label for="validation">Validación IVR</label>
+          <select id="validation">
+            <option value="true">Validado por bot</option>
+            <option value="false">Pendiente: valida asesor</option>
+          </select>
+
+          <label for="branch">Ramo</label>
+          <select id="branch">
+            <option>Vida</option>
+            <option>Salud</option>
+            <option>Vehicular</option>
+          </select>
+        </div>
+
+        <div class="chat" id="chat"></div>
+
+        <div class="compose">
+          <label for="question">Motivo de consulta (anonimizado / sintético)</label>
+          <textarea id="question" rows="3" placeholder="Ingrese un texto sintético o seleccione un caso para procesar..."></textarea>
+          <div class="actionbar">
+            <button class="primary" id="process-btn">Procesar consulta</button>
+            <button class="secondary" id="reset-btn">Reiniciar demo</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- PANEL DERECHO: TRIAJE, ASISTENCIA Y ROUTING -->
+      <div class="right-stack">
+        <!-- TRIAJE -->
+        <article class="panel">
+          <div class="panelbar">
+            <div>
+              <span class="panel-icon blue">ABC</span>
+              <b>Triaje A/B/C</b>
+            </div>
+            <span class="soft">M3 · Reglas preliminares</span>
+          </div>
+          <div class="inner">
+            <div class="classrow">
+              <div>
+                <small>Clase sugerida</small>
+                <div id="class-chip" class="classchip empty">—</div>
+              </div>
+              <div>
+                <small>Nivel de riesgo</small>
+                <strong id="risk">Pendiente</strong>
+              </div>
+              <div>
+                <small>Confianza</small>
+                <strong>No estimada</strong>
+              </div>
+            </div>
+            <p id="rule-reason" class="faint">Seleccione un caso y pulse “Procesar consulta”.</p>
+            <p class="disclosure">Nota metodológica: Las clases A/B/C son demostrativas y están pendientes de calibración con panel de expertos.</p>
+          </div>
+        </article>
+
+        <!-- ASISTENCIA -->
+        <article class="panel">
+          <div class="panelbar">
+            <div>
+              <span class="panel-icon mint">KB</span>
+              <b>Asistencia de respuesta (Human-in-the-Loop)</b>
+            </div>
+            <span class="soft">M2 · M4 · M5</span>
+          </div>
+          <div class="inner">
+            <div class="small-heading">Fuente de conocimiento recuperada</div>
+            <div id="kb-source" class="source-box">Pendiente de consulta</div>
+
+            <div class="small-heading spaced">Respuesta sugerida para revisión</div>
+            <div id="suggestion" class="suggestion">La sugerencia aparecerá cuando se procese el caso.</div>
+
+            <div class="micro"><b>Acción obligatoria del asesor</b> — Envío autónomo deshabilitado por diseño</div>
+            <div class="fourbtn">
+              <button data-action="Aceptar" disabled>Aceptar</button>
+              <button data-action="Editar" disabled>Editar</button>
+              <button data-action="Rechazar" disabled>Rechazar</button>
+              <button data-action="Escalar" disabled>Escalar</button>
+            </div>
+            <p id="action-result" class="result muted">Sin decisión humana registrada.</p>
+          </div>
+        </article>
+
+        <!-- CAPACIDAD Y ROUTING -->
+        <article class="panel">
+          <div class="panelbar">
+            <div>
+              <span class="panel-icon purple">↪</span>
+              <b>Capacidad y routing</b>
+            </div>
+            <span class="soft">M6 · Recomendación</span>
+          </div>
+          <div class="inner">
+            <div class="capacity-grid">
+              <div>
+                <small>Capacidad nominal</small>
+                <strong>10 unidades</strong>
+              </div>
+              <div>
+                <small>Peso asignado</small>
+                <strong id="weight">5 unidades</strong>
+              </div>
+              <div>
+                <small>Asesor recomendado</small>
+                <strong id="recommended">Pendiente</strong>
+              </div>
+              <div>
+                <small>Carga proyectada</small>
+                <strong id="projected">—</strong>
+              </div>
+            </div>
+            <div class="progress"><div id="progress-fill"></div></div>
+            <p id="route-reason" class="faint">Se recomienda el asesor disponible con menor carga y skill compatible sin exceder 10 unidades.</p>
+            <button class="secondary" id="assign-btn" disabled>Confirmar asignación demostrativa</button>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="footnote">
+      SAI-GC · Prototipo académico local autónomo. Sin integración a APIs corporativas ni datos personales. Los indicadores históricos provienen del diagnóstico ene–jul 2026; la operación en pantalla utiliza datos sintéticos.
+    </div>
+  </section>
+
+  <!-- P2. REPRESENTANTES -->
+  <section class="page" id="page-supervision">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <h1>Representantes de atención al cliente</h1>
+        <p>Monitoreo de estado, utilización de capacidad y canales asignados.</p>
+      </div>
+      <span class="label-demo">DATOS SINTÉTICOS</span>
+    </div>
+    <div class="panel">
+      <div class="panelbar">
+        <b>Supervisión de asesores en turno</b>
+        <span class="soft">TODOS LOS AGENTES | AGENTES POR COLA</span>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>AGENTE</th>
+              <th>ESTADO</th>
+              <th>RESUMEN DE TRABAJO</th>
+              <th>CANAL</th>
+              <th>CAPACIDAD PRINCIPAL</th>
+              <th>CARGA DE TRABAJO</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="agents-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="twocol">
+      <div class="panel">
+        <div class="panelbar"><b>Regla operativa confirmada</b></div>
+        <div class="inner">
+          <p>• Capacidad máxima nominal: <strong>10 unidades</strong> por asesor.</p>
+          <p>• Caso de correo electrónico: <strong>10 unidades</strong>.</p>
+          <p>• Conversación WhatsApp: <strong>5 unidades</strong> (permite hasta 2 chats concurrentes).</p>
+          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes AG-* son sintéticos para fines demostrativos.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panelbar"><b>Oportunidad del SAI-GC</b></div>
+        <div class="inner">
+          <p>• Recomendar asignaciones considerando <strong>complejidad, disponibilidad, ramo/skill y carga proyectada</strong>.</p>
+          <p>• Evitar sobrecargas y retener en cola cuando se agota la capacidad disponible.</p>
+          <p class="disclosure">La política experimental A/B/C es configurable de forma independiente en la pestaña Configuración.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- P3. RETRASO DE COLAS -->
+  <section class="page" id="page-colas">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <h1>Resumen de retraso de colas</h1>
+        <p>Visibilidad analítica de espera por canal de atención al cliente.</p>
+      </div>
+      <span class="label-demo">DATOS SINTÉTICOS</span>
+    </div>
+    <div class="panel">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>COLA</th>
+              <th>PRIORIDAD</th>
+              <th>TAMAÑO DE TRABAJO</th>
+              <th>TIPO</th>
+              <th>ESPERA TOTAL</th>
+              <th>TIEMPO DE ESPERA MÁS LARGO</th>
+              <th>TIEMPO DE ESPERA MEDIO</th>
+              <th>RIESGO OPERATIVO</th>
+            </tr>
+          </thead>
+          <tbody id="queues-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="explain">
+      Aviso metodológico: Los conteos y tiempos de espera mostrados son <strong>valores sintéticos demostrativos</strong> para validar la estructura de la consola de supervisión; no corresponden a simulación calibrada de eventos discretos ni a telemetría de Salesforce.
+    </div>
+  </section>
+
+  <!-- P4. TRABAJO EN CURSO -->
+  <section class="page" id="page-curso">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <h1>Resumen de trabajo en curso (WIP)</h1>
+        <p>Seguimiento de casos asignados, etapa actual y tiempo transcurrido.</p>
+      </div>
+      <span class="label-demo">DATOS SINTÉTICOS</span>
+    </div>
+    <div class="panel">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>COLA</th>
+              <th>CASO</th>
+              <th>TIPO</th>
+              <th>ASESOR</th>
+              <th>ASIGNADA</th>
+              <th>ABIERTA</th>
+              <th>AHT OBSERVADO</th>
+              <th>CLASE SUGERIDA</th>
+              <th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody id="wip-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="explain">
+      Las asignaciones confirmadas en la pestaña “Atención asistida” se reflejan en esta tabla. El tiempo AHT aquí mostrado es ilustrativo para verificar la reactividad de la consola.
+    </div>
+  </section>
+
+  <!-- P5. BITÁCORA -->
+  <section class="page" id="page-bitacora">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Control de decisiones · Trazabilidad de auditoría</span>
+        <h1>Bitácora de interacciones</h1>
+        <p>Registro de cada evento: caso, versión, clase, fuente KB, decisión humana, asesor y política.</p>
+      </div>
+      <div class="btn-group">
+        <button class="secondary" id="export-json-btn">Exportar bitácora JSON</button>
+        <button class="secondary" id="export-csv-btn">Exportar bitácora CSV</button>
+        <button class="secondary" id="clear-btn">Limpiar bitácora</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>FECHA / HORA</th>
+              <th>CASO</th>
+              <th>EVENTO</th>
+              <th>CLASE</th>
+              <th>FUENTE</th>
+              <th>DECISIÓN HUMANA</th>
+              <th>ASESOR / ROUTING</th>
+              <th>POLÍTICA</th>
+            </tr>
+          </thead>
+          <tbody id="log-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="explain">
+      Trazabilidad en memoria de la sesión local. Permite auditoría exportable tanto a formato JSON como CSV para sustentar la reproducibilidad técnica exigida en el Capítulo IV.
+    </div>
+  </section>
+
+  <!-- P6. CONFIGURACIÓN -->
+  <section class="page" id="page-config">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Parámetros del escenario · Control de hipótesis</span>
+        <h1>Configuración de políticas de capacidad</h1>
+        <p>Separación estricta entre la regla operativa real y las hipótesis de experimentación.</p>
+      </div>
+      <span class="label-demo">SIN CALIBRACIÓN EMPÍRICA</span>
+    </div>
+    <div class="twocol">
+      <div class="panel">
+        <div class="panelbar"><b>Selector de política de routing</b></div>
+        <div class="inner">
+          <label class="radio-line">
+            <input type="radio" name="policy" value="actual" checked>
+            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades, Capacidad nominal = 10 unidades.</span>
+          </label>
+          <label class="radio-line">
+            <input type="radio" name="policy" value="experimental">
+            <span><b>Política experimental A/B/C</b> · A = 4, B = 5, C = 7 (valores puramente hipotéticos).</span>
+          </label>
+          <p class="disclosure">
+            Advertencia de integridad metodológica: Los pesos 4, 5 y 7 son valores ilustrativos de prueba académica. No corresponden a pesos calibrados de la aseguradora y su impacto en TMO está pendiente de validación mediante simulación en el Capítulo V.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panelbar"><b>Condiciones de verdad y límites del prototipo</b></div>
+        <div class="inner">
+          <p>✓ <strong>Reglas de triaje interpretables:</strong> lógica determinista auditable y precautoria.</p>
+          <p>✓ <strong>Repositorio demostrativo:</strong> KB con identificadores y versiones explícitas.</p>
+          <p>✓ <strong>Revisión humana mandatoria:</strong> el sistema nunca envía mensajes de manera autónoma.</p>
+          <p>✓ <strong>Gestión de capacidad:</strong> ruteo respetando umbrales de 10 unidades y estados de agente.</p>
+          <p>✓ <strong>Trazabilidad completa:</strong> bitácora descargable en JSON y CSV.</p>
+          <p>✗ <strong>Sin conexión a Salesforce / WhatsApp:</strong> prototipo autónomo offline.</p>
+          <p>✗ <strong>Sin LLM ni RAG en producción:</strong> asistencia basada en recuperación y plantillas.</p>
+          <p>✗ <strong>Sin resultados To-Be inventados:</strong> la reducción de TMO no se asume sin piloto.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  SAI-GC R01 · Prototipo Académico Demostrativo Local · Inspirado en la estructura funcional de supervisión de aseguradora · Proyecto de Grado UPC
+</footer>
+
+<script type="module" src="script.mjs"></script>
+</body>
+</html>

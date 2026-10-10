@@ -1,0 +1,1448 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SAI-GC | Centro de Atención y Gestión de Capacidad (MVP R01 Autocontenido)</title>
+  <style>
+    :root {
+      --blue: #0176d3;
+      --blue-dark: #014486;
+      --line: #d8dde4;
+      --dark: #181818;
+      --secondary: #596579;
+      --bg: #f5f7fa;
+      --light: #f3f5f8;
+      --success: #2e844a;
+      --warning: #d7891e;
+      --danger: #c23934;
+      --radius: 5px;
+    }
+    * { box-sizing: border-box; }
+    html {
+      font-family: Arial, Calibri, sans-serif;
+      color: var(--dark);
+      background: var(--bg);
+      font-size: 13px;
+    }
+    body { margin: 0; min-width: 980px; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: 0.48; cursor: not-allowed; }
+    .global {
+      height: 59px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 25px;
+      gap: 30px;
+    }
+    .brand { display: flex; gap: 10px; align-items: center; }
+    .brand-logo {
+      background: var(--blue);
+      color: white;
+      border-radius: 7px;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .brand strong { font-size: 17px; letter-spacing: 0.3px; }
+    .brand small { display: block; color: var(--secondary); font-size: 10px; margin-top: 2px; }
+    .global-meta { display: flex; align-items: center; gap: 20px; color: var(--secondary); font-size: 12px; }
+    .env {
+      background: #e8f1fc;
+      border: 1px solid #bad5f9;
+      color: #0357a5;
+      padding: 7px 10px;
+      font-weight: bold;
+      border-radius: 3px;
+      letter-spacing: 0.4px;
+    }
+    .avatar {
+      background: #d0e3fb;
+      color: #1e507f;
+      width: 33px;
+      height: 33px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: bold;
+    }
+    .tabs {
+      height: 49px;
+      background: white;
+      border-bottom: 1px solid #bfc5cd;
+      display: flex;
+      align-items: stretch;
+      gap: 9px;
+      padding: 0 19px;
+      overflow: auto;
+    }
+    .tab {
+      background: transparent;
+      color: #454b54;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      padding: 0 16px;
+      white-space: nowrap;
+    }
+    .tab.active {
+      border-bottom-color: #4a80ff;
+      color: #222;
+      font-weight: bold;
+    }
+    .tab:hover { background: #f5f9ff; }
+    main {
+      padding: 20px 24px 12px;
+      min-height: calc(100vh - 143px);
+      max-width: 1700px;
+      margin: auto;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+    .heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 25px;
+      align-items: center;
+      margin: 3px 0 17px;
+    }
+    .heading h1 { margin: 4px 0; font-size: 22px; font-weight: 650; }
+    .heading p { margin: 5px 0 0; color: var(--secondary); font-size: 12px; }
+    .eyebrow {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.7px;
+      color: #59718e;
+      text-transform: uppercase;
+    }
+    .label-demo {
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      color: #76520c;
+      background: #fff5d7;
+      border: 1px solid #edcf79;
+      padding: 8px 11px;
+      border-radius: 4px;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+    .metricstrip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      background: white;
+      padding: 13px 16px;
+      min-height: 108px;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .metric small { color: var(--secondary); font-size: 11px; }
+    .metric b { font-size: 26px; margin-top: 1px; }
+    .metric em { font-size: 12px; font-weight: normal; font-style: normal; }
+    .metric span { font-size: 11px; color: #526274; }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(430px, 1.12fr) minmax(480px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .panelbar {
+      min-height: 49px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .panelbar b { font-size: 14px; font-weight: 650; }
+    .panelbar > div { display: flex; align-items: center; gap: 8px; }
+    .wa-mark {
+      background: #23c964;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 3px;
+    }
+    .soft { color: #6c7684; font-size: 11px; }
+    .light-text { font-size: 11px; color: #69798a; }
+    .tiny-status {
+      font-size: 11px;
+      background: #f0f4f5;
+      border: 1px solid #e0e6ec;
+      color: #4f6970;
+      padding: 5px 8px;
+      border-radius: 3px;
+    }
+    .case-tools {
+      padding: 11px 12px;
+      background: #fafcff;
+      border-bottom: 1px solid #e1e6ed;
+      display: grid;
+      grid-template-columns: 105px minmax(0, 1fr) 92px 154px 43px 110px;
+      gap: 8px;
+      align-items: center;
+    }
+    .case-tools label { font-size: 11px; color: #526477; }
+    .case-tools select {
+      max-width: 100%;
+      height: 32px;
+      border: 1px solid #bfc9d7;
+      border-radius: 3px;
+      padding: 5px;
+      background: white;
+      font-size: 12px;
+    }
+    .chat {
+      height: 377px;
+      overflow: auto;
+      padding: 20px 18px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .event {
+      align-self: center;
+      color: #697b8f;
+      font-size: 10px;
+      text-align: center;
+      padding: 7px 0;
+    }
+    .message {
+      max-width: 80%;
+      padding: 11px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+    .message.customer {
+      align-self: flex-start;
+      background: #f1f2f4;
+      color: #2c2c2c;
+      border-radius: 7px 7px 7px 0;
+    }
+    .message.system {
+      align-self: flex-end;
+      background: #73777e;
+      color: #fff;
+      border-radius: 7px 7px 0 7px;
+    }
+    .message .who {
+      display: block;
+      font-size: 10px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      opacity: 0.9;
+    }
+    .compose {
+      border-top: 1px solid #dce3eb;
+      padding: 13px 14px 14px;
+    }
+    .compose label {
+      display: block;
+      font-weight: 600;
+      color: #425973;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+    .compose textarea {
+      resize: vertical;
+      width: 100%;
+      border: 1px solid #c6d0db;
+      padding: 9px;
+      border-radius: 3px;
+      min-height: 62px;
+    }
+    .actionbar { display: flex; gap: 8px; margin-top: 8px; }
+    .primary, .secondary {
+      border-radius: 4px;
+      padding: 9px 13px;
+      font-weight: bold;
+      border: 1px solid var(--blue);
+      font-size: 12px;
+    }
+    .primary { color: #fff; background: var(--blue); }
+    .secondary { background: white; color: var(--blue); }
+    .primary:hover { background: #005eac; }
+    .secondary:hover { background: #f0f8ff; }
+    .right-stack { display: flex; flex-direction: column; gap: 13px; }
+    .panel-icon {
+      width: 27px;
+      height: 25px;
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .panel-icon.blue { color: #0d5fa9; background: #dff0ff; }
+    .panel-icon.mint { color: #08714c; background: #dcf7e9; }
+    .panel-icon.purple { color: #6a47a6; background: #efe7fc; }
+    .inner { padding: 12px 15px 14px; }
+    .classrow {
+      display: grid;
+      grid-template-columns: 100px 1fr 1.05fr;
+      gap: 13px;
+      align-items: center;
+    }
+    .classrow small, .capacity-grid small {
+      display: block;
+      color: #647285;
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+    .classrow strong, .capacity-grid strong { font-size: 13px; }
+    .classchip {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 37px;
+      min-height: 28px;
+      border-radius: 4px;
+      font-size: 17px;
+      font-weight: bold;
+      border: 1px solid #ccd6e2;
+    }
+    .classchip.empty { color: #6e7f8d; background: #f2f4f7; }
+    .classchip.A { background: #e0f4e4; color: #1a6337; border-color: #a9d7b4; }
+    .classchip.B { background: #fff2d7; color: #8b5c07; border-color: #edd49b; }
+    .classchip.C { background: #fbe7e7; color: #ab2e2e; border-color: #eab0b0; }
+    .faint { color: #5b6877; font-size: 11px; line-height: 1.4; margin: 10px 0 0; }
+    .disclosure {
+      background: #f8f9fb;
+      border-left: 3px solid #91a8c6;
+      padding: 7px 10px;
+      font-size: 11px;
+      color: #596d7f;
+      margin: 11px 0 0;
+      line-height: 1.45;
+    }
+    .small-heading {
+      font-weight: bold;
+      color: #53667d;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 7px;
+    }
+    .small-heading.spaced { margin-top: 12px; }
+    .source-box {
+      background: #f4f8fc;
+      color: #315d8c;
+      border: 1px solid #d9e7f6;
+      padding: 9px;
+      border-radius: 3px;
+      min-height: 31px;
+      font-size: 12px;
+    }
+    .suggestion {
+      background: #fafbfc;
+      color: #404e5c;
+      border: 1px solid #e2e7ed;
+      padding: 12px;
+      border-radius: 4px;
+      min-height: 67px;
+      line-height: 1.4;
+      font-size: 12px;
+    }
+    .micro { color: #66798d; font-size: 11px; margin: 10px 0 8px; }
+    .fourbtn { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .fourbtn button {
+      border: 1px solid #b5c5d6;
+      color: #025faa;
+      background: #fff;
+      border-radius: 3px;
+      padding: 8px 0;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    .fourbtn button:hover:enabled { background: #ebf5ff; }
+    .result { font-size: 11px; margin: 9px 0 0; padding: 5px; }
+    .result.muted { color: #798692; }
+    .result.done { color: #206f46; background: #f0fcf5; border: 1px solid #c8e7d4; }
+    .capacity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .progress {
+      height: 7px;
+      background: #e9edf1;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+    .progress div { height: 100%; width: 0; background: #0276d3; transition: width 0.3s; }
+    .capacity-grid strong { word-break: break-word; }
+    #assign-btn { margin-top: 13px; }
+    .footnote { padding: 12px 0 1px; color: #66758a; font-size: 11px; }
+    .tablewrap { overflow: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; text-align: left; }
+    thead th {
+      color: #006bc2;
+      font-size: 11px;
+      border-bottom: 1px solid #bcc9d6;
+      padding: 15px 13px 13px;
+      background: #fff;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(odd) { background: #f4f4f4; }
+    tbody td {
+      padding: 15px 13px;
+      line-height: 1.4;
+      border-bottom: 1px solid #e2e6ea;
+      vertical-align: middle;
+    }
+    .status {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 7px;
+      background: #aaa;
+    }
+    .status.ok { background: #2e844a; }
+    .status.bad { background: #c23934; }
+    .status.wait { background: #dfa43b; }
+    .link { color: #0176d3; font-weight: bold; }
+    .meter {
+      height: 8px;
+      min-width: 150px;
+      background: #e7ecf1;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .meter span { height: 100%; display: block; background: #1e9766; }
+    .meter.full span { background: #bf2a2a; }
+    .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 16px; }
+    .twocol p { color: #4b5a69; font-size: 13px; line-height: 1.6; }
+    .explain {
+      background: #fffdf5;
+      border-left: 3px solid #d0a34e;
+      padding: 15px 18px;
+      color: #79632e;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+    .radio-line {
+      display: block;
+      cursor: pointer;
+      padding: 12px;
+      background: #f8fafd;
+      border: 1px solid #e2e6ec;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .radio-line input { margin-right: 6px; }
+    .btn-group { display: flex; gap: 10px; align-items: center; }
+    footer {
+      padding: 8px 26px 14px;
+      color: #708094;
+      text-align: center;
+      font-size: 10px;
+    }
+    @media (max-width: 1180px) {
+      .workspace { grid-template-columns: 1fr; }
+      .case-tools { grid-template-columns: 130px 1fr 100px 170px 55px 120px; }
+      .chat { height: 350px; }
+      .tabs { gap: 1px; }
+      .tab { padding: 0 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="global">
+  <div class="brand">
+    <span class="brand-logo">S</span>
+    <div>
+      <strong>SAI-GC</strong>
+      <small>Sistema de Asistencia Inteligente y Gestión de Capacidad</small>
+    </div>
+  </div>
+  <div class="global-meta">
+    <span class="env">DEMO · DATOS SINTÉTICOS</span>
+    <span>Prototipo Académico · v0.3-r01</span>
+    <span class="avatar" title="Usuario Demostrativo">VD</span>
+  </div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab active" data-tab="atencion">Atención asistida</button>
+  <button class="tab" data-tab="supervision">Representantes de atención al cliente</button>
+  <button class="tab" data-tab="colas">Retraso de colas</button>
+  <button class="tab" data-tab="curso">Trabajo en curso</button>
+  <button class="tab" data-tab="bitacora">Bitácora</button>
+  <button class="tab" data-tab="config">Configuración</button>
+</div>
+
+<main>
+  <!-- P1. ATENCIÓN ASISTIDA -->
+  <section class="page active" id="page-atencion">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">SAI-GC / Experimento Funcional</span>
+        <h1>Atención asistida del canal WhatsApp Postventa</h1>
+        <p>Flujo propuesto: IVR existente → captura motivo → triaje A/B/C → routing por capacidad → asistencia KB → decisión humana (HITL)</p>
+      </div>
+      <span class="label-demo">NO CONECTADO A SALESFORCE</span>
+    </div>
+
+    <div class="metricstrip">
+      <div class="metric">
+        <small>Histórico corporativo (ene–jul 2026)</small>
+        <b>16.76 <em>min</em></b>
+        <span>TMO As-Is observado (55,924 chats)</span>
+      </div>
+      <div class="metric">
+        <small>Meta interna corporativa</small>
+        <b>14.50 <em>min</em></b>
+        <span>Referencia oficial de gestión</span>
+      </div>
+      <div class="metric">
+        <small>TMO de atenciones efectivas</small>
+        <b>18.45 <em>min</em></b>
+        <span>Línea base ajustada (sin abandonos)</span>
+      </div>
+      <div class="metric">
+        <small>Tasa histórica de abandono</small>
+        <b>16.93<em>%</em></b>
+        <span>Línea base de diagnóstico</span>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <!-- PANEL IZQUIERDO: CONVERSACIÓN -->
+      <article class="panel conversation">
+        <div class="panelbar">
+          <div>
+            <span class="wa-mark">◉</span>
+            <b>Conversación</b>
+            <span class="light-text">/ Casos sintéticos controlados</span>
+          </div>
+          <span class="tiny-status">Canal: WhatsApp</span>
+        </div>
+
+        <div class="case-tools">
+          <label for="case-select">Caso demo</label>
+          <select id="case-select"></select>
+
+          <label for="validation">Validación IVR</label>
+          <select id="validation">
+            <option value="true">Validado por bot</option>
+            <option value="false">Pendiente: valida asesor</option>
+          </select>
+
+          <label for="branch">Ramo</label>
+          <select id="branch">
+            <option>Vida</option>
+            <option>Salud</option>
+            <option>Vehicular</option>
+          </select>
+        </div>
+
+        <div class="chat" id="chat"></div>
+
+        <div class="compose">
+          <label for="question">Motivo de consulta (anonimizado / sintético)</label>
+          <textarea id="question" rows="3" placeholder="Ingrese un texto sintético o seleccione un caso para procesar..."></textarea>
+          <div class="actionbar">
+            <button class="primary" id="process-btn">Procesar consulta</button>
+            <button class="secondary" id="reset-btn">Reiniciar demo</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- PANEL DERECHO: TRIAJE, ASISTENCIA Y ROUTING -->
+      <div class="right-stack">
+        <!-- TRIAJE -->
+        <article class="panel">
+          <div class="panelbar">
+            <div>
+              <span class="panel-icon blue">ABC</span>
+              <b>Triaje A/B/C</b>
+            </div>
+            <span class="soft">M3 · Reglas preliminares</span>
+          </div>
+          <div class="inner">
+            <div class="classrow">
+              <div>
+                <small>Clase sugerida</small>
+                <div id="class-chip" class="classchip empty">—</div>
+              </div>
+              <div>
+                <small>Nivel de riesgo</small>
+                <strong id="risk">Pendiente</strong>
+              </div>
+              <div>
+                <small>Confianza</small>
+                <strong>No estimada</strong>
+              </div>
+            </div>
+            <p id="rule-reason" class="faint">Seleccione un caso y pulse “Procesar consulta”.</p>
+            <p class="disclosure">Nota metodológica: Las clases A/B/C son demostrativas y están pendientes de calibración con panel de expertos.</p>
+          </div>
+        </article>
+
+        <!-- ASISTENCIA -->
+        <article class="panel">
+          <div class="panelbar">
+            <div>
+              <span class="panel-icon mint">KB</span>
+              <b>Asistencia de respuesta (Human-in-the-Loop)</b>
+            </div>
+            <span class="soft">M2 · M4 · M5</span>
+          </div>
+          <div class="inner">
+            <div class="small-heading">Fuente de conocimiento recuperada</div>
+            <div id="kb-source" class="source-box">Pendiente de consulta</div>
+
+            <div class="small-heading spaced">Respuesta sugerida para revisión</div>
+            <div id="suggestion" class="suggestion">La sugerencia aparecerá cuando se procese el caso.</div>
+
+            <div class="micro"><b>Acción obligatoria del asesor</b> — Envío autónomo deshabilitado por diseño</div>
+            <div class="fourbtn">
+              <button data-action="Aceptar" disabled>Aceptar</button>
+              <button data-action="Editar" disabled>Editar</button>
+              <button data-action="Rechazar" disabled>Rechazar</button>
+              <button data-action="Escalar" disabled>Escalar</button>
+            </div>
+            <p id="action-result" class="result muted">Sin decisión humana registrada.</p>
+          </div>
+        </article>
+
+        <!-- CAPACIDAD Y ROUTING -->
+        <article class="panel">
+          <div class="panelbar">
+            <div>
+              <span class="panel-icon purple">↪</span>
+              <b>Capacidad y routing</b>
+            </div>
+            <span class="soft">M6 · Recomendación</span>
+          </div>
+          <div class="inner">
+            <div class="capacity-grid">
+              <div>
+                <small>Capacidad nominal</small>
+                <strong>10 unidades</strong>
+              </div>
+              <div>
+                <small>Peso asignado</small>
+                <strong id="weight">5 unidades</strong>
+              </div>
+              <div>
+                <small>Asesor recomendado</small>
+                <strong id="recommended">Pendiente</strong>
+              </div>
+              <div>
+                <small>Carga proyectada</small>
+                <strong id="projected">—</strong>
+              </div>
+            </div>
+            <div class="progress"><div id="progress-fill"></div></div>
+            <p id="route-reason" class="faint">Se recomienda el asesor disponible con menor carga y skill compatible sin exceder 10 unidades.</p>
+            <button class="secondary" id="assign-btn" disabled>Confirmar asignación demostrativa</button>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="footnote">
+      SAI-GC · Prototipo académico local autónomo. Sin integración a APIs corporativas ni datos personales. Los indicadores históricos provienen del diagnóstico ene–jul 2026; la operación en pantalla utiliza datos sintéticos.
+    </div>
+  </section>
+
+  <!-- P2. REPRESENTANTES -->
+  <section class="page" id="page-supervision">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <h1>Representantes de atención al cliente</h1>
+        <p>Monitoreo de estado, utilización de capacidad y canales asignados.</p>
+      </div>
+      <span class="label-demo">DATOS SINTÉTICOS</span>
+    </div>
+    <div class="panel">
+      <div class="panelbar">
+        <b>Supervisión de asesores en turno</b>
+        <span class="soft">TODOS LOS AGENTES | AGENTES POR COLA</span>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>AGENTE</th>
+              <th>ESTADO</th>
+              <th>RESUMEN DE TRABAJO</th>
+              <th>CANAL</th>
+              <th>CAPACIDAD PRINCIPAL</th>
+              <th>CARGA DE TRABAJO</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="agents-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="twocol">
+      <div class="panel">
+        <div class="panelbar"><b>Regla operativa confirmada</b></div>
+        <div class="inner">
+          <p>• Capacidad máxima nominal: <strong>10 unidades</strong> por asesor.</p>
+          <p>• Caso de correo electrónico: <strong>10 unidades</strong>.</p>
+          <p>• Conversación WhatsApp: <strong>5 unidades</strong> (permite hasta 2 chats concurrentes).</p>
+          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes AG-* son sintéticos para fines demostrativos.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panelbar"><b>Oportunidad del SAI-GC</b></div>
+        <div class="inner">
+          <p>• Recomendar asignaciones considerando <strong>complejidad, disponibilidad, ramo/skill y carga proyectada</strong>.</p>
+          <p>• Evitar sobrecargas y retener en cola cuando se agota la capacidad disponible.</p>
+          <p class="disclosure">La política experimental A/B/C es configurable de forma independiente en la pestaña Configuración.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- P3. RETRASO DE COLAS -->
+  <section class="page" id="page-colas">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <h1>Resumen de retraso de colas</h1>
+        <p>Visibilidad analítica de espera por canal de atención al cliente.</p>
+      </div>
+      <span class="label-demo">DATOS SINTÉTICOS</span>
+    </div>
+    <div class="panel">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>COLA</th>
+              <th>PRIORIDAD</th>
+              <th>TAMAÑO DE TRABAJO</th>
+              <th>TIPO</th>
+              <th>ESPERA TOTAL</th>
+              <th>TIEMPO DE ESPERA MÁS LARGO</th>
+              <th>TIEMPO DE ESPERA MEDIO</th>
+              <th>RIESGO OPERATIVO</th>
+            </tr>
+          </thead>
+          <tbody id="queues-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="explain">
+      Aviso metodológico: Los conteos y tiempos de espera mostrados son <strong>valores sintéticos demostrativos</strong> para validar la estructura de la consola de supervisión; no corresponden a simulación calibrada de eventos discretos ni a telemetría de Salesforce.
+    </div>
+  </section>
+
+  <!-- P4. TRABAJO EN CURSO -->
+  <section class="page" id="page-curso">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <h1>Resumen de trabajo en curso (WIP)</h1>
+        <p>Seguimiento de casos asignados, etapa actual y tiempo transcurrido.</p>
+      </div>
+      <span class="label-demo">DATOS SINTÉTICOS</span>
+    </div>
+    <div class="panel">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>COLA</th>
+              <th>CASO</th>
+              <th>TIPO</th>
+              <th>ASESOR</th>
+              <th>ASIGNADA</th>
+              <th>ABIERTA</th>
+              <th>AHT OBSERVADO</th>
+              <th>CLASE SUGERIDA</th>
+              <th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody id="wip-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="explain">
+      Las asignaciones confirmadas en la pestaña “Atención asistida” se reflejan en esta tabla. El tiempo AHT aquí mostrado es ilustrativo para verificar la reactividad de la consola.
+    </div>
+  </section>
+
+  <!-- P5. BITÁCORA -->
+  <section class="page" id="page-bitacora">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Control de decisiones · Trazabilidad de auditoría</span>
+        <h1>Bitácora de interacciones</h1>
+        <p>Registro de cada evento: caso, versión, clase, fuente KB, decisión humana, asesor y política.</p>
+      </div>
+      <div class="btn-group">
+        <button class="secondary" id="export-json-btn">Exportar bitácora JSON</button>
+        <button class="secondary" id="export-csv-btn">Exportar bitácora CSV</button>
+        <button class="secondary" id="clear-btn">Limpiar bitácora</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>FECHA / HORA</th>
+              <th>CASO</th>
+              <th>EVENTO</th>
+              <th>CLASE</th>
+              <th>FUENTE</th>
+              <th>DECISIÓN HUMANA</th>
+              <th>ASESOR / ROUTING</th>
+              <th>POLÍTICA</th>
+            </tr>
+          </thead>
+          <tbody id="log-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="explain">
+      Trazabilidad en memoria de la sesión local. Permite auditoría exportable tanto a formato JSON como CSV para sustentar la reproducibilidad técnica exigida en el Capítulo IV.
+    </div>
+  </section>
+
+  <!-- P6. CONFIGURACIÓN -->
+  <section class="page" id="page-config">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Parámetros del escenario · Control de hipótesis</span>
+        <h1>Configuración de políticas de capacidad</h1>
+        <p>Separación estricta entre la regla operativa real y las hipótesis de experimentación.</p>
+      </div>
+      <span class="label-demo">SIN CALIBRACIÓN EMPÍRICA</span>
+    </div>
+    <div class="twocol">
+      <div class="panel">
+        <div class="panelbar"><b>Selector de política de routing</b></div>
+        <div class="inner">
+          <label class="radio-line">
+            <input type="radio" name="policy" value="actual" checked>
+            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades, Capacidad nominal = 10 unidades.</span>
+          </label>
+          <label class="radio-line">
+            <input type="radio" name="policy" value="experimental">
+            <span><b>Política experimental A/B/C</b> · A = 4, B = 5, C = 7 (valores puramente hipotéticos).</span>
+          </label>
+          <p class="disclosure">
+            Advertencia de integridad metodológica: Los pesos 4, 5 y 7 son valores ilustrativos de prueba académica. No corresponden a pesos calibrados de la aseguradora y su impacto en TMO está pendiente de validación mediante simulación en el Capítulo V.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panelbar"><b>Condiciones de verdad y límites del prototipo</b></div>
+        <div class="inner">
+          <p>✓ <strong>Reglas de triaje interpretables:</strong> lógica determinista auditable y precautoria.</p>
+          <p>✓ <strong>Repositorio demostrativo:</strong> KB con identificadores y versiones explícitas.</p>
+          <p>✓ <strong>Revisión humana mandatoria:</strong> el sistema nunca envía mensajes de manera autónoma.</p>
+          <p>✓ <strong>Gestión de capacidad:</strong> ruteo respetando umbrales de 10 unidades y estados de agente.</p>
+          <p>✓ <strong>Trazabilidad completa:</strong> bitácora descargable en JSON y CSV.</p>
+          <p>✗ <strong>Sin conexión a Salesforce / WhatsApp:</strong> prototipo autónomo offline.</p>
+          <p>✗ <strong>Sin LLM ni RAG en producción:</strong> asistencia basada en recuperación y plantillas.</p>
+          <p>✗ <strong>Sin resultados To-Be inventados:</strong> la reducción de TMO no se asume sin piloto.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  SAI-GC R01 · Prototipo Académico Demostrativo Local · Inspirado en la estructura funcional de supervisión de aseguradora · Proyecto de Grado UPC
+</footer>
+
+<script>
+/** SAI-GC R01 — Lógica Autocontenida */
+const VERSION = '0.3-r01-demo';
+const CAPACITY = 10;
+
+const KNOWLEDGE = {
+  A: {
+    id: 'KB-DEMO-001',
+    title: 'Envío de constancia · plantilla demostrativa',
+    body: 'Para solicitar una constancia, verificar identidad y cobertura con el procedimiento corporativo vigente. No afirmar el envío ni la vigencia sin comprobación.',
+    reply: 'Con gusto le ayudo con su constancia. Antes de continuar, revisaré la validación y la información disponible en el procedimiento autorizado. Le confirmaré los siguientes pasos.'
+  },
+  B: {
+    id: 'KB-DEMO-002',
+    title: 'Estado de cuenta y deuda · plantilla demostrativa',
+    body: 'La información de deuda y cuotas requiere consulta a fuentes corporativas. La plantilla no contiene saldos ni datos personales.',
+    reply: 'Con gusto reviso su consulta sobre el estado de cuenta. Necesito validar los datos correspondientes y consultar el sistema autorizado antes de confirmarle importes o fechas.'
+  },
+  C: {
+    id: 'KB-DEMO-003',
+    title: 'Siniestros y excepciones · control reforzado',
+    body: 'Los siniestros, indemnizaciones, anulaciones contractuales y casos sensibles requieren revisión o escalamiento. No prometer cobertura, pagos ni plazos.',
+    reply: 'Comprendo su solicitud. Por tratarse de una gestión que requiere una revisión especializada, verificaré la documentación y la ruta de atención correspondiente antes de brindarle una respuesta definitiva.'
+  }
+};
+
+const CASES = [
+  {
+    id: 'DEMO-001',
+    name: 'Constancia (Clase A)',
+    text: 'Necesito el reenvío de mi constancia de seguro vehicular.',
+    topic: 'Envío de constancia',
+    branch: 'Vehicular',
+    validated: true,
+    scenario: 'standard'
+  },
+  {
+    id: 'DEMO-002',
+    name: 'Estado de cuenta (Clase B)',
+    text: 'Quiero consultar una deuda y el estado de cuenta de mi póliza de vida.',
+    topic: 'Estado de cuenta y deuda',
+    branch: 'Vida',
+    validated: false,
+    scenario: 'standard'
+  },
+  {
+    id: 'DEMO-003',
+    name: 'Siniestro (Clase C)',
+    text: 'Tuve un siniestro vehicular y necesito orientación sobre la indemnización.',
+    topic: 'Siniestros e indemnización',
+    branch: 'Vehicular',
+    validated: true,
+    scenario: 'standard'
+  },
+  {
+    id: 'DEMO-004',
+    name: 'Anulación por excepción (Clase C)',
+    text: 'Deseo anular mi póliza de seguro de salud por un caso excepcional.',
+    topic: 'Anulación de póliza',
+    branch: 'Salud',
+    validated: false,
+    scenario: 'standard'
+  },
+  {
+    id: 'DEMO-005',
+    name: 'Texto no reconocido (C precautoria)',
+    text: 'Tengo una inquietud especial con un código de promoción o sorteo no registrado en el sistema.',
+    topic: 'Consulta fuera de catálogo',
+    branch: 'Vida',
+    validated: false,
+    scenario: 'standard'
+  },
+  {
+    id: 'DEMO-006',
+    name: 'Saturación en cola (Sin capacidad)',
+    text: 'Consulta vehicular prioritaria ingresando en momento de saturación de asesores.',
+    topic: 'Capacidad agotada en cola',
+    branch: 'Vehicular',
+    validated: true,
+    scenario: 'all_busy'
+  },
+  {
+    id: 'DEMO-007',
+    name: 'Especialista en pausa/refrigerio',
+    text: 'Consulta del ramo Salud donde el asesor de turno se encuentra en refrigerio.',
+    topic: 'Exclusión por estado no disponible',
+    branch: 'Salud',
+    validated: true,
+    scenario: 'agent_paused'
+  },
+  {
+    id: 'DEMO-008',
+    name: 'Comparativa Actual vs Experimental',
+    text: 'Solicitud con complejidad clase C para contrastar peso 5 (actual) vs 7 (experimental).',
+    topic: 'Contraste metodológico',
+    branch: 'Vehicular',
+    validated: true,
+    scenario: 'policy_compare'
+  }
+];
+
+const AGENTS = [
+  { id: 'AG-01', display: 'Asesor Demo 01', status: 'Disponible', load: 0, skills: ['Vida', 'Salud', 'Vehicular'] },
+  { id: 'AG-02', display: 'Asesor Demo 02', status: 'Disponible', load: 5, skills: ['Vida', 'Vehicular'] },
+  { id: 'AG-03', display: 'Asesor Demo 03', status: 'Ocupado', load: 10, skills: ['Vida', 'Salud', 'Vehicular'] },
+  { id: 'AG-04', display: 'Asesor Demo 04', status: 'Refrigerio', load: 0, skills: ['Vida', 'Salud'] }
+];
+
+const CLASS_RULES = [
+  {
+    value: 'C',
+    rx: /siniestro|indemniza|anulaci[oó]n|rescate|carta de garant[ií]a|fraude|queja grave|reclamo sensible|excepci[oó]n|modificaci[oó]n de p[oó]liza/i,
+    why: 'Regla de seguridad demostrativa: consulta sensible / contractual / excepción'
+  },
+  {
+    value: 'B',
+    rx: /deuda|estado de cuenta|cuota|cobranza|renovaci[oó]n|deducible|beneficio|proveedor|factura|boleta/i,
+    why: 'Procedimiento con verificaciones o consultas a sistemas internos'
+  },
+  {
+    value: 'A',
+    rx: /constancia|copia|duplicado|p[oó]liza digital|vigencia informativa|horario/i,
+    why: 'Consulta de orientación preliminar de baja complejidad'
+  }
+];
+
+function classify(text) {
+  if (typeof text !== 'string' || !text.trim()) {
+    return {
+      level: 'C',
+      risk: 'Alto',
+      reason: 'Entrada vacía o inválida: escalamiento precautorio',
+      confidence: 'No estimada (reglas demostrativas)'
+    };
+  }
+  const rule = CLASS_RULES.find(r => r.rx.test(text));
+  if (!rule) {
+    return {
+      level: 'C',
+      risk: 'Alto',
+      reason: 'Baja cobertura del conocimiento: escalamiento precautorio a humano',
+      confidence: 'No estimada (reglas demostrativas)'
+    };
+  }
+  return {
+    level: rule.value,
+    risk: rule.value === 'C' ? 'Alto' : rule.value === 'B' ? 'Medio' : 'Bajo',
+    reason: rule.why,
+    confidence: 'No estimada (reglas demostrativas)'
+  };
+}
+
+function weightFor(level, policy = 'actual') {
+  if (policy === 'experimental') {
+    return ({ A: 4, B: 5, C: 7 })[level] ?? 7;
+  }
+  return 5;
+}
+
+function route(agents, level, branch, policy = 'actual') {
+  const weight = weightFor(level, policy);
+  const valid = (agents || []).filter(a =>
+    a.status === 'Disponible' &&
+    Array.isArray(a.skills) &&
+    a.skills.includes(branch) &&
+    (a.load + weight) <= CAPACITY
+  );
+  valid.sort((a, b) => (a.load - b.load) || a.id.localeCompare(b.id));
+  const choice = valid[0];
+  return {
+    weight,
+    agent: choice || null,
+    projected: choice ? choice.load + weight : null,
+    reason: choice
+      ? 'Menor carga ponderada y skill compatible'
+      : 'Sin capacidad o skill disponible; mantener en cola'
+  };
+}
+
+function respond(level, validated) {
+  const source = KNOWLEDGE[level] || KNOWLEDGE.C;
+  const validation = validated
+    ? 'El bot realizó validación previa; no repetir automáticamente el requerimiento.'
+    : 'Validación pendiente; el asesor debe ejecutar verificación conforme al procedimiento autorizado.';
+  return {
+    ...source,
+    text: source.reply + ' ' + validation
+  };
+}
+
+function processCase(testCase, agents, policy = 'actual') {
+  const classification = classify(testCase.text);
+  const hasCoverage = !classification.reason.startsWith('Baja cobertura') &&
+                      !classification.reason.startsWith('Entrada vacía');
+  const guidance = hasCoverage
+    ? respond(classification.level, !!testCase.validated)
+    : {
+        id: 'KB-NO-COBERTURA',
+        title: 'Sin fuente aplicable: escalamiento obligatorio',
+        body: 'La base demo no cubre este caso sintético.',
+        text: 'No se dispone de información suficiente en el repositorio de prueba. El asesor debe revisar y escalar; no generar una respuesta de contenido.'
+      };
+  const recommendation = route(agents, classification.level, testCase.branch || 'Vehicular', policy);
+  return {
+    classification,
+    guidance,
+    recommendation,
+    caseId: testCase.id,
+    policy,
+    version: VERSION
+  };
+}
+
+function log_event(logs, entry) {
+  const time = entry.time || new Date().toLocaleString('es-PE');
+  const record = {
+    time,
+    case: entry.caseId || entry.case || '—',
+    event: entry.event || 'Evento',
+    level: entry.level || '—',
+    source: entry.source || '—',
+    action: entry.action || '—',
+    agent: entry.agent || '—',
+    policy: entry.policy || 'actual',
+    version: entry.version || VERSION
+  };
+  return [record, ...(logs || [])];
+}
+
+function export_evidence(logs, format = 'json') {
+  const records = logs || [];
+  if (format === 'csv') {
+    const headers = ['Fecha_Hora', 'Caso', 'Evento', 'Clase', 'Fuente', 'Decision_Humana', 'Asesor_Routing', 'Politica', 'Version'];
+    const rows = records.map(r => [
+      r.time,
+      r.case,
+      r.event,
+      r.level,
+      r.source,
+      r.action,
+      r.agent,
+      r.policy,
+      r.version
+    ].map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(','));
+    return [headers.join(','), ...rows].join('\r\n');
+  }
+  return JSON.stringify({
+    app: 'SAI-GC',
+    version: VERSION,
+    generatedAt: new Date().toISOString(),
+    disclaimer: 'Datos sintéticos para demostración académica; no contiene registros operativos reales',
+    records
+  }, null, 2);
+}
+
+// Interfaz e Interacción
+const $ = id => document.getElementById(id);
+const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[c]));
+
+const state = {
+  agents: structuredClone(AGENTS),
+  cases: structuredClone(CASES),
+  selected: CASES[0],
+  output: null,
+  policy: 'actual',
+  logs: [],
+  decisions: {},
+  assignments: [],
+  counter: 0
+};
+
+function navigate(name) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === name));
+  document.querySelectorAll('.page').forEach(x => x.classList.toggle('active', x.id === `page-${name}`));
+  renderTables();
+}
+
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => navigate(b.dataset.tab)));
+
+const select = $('case-select');
+for (const c of state.cases) {
+  const o = document.createElement('option');
+  o.value = c.id;
+  o.textContent = `${c.id} · ${c.name}`;
+  select.append(o);
+}
+select.addEventListener('change', () => setCase(select.value));
+
+function setCase(id) {
+  const c = state.cases.find(x => x.id === id);
+  if (!c) return;
+  state.selected = c;
+  state.output = null;
+
+  if (c.scenario === 'all_busy') {
+    state.agents = AGENTS.map(a => ({ ...a, status: 'Ocupado', load: 10 }));
+  } else if (c.scenario === 'agent_paused') {
+    state.agents = [
+      { id: 'AG-01', display: 'Asesor Demo 01', status: 'Ocupado', load: 10, skills: ['Vida', 'Vehicular'] },
+      { id: 'AG-02', display: 'Asesor Demo 02', status: 'Ocupado', load: 10, skills: ['Vida', 'Vehicular'] },
+      { id: 'AG-03', display: 'Asesor Demo 03', status: 'Ocupado', load: 10, skills: ['Vehicular'] },
+      { id: 'AG-04', display: 'Asesor Demo 04', status: 'Refrigerio', load: 0, skills: ['Vida', 'Salud'] }
+    ];
+  } else if (c.scenario === 'policy_compare') {
+    state.agents = structuredClone(AGENTS);
+  } else {
+    if (state.agents.every(a => a.load === 10)) {
+      state.agents = structuredClone(AGENTS);
+    }
+  }
+
+  $('question').value = c.text;
+  $('validation').value = String(c.validated);
+  $('branch').value = c.branch;
+  renderChat();
+  resetOutput();
+  renderTables();
+}
+
+function renderChat() {
+  const d = $('chat');
+  const c = state.selected;
+  const check = $('validation').value === 'true';
+  d.innerHTML = `
+    <div class="event">◉ Cliente inicia contacto en canal WhatsApp · caso ${escapeHTML(c.id)}</div>
+    <div class="message customer"><span class="who">Cliente (demostración)</span>Hola, necesito asistencia con mi póliza.</div>
+    <div class="message system"><span class="who">IVR actual · demostración</span>Gracias por comunicarse. Por favor, indique brevemente el motivo de su consulta.</div>
+    <div class="message customer"><span class="who">Cliente (demostración)</span>${escapeHTML($('question').value || c.text)}</div>
+    <div class="event">${check ? '✓ Identidad previamente validada por IVR.' : '! Identidad sin validar: asesor debe ejecutar verificación.'}<br>Transferencia simulada a cola WhatsApp.</div>
+  `;
+  if (state.output) {
+    const o = state.output;
+    d.innerHTML += `
+      <div class="message system">
+        <span class="who">SAI-GC · propuesta interna (no enviada al cliente)</span>
+        Clase ${o.classification.level} · Fuente: ${o.guidance.id}<br>
+        <em>Acción humana requerida: el asesor debe validar y decidir.</em>
+      </div>
+    `;
+  }
+  d.scrollTop = d.scrollHeight;
+}
+
+$('validation').addEventListener('change', () => {
+  state.output = null;
+  renderChat();
+  resetOutput();
+});
+
+$('branch').addEventListener('change', () => {
+  state.output = null;
+  resetOutput();
+});
+
+function resetOutput() {
+  $('class-chip').className = 'classchip empty';
+  $('class-chip').textContent = '—';
+  $('risk').textContent = 'Pendiente';
+  $('rule-reason').textContent = 'Seleccione un caso y pulse “Procesar consulta”.';
+  $('kb-source').textContent = 'Pendiente de consulta';
+  $('suggestion').textContent = 'La asistencia aparecerá cuando se procese el caso.';
+  $('suggestion').contentEditable = 'false';
+  $('suggestion').style.background = '';
+  $('suggestion').style.outline = '';
+  $('action-result').className = 'result muted';
+  $('action-result').textContent = 'Sin decisión humana registrada.';
+  document.querySelectorAll('[data-action]').forEach(b => b.disabled = true);
+  $('weight').textContent = state.policy === 'experimental' ? 'Depende de clase' : '5 unidades';
+  $('recommended').textContent = 'Pendiente';
+  $('projected').textContent = '—';
+  $('route-reason').textContent = 'Se recomienda el asesor disponible con menor carga y skill compatible.';
+  $('progress-fill').style.width = '0%';
+  $('assign-btn').disabled = true;
+}
+
+function addLog(type, action = '—', agent = '—') {
+  const o = state.output || {};
+  state.logs = log_event(state.logs, {
+    caseId: state.selected.id,
+    event: type,
+    level: o.classification?.level || '—',
+    source: o.guidance?.id || '—',
+    action,
+    agent,
+    policy: state.policy,
+    version: VERSION
+  });
+  renderTables();
+}
+
+function runCase() {
+  const c = {
+    ...state.selected,
+    text: $('question').value,
+    validated: $('validation').value === 'true',
+    branch: $('branch').value
+  };
+
+  state.output = processCase(c, state.agents, state.policy);
+  const o = state.output;
+
+  $('class-chip').className = `classchip ${o.classification.level}`;
+  $('class-chip').textContent = o.classification.level;
+  $('risk').textContent = o.classification.risk;
+  $('rule-reason').textContent = o.classification.reason;
+  $('kb-source').textContent = `${o.guidance.id} · ${o.guidance.title}`;
+  $('suggestion').textContent = o.guidance.text;
+  $('weight').textContent = `${o.recommendation.weight} unidades`;
+  $('recommended').textContent = o.recommendation.agent?.display || 'En cola';
+  $('projected').textContent = o.recommendation.agent ? `${o.recommendation.projected} / 10` : '—';
+  $('route-reason').textContent = o.recommendation.reason;
+  $('progress-fill').style.width = `${100 * (o.recommendation.projected || 0) / CAPACITY}%`;
+
+  $('assign-btn').disabled = !o.recommendation.agent;
+  document.querySelectorAll('[data-action]').forEach(b => b.disabled = false);
+
+  $('action-result').textContent = 'Pendiente: el asesor debe decidir antes de actuar.';
+  $('action-result').className = 'result muted';
+
+  renderChat();
+  addLog('Triaje y recomendación');
+}
+
+$('process-btn').addEventListener('click', runCase);
+
+$('reset-btn').addEventListener('click', () => {
+  state.agents = structuredClone(AGENTS);
+  state.logs = [];
+  state.decisions = {};
+  state.assignments = [];
+  state.counter = 0;
+  setCase(CASES[0].id);
+  select.value = CASES[0].id;
+  renderTables();
+});
+
+for (const b of document.querySelectorAll('[data-action]')) {
+  b.addEventListener('click', () => {
+    if (!state.output) return;
+    const act = b.dataset.action;
+    if (act === 'Editar') {
+      $('suggestion').contentEditable = 'true';
+      $('suggestion').style.background = '#fffef0';
+      $('suggestion').style.outline = '2px solid #94bce6';
+      $('suggestion').focus();
+    } else {
+      $('suggestion').contentEditable = 'false';
+      $('suggestion').style.background = '';
+      $('suggestion').style.outline = '';
+    }
+    state.decisions[state.selected.id] = act;
+    $('action-result').textContent = `Decisión registrada: ${act}. ${act === 'Escalar' ? 'Requiere revisión humana reforzada.' : 'Sugerencia no enviada automáticamente.'}`;
+    $('action-result').className = 'result done';
+    addLog('Decisión humana', act, state.output.recommendation.agent?.display || '—');
+  });
+}
+
+$('assign-btn').addEventListener('click', () => {
+  if (!state.output || !state.output.recommendation.agent) return;
+  const choice = state.agents.find(a => a.id === state.output.recommendation.agent.id);
+  const w = state.output.recommendation.weight;
+  if (!choice || (choice.load + w > CAPACITY)) {
+    alert('No hay capacidad disponible; reprocesar el caso.');
+    return;
+  }
+  choice.load += w;
+  state.counter++;
+  state.assignments.push({
+    id: state.selected.id,
+    agent: choice.display,
+    level: state.output.classification.level,
+    age: '00:00',
+    status: 'En curso'
+  });
+  $('assign-btn').disabled = true;
+  addLog('Asignación confirmada', state.decisions[state.selected.id] || 'Pendiente', choice.display);
+  $('route-reason').textContent = `Asignación DEMO confirmada: ${choice.display} · ${choice.load}/10 unidades ocupadas.`;
+  renderTables();
+});
+
+document.querySelectorAll('input[name="policy"]').forEach(x => {
+  x.addEventListener('change', () => {
+    state.policy = x.value;
+    state.output = null;
+    resetOutput();
+    renderChat();
+  });
+});
+
+function renderTables() {
+  $('agents-body').innerHTML = state.agents.map(a => `
+    <tr>
+      <td><span class="link">${escapeHTML(a.display)}</span></td>
+      <td><span class="status ${a.status === 'Disponible' ? 'ok' : a.status === 'Ocupado' ? 'bad' : 'wait'}"></span>${escapeHTML(a.status)}</td>
+      <td>${a.load === 0 ? '0 casos' : `${Math.ceil(a.load / 5)} caso(s)`}</td>
+      <td>WhatsApp</td>
+      <td><div class="meter ${a.load === 10 ? 'full' : ''}"><span style="width:${a.load * 10}%"></span></div><small>${a.load * 10}%</small></td>
+      <td>${a.load} / 10</td>
+      <td><span class="link">Ver carga</span></td>
+    </tr>
+  `).join('');
+
+  const queues = [
+    ['WhatsApp', '3', `${state.counter > 0 ? 3 : 2} pendientes`, 'Mensajería', '06:40', '04:25', '03:20', 'Monitorizar'],
+    ['Correo', '11', '1 pendiente', 'Caso', '05:10', '05:10', '05:10', 'Monitorizar'],
+    ['Facebook', '1', '0 pendientes', 'Mensajería', '00:00', '—', '—', 'Normal']
+  ];
+  $('queues-body').innerHTML = queues.map(q => `<tr>${q.map(v => `<td>${escapeHTML(v)}</td>`).join('')}</tr>`).join('');
+
+  const rows = [
+    ...state.assignments.map(x => ['WhatsApp', x.id, 'Conversación', x.agent, '1', '1', x.age, x.level, x.status]),
+    ['WhatsApp', 'DEMO-WIP-001', 'Conversación', 'Asesor Demo 02', '1', '1', '05:40', 'B', 'En curso'],
+    ['Correo', 'DEMO-WIP-002', 'Caso', 'Asesor Demo 03', '1', '1', '12:30', 'N/A', 'En curso']
+  ];
+  $('wip-body').innerHTML = rows.map(q => `<tr>${q.map(v => `<td>${escapeHTML(v)}</td>`).join('')}</tr>`).join('');
+
+  $('log-body').innerHTML = state.logs.length
+    ? state.logs.map(r => `
+        <tr>
+          <td>${escapeHTML(r.time)}</td>
+          <td>${escapeHTML(r.case)}</td>
+          <td>${escapeHTML(r.event)}</td>
+          <td>${escapeHTML(r.level)}</td>
+          <td>${escapeHTML(r.source)}</td>
+          <td>${escapeHTML(r.action)}</td>
+          <td>${escapeHTML(r.agent)}</td>
+          <td>${escapeHTML(r.policy)}</td>
+        </tr>
+      `).join('')
+    : '<tr><td colspan="8">Aún no se han registrado eventos. Procese consultas en “Atención asistida”.</td></tr>';
+}
+
+function downloadFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+$('export-json-btn').addEventListener('click', () => {
+  const jsonContent = export_evidence(state.logs, 'json');
+  downloadFile(jsonContent, 'SAI_GC_BITACORA_DEMO.json', 'application/json');
+});
+
+$('export-csv-btn').addEventListener('click', () => {
+  const csvContent = export_evidence(state.logs, 'csv');
+  downloadFile(csvContent, 'SAI_GC_BITACORA_DEMO.csv', 'text/csv;charset=utf-8;');
+});
+
+$('clear-btn').addEventListener('click', () => {
+  state.logs = [];
+  renderTables();
+});
+
+setCase(CASES[0].id);
+renderTables();
+</script>
+</body>
+</html>

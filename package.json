@@ -1,0 +1,18 @@
+{
+  "name": "sai-gc-mvp",
+  "version": "0.3.0",
+  "description": "SAI-GC: Sistema de Asistencia Inteligente y Gestión de Capacidad - MVP Académico Funcional",
+  "scripts": {
+    "test": "node --test tests/logic.test.mjs"
+  },
+  "keywords": [
+    "mvp",
+    "salesforce",
+    "whatsapp",
+    "tmo",
+    "triage",
+    "routing"
+  ],
+  "author": "jachy207-coder",
+  "license": "MIT"
+}
