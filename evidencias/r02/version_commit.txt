@@ -7,6 +7,7 @@ Institución: Universidad Peruana de Ciencias Aplicadas (UPC) - Ingeniería Indu
 Autor / Tesista: Víctor Chunga
 Rama de trabajo: feat/r02-controles-humanos
 Commit base: 97e0b0a219d8a7aa738fdce23956f487934d4b56
+Commit de liberación R02: ec5a8c4786f694f94899f2acfab964888632c048
 Versión semántica: v0.5-r02-verificable
 Fecha de liberación de evidencias: 2026-10-30T23:10:00Z
 
