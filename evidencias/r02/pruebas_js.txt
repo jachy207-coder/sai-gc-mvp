@@ -1,0 +1,39 @@
+✔ 1. DEMO-001 clasifica como Clase A (constancia informativa) y detecta keyword (2.4979ms)
+✔ 2. DEMO-002 clasifica como Clase B (deuda / estado de cuenta) (0.3363ms)
+✔ 3. DEMO-003 clasifica como Clase C (siniestro e indemnización) (0.4236ms)
+✔ 4. DEMO-004 clasifica como Clase C (anulación por excepción) (0.249ms)
+✔ 5. DEMO-005 texto desconocido aplica escalamiento precautorio a Clase C (0.3837ms)
+✔ 6. Texto vacío o inválido aplica escalamiento precautorio a Clase C (0.2266ms)
+✔ 7. Regla actual confirmada: peso WhatsApp = 5 independientemente de la clase (0.245ms)
+✔ 8. Política experimental: pesos A=4, B=5, C=7 ilustrativos (0.1802ms)
+✔ 9. Routing asigna al asesor disponible con menor carga y skill compatible (0.5384ms)
+✔ 10. Routing excluye asesores en estado Ocupado o Refrigerio (1.8462ms)
+✔ 11. Routing no supera capacidad máxima de 10 unidades (0.4447ms)
+✔ 12. DEMO-006: Saturación en cola retiene caso sin forzar asignación (0.3279ms)
+✔ 13. DEMO-007: Exclusión de agente en pausa preserva cola si no hay otro con skill (0.2287ms)
+✔ 14. Asistencia incluye checklist KB y diferencia validación IVR (0.2397ms)
+✔ 15. comparePolicies contrasta pesos y concurrencias máximas (0.2404ms)
+✔ 16. calculateCapacityRecovery aplica ecuación industrial ((V * deltaTMO) / 60) (0.3216ms)
+✔ T01: Caso A con asesor libre; pulsar confirmar sin revisión humana -> Bloqueado (ERR_NO_APPROVAL) (0.7599ms)
+✔ T02: Caso B con asesor libre; pulsar confirmar sin revisión humana -> Bloqueado (ERR_NO_APPROVAL) (0.246ms)
+✔ T03: Caso A/B; aprobar versión vigente y confirmar -> Permitido (OK_APPROVED) con asignación única (0.1922ms)
+✔ T04: Elegir Editar sin guardar y aprobar el texto final -> Bloqueado (ERR_EDIT_NOT_APPROVED) (0.1814ms)
+✔ T05: Elegir Rechazar y luego intentar confirmar -> Bloqueado (ERR_REJECTED) (0.171ms)
+✔ T06: Caso C (DEMO-003/004), incluso con clic forzado en Aceptar -> Bloqueado (ERR_CLASS_C_ESCALATION) (1.3478ms)
+✔ T07: Texto desconocido o vacío (DEMO-005) -> C precautoria y escalamiento obligatorio (0.2001ms)
+✔ T08: Aprobar A; cambiar texto, ramo o verificación -> Aprobación anterior invalidada (ERR_STALE_REVISION) (0.2191ms)
+✔ T09: Aprobar A; cambiar política o reprocesar -> Aprobación anterior invalidada (ERR_STALE_REVISION) (0.1599ms)
+✔ T10: Cambiar estado del asesor a pausa/ocupado tras recomendar -> Bloqueado (ERR_NO_CAPACITY_OR_SKILL) (0.1871ms)
+✔ T11: Elevar carga del asesor tras recomendar -> No sobrepasa 10 unidades (ERR_NO_CAPACITY_OR_SKILL) (0.1392ms)
+✔ T12: Cambiar especialidad/ramo a uno sin skill compatible -> Bloqueado (ERR_NO_CAPACITY_OR_SKILL) (0.1064ms)
+✔ T13: Intentar confirmar el mismo caso dos veces -> Bloqueado por duplicado (ERR_DUPLICATE_ASSIGNMENT) (0.136ms)
+✔ T14: Verificación IVR pendiente exige confirmación manual del asesor (R02-06) (0.1587ms)
+✔ T15: Exportar bitácora tras aprobación, bloqueo, escalamiento e invalidación (20.8799ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 187.2247

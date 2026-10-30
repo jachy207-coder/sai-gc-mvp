@@ -3,472 +3,1199 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SAI-GC | Centro de Atención y Gestión de Capacidad (MVP R01 Autocontenido)</title>
+  <title>SAI-GC | Centro de Atención y Gestión de Capacidad (MVP R02 Autocontenido)</title>
   <style>
-    :root {
-      --blue: #0176d3;
-      --blue-dark: #014486;
-      --line: #d8dde4;
-      --dark: #181818;
-      --secondary: #596579;
-      --bg: #f5f7fa;
-      --light: #f3f5f8;
-      --success: #2e844a;
-      --warning: #d7891e;
-      --danger: #c23934;
-      --radius: 5px;
-    }
-    * { box-sizing: border-box; }
-    html {
-      font-family: Arial, Calibri, sans-serif;
-      color: var(--dark);
-      background: var(--bg);
-      font-size: 13px;
-    }
-    body { margin: 0; min-width: 980px; }
-    button, input, select, textarea { font: inherit; }
-    button { cursor: pointer; }
-    button:disabled { opacity: 0.48; cursor: not-allowed; }
-    .global {
-      height: 59px;
-      background: #fff;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 9px 25px;
-      gap: 30px;
-    }
-    .brand { display: flex; gap: 10px; align-items: center; }
-    .brand-logo {
-      background: var(--blue);
-      color: white;
-      border-radius: 7px;
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      font-size: 22px;
-      font-weight: 700;
-    }
-    .brand strong { font-size: 17px; letter-spacing: 0.3px; }
-    .brand small { display: block; color: var(--secondary); font-size: 10px; margin-top: 2px; }
-    .global-meta { display: flex; align-items: center; gap: 20px; color: var(--secondary); font-size: 12px; }
-    .env {
-      background: #e8f1fc;
-      border: 1px solid #bad5f9;
-      color: #0357a5;
-      padding: 7px 10px;
-      font-weight: bold;
-      border-radius: 3px;
-      letter-spacing: 0.4px;
-    }
-    .avatar {
-      background: #d0e3fb;
-      color: #1e507f;
-      width: 33px;
-      height: 33px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-weight: bold;
-    }
-    .tabs {
-      height: 49px;
-      background: white;
-      border-bottom: 1px solid #bfc5cd;
-      display: flex;
-      align-items: stretch;
-      gap: 9px;
-      padding: 0 19px;
-      overflow: auto;
-    }
-    .tab {
-      background: transparent;
-      color: #454b54;
-      border: 0;
-      border-bottom: 3px solid transparent;
-      padding: 0 16px;
-      white-space: nowrap;
-    }
-    .tab.active {
-      border-bottom-color: #4a80ff;
-      color: #222;
-      font-weight: bold;
-    }
-    .tab:hover { background: #f5f9ff; }
-    main {
-      padding: 20px 24px 12px;
-      min-height: calc(100vh - 143px);
-      max-width: 1700px;
-      margin: auto;
-    }
-    .page { display: none; }
-    .page.active { display: block; }
-    .heading {
-      display: flex;
-      justify-content: space-between;
-      gap: 25px;
-      align-items: center;
-      margin: 3px 0 17px;
-    }
-    .heading h1 { margin: 4px 0; font-size: 22px; font-weight: 650; }
-    .heading p { margin: 5px 0 0; color: var(--secondary); font-size: 12px; }
-    .eyebrow {
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 0.7px;
-      color: #59718e;
-      text-transform: uppercase;
-    }
-    .label-demo {
-      font-size: 11px;
-      letter-spacing: 0.5px;
-      color: #76520c;
-      background: #fff5d7;
-      border: 1px solid #edcf79;
-      padding: 8px 11px;
-      border-radius: 4px;
-      white-space: nowrap;
-      font-weight: 700;
-    }
-    .metricstrip {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .metric {
-      border: 1px solid var(--line);
-      background: white;
-      padding: 13px 16px;
-      min-height: 108px;
-      border-radius: var(--radius);
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .metric small { color: var(--secondary); font-size: 11px; }
-    .metric b { font-size: 26px; margin-top: 1px; }
-    .metric em { font-size: 12px; font-weight: normal; font-style: normal; }
-    .metric span { font-size: 11px; color: #526274; }
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(430px, 1.12fr) minmax(480px, 1fr);
-      gap: 16px;
-      align-items: start;
-    }
-    .panel {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .panelbar {
-      min-height: 49px;
-      padding: 11px 14px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .panelbar b { font-size: 14px; font-weight: 650; }
-    .panelbar > div { display: flex; align-items: center; gap: 8px; }
-    .wa-mark {
-      background: #23c964;
-      color: white;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 22px;
-      height: 22px;
-      border-radius: 3px;
-    }
-    .soft { color: #6c7684; font-size: 11px; }
-    .light-text { font-size: 11px; color: #69798a; }
-    .tiny-status {
-      font-size: 11px;
-      background: #f0f4f5;
-      border: 1px solid #e0e6ec;
-      color: #4f6970;
-      padding: 5px 8px;
-      border-radius: 3px;
-    }
-    .case-tools {
-      padding: 11px 12px;
-      background: #fafcff;
-      border-bottom: 1px solid #e1e6ed;
-      display: grid;
-      grid-template-columns: 105px minmax(0, 1fr) 92px 154px 43px 110px;
-      gap: 8px;
-      align-items: center;
-    }
-    .case-tools label { font-size: 11px; color: #526477; }
-    .case-tools select {
-      max-width: 100%;
-      height: 32px;
-      border: 1px solid #bfc9d7;
-      border-radius: 3px;
-      padding: 5px;
-      background: white;
-      font-size: 12px;
-    }
-    .chat {
-      height: 377px;
-      overflow: auto;
-      padding: 20px 18px;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .event {
-      align-self: center;
-      color: #697b8f;
-      font-size: 10px;
-      text-align: center;
-      padding: 7px 0;
-    }
-    .message {
-      max-width: 80%;
-      padding: 11px 12px;
-      font-size: 12px;
-      line-height: 1.5;
-      border-radius: 8px;
-      white-space: pre-wrap;
-    }
-    .message.customer {
-      align-self: flex-start;
-      background: #f1f2f4;
-      color: #2c2c2c;
-      border-radius: 7px 7px 7px 0;
-    }
-    .message.system {
-      align-self: flex-end;
-      background: #73777e;
-      color: #fff;
-      border-radius: 7px 7px 0 7px;
-    }
-    .message .who {
-      display: block;
-      font-size: 10px;
-      font-weight: bold;
-      margin-bottom: 5px;
-      opacity: 0.9;
-    }
-    .compose {
-      border-top: 1px solid #dce3eb;
-      padding: 13px 14px 14px;
-    }
-    .compose label {
-      display: block;
-      font-weight: 600;
-      color: #425973;
-      font-size: 11px;
-      margin-bottom: 6px;
-    }
-    .compose textarea {
-      resize: vertical;
-      width: 100%;
-      border: 1px solid #c6d0db;
-      padding: 9px;
-      border-radius: 3px;
-      min-height: 62px;
-    }
-    .actionbar { display: flex; gap: 8px; margin-top: 8px; }
-    .primary, .secondary {
-      border-radius: 4px;
-      padding: 9px 13px;
-      font-weight: bold;
-      border: 1px solid var(--blue);
-      font-size: 12px;
-    }
-    .primary { color: #fff; background: var(--blue); }
-    .secondary { background: white; color: var(--blue); }
-    .primary:hover { background: #005eac; }
-    .secondary:hover { background: #f0f8ff; }
-    .right-stack { display: flex; flex-direction: column; gap: 13px; }
-    .panel-icon {
-      width: 27px;
-      height: 25px;
-      border-radius: 4px;
-      display: grid;
-      place-items: center;
-      font-size: 10px;
-      font-weight: bold;
-    }
-    .panel-icon.blue { color: #0d5fa9; background: #dff0ff; }
-    .panel-icon.mint { color: #08714c; background: #dcf7e9; }
-    .panel-icon.purple { color: #6a47a6; background: #efe7fc; }
-    .inner { padding: 12px 15px 14px; }
-    .classrow {
-      display: grid;
-      grid-template-columns: 100px 1fr 1.05fr;
-      gap: 13px;
-      align-items: center;
-    }
-    .classrow small, .capacity-grid small {
-      display: block;
-      color: #647285;
-      font-size: 11px;
-      margin-bottom: 5px;
-    }
-    .classrow strong, .capacity-grid strong { font-size: 13px; }
-    .classchip {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      min-width: 37px;
-      min-height: 28px;
-      border-radius: 4px;
-      font-size: 17px;
-      font-weight: bold;
-      border: 1px solid #ccd6e2;
-    }
-    .classchip.empty { color: #6e7f8d; background: #f2f4f7; }
-    .classchip.A { background: #e0f4e4; color: #1a6337; border-color: #a9d7b4; }
-    .classchip.B { background: #fff2d7; color: #8b5c07; border-color: #edd49b; }
-    .classchip.C { background: #fbe7e7; color: #ab2e2e; border-color: #eab0b0; }
-    .faint { color: #5b6877; font-size: 11px; line-height: 1.4; margin: 10px 0 0; }
-    .disclosure {
-      background: #f8f9fb;
-      border-left: 3px solid #91a8c6;
-      padding: 7px 10px;
-      font-size: 11px;
-      color: #596d7f;
-      margin: 11px 0 0;
-      line-height: 1.45;
-    }
-    .small-heading {
-      font-weight: bold;
-      color: #53667d;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      margin-bottom: 7px;
-    }
-    .small-heading.spaced { margin-top: 12px; }
-    .source-box {
-      background: #f4f8fc;
-      color: #315d8c;
-      border: 1px solid #d9e7f6;
-      padding: 9px;
-      border-radius: 3px;
-      min-height: 31px;
-      font-size: 12px;
-    }
-    .suggestion {
-      background: #fafbfc;
-      color: #404e5c;
-      border: 1px solid #e2e7ed;
-      padding: 12px;
-      border-radius: 4px;
-      min-height: 67px;
-      line-height: 1.4;
-      font-size: 12px;
-    }
-    .micro { color: #66798d; font-size: 11px; margin: 10px 0 8px; }
-    .fourbtn { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
-    .fourbtn button {
-      border: 1px solid #b5c5d6;
-      color: #025faa;
-      background: #fff;
-      border-radius: 3px;
-      padding: 8px 0;
-      font-weight: bold;
-      font-size: 12px;
-    }
-    .fourbtn button:hover:enabled { background: #ebf5ff; }
-    .result { font-size: 11px; margin: 9px 0 0; padding: 5px; }
-    .result.muted { color: #798692; }
-    .result.done { color: #206f46; background: #f0fcf5; border: 1px solid #c8e7d4; }
-    .capacity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .progress {
-      height: 7px;
-      background: #e9edf1;
-      border-radius: 5px;
-      overflow: hidden;
-      margin-top: 15px;
-    }
-    .progress div { height: 100%; width: 0; background: #0276d3; transition: width 0.3s; }
-    .capacity-grid strong { word-break: break-word; }
-    #assign-btn { margin-top: 13px; }
-    .footnote { padding: 12px 0 1px; color: #66758a; font-size: 11px; }
-    .tablewrap { overflow: auto; }
-    table { border-collapse: collapse; width: 100%; font-size: 12px; text-align: left; }
-    thead th {
-      color: #006bc2;
-      font-size: 11px;
-      border-bottom: 1px solid #bcc9d6;
-      padding: 15px 13px 13px;
-      background: #fff;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    tbody tr:nth-child(odd) { background: #f4f4f4; }
-    tbody td {
-      padding: 15px 13px;
-      line-height: 1.4;
-      border-bottom: 1px solid #e2e6ea;
-      vertical-align: middle;
-    }
-    .status {
-      display: inline-block;
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      margin-right: 7px;
-      background: #aaa;
-    }
-    .status.ok { background: #2e844a; }
-    .status.bad { background: #c23934; }
-    .status.wait { background: #dfa43b; }
-    .link { color: #0176d3; font-weight: bold; }
-    .meter {
-      height: 8px;
-      min-width: 150px;
-      background: #e7ecf1;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .meter span { height: 100%; display: block; background: #1e9766; }
-    .meter.full span { background: #bf2a2a; }
-    .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 16px; }
-    .twocol p { color: #4b5a69; font-size: 13px; line-height: 1.6; }
-    .explain {
-      background: #fffdf5;
-      border-left: 3px solid #d0a34e;
-      padding: 15px 18px;
-      color: #79632e;
-      margin-top: 20px;
-      font-size: 12px;
-    }
-    .radio-line {
-      display: block;
-      cursor: pointer;
-      padding: 12px;
-      background: #f8fafd;
-      border: 1px solid #e2e6ec;
-      border-radius: 4px;
-      margin-bottom: 10px;
-    }
-    .radio-line input { margin-right: 6px; }
-    .btn-group { display: flex; gap: 10px; align-items: center; }
-    footer {
-      padding: 8px 26px 14px;
-      color: #708094;
-      text-align: center;
-      font-size: 10px;
-    }
-    @media (max-width: 1180px) {
-      .workspace { grid-template-columns: 1fr; }
-      .case-tools { grid-template-columns: 130px 1fr 100px 170px 55px 120px; }
-      .chat { height: 350px; }
-      .tabs { gap: 1px; }
-      .tab { padding: 0 11px; }
-    }
-  </style>
+:root {
+  --blue: #0176d3;
+  --blue-dark: #014486;
+  --line: #d8dde4;
+  --dark: #181818;
+  --secondary: #596579;
+  --bg: #f5f7fa;
+  --light: #f3f5f8;
+  --success: #2e844a;
+  --warning: #d7891e;
+  --danger: #c23934;
+  --radius: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, Calibri, sans-serif;
+  color: var(--dark);
+  background: var(--bg);
+  font-size: 13px;
+}
+
+body {
+  margin: 0;
+  min-width: 980px;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.global {
+  height: 59px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 25px;
+  gap: 30px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.brand-logo {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: white;
+  border-radius: 7px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(1, 118, 211, 0.25);
+}
+
+.brand strong {
+  font-size: 17px;
+  letter-spacing: 0.3px;
+  color: var(--blue-dark);
+}
+
+.brand small {
+  display: block;
+  color: var(--secondary);
+  font-size: 10.5px;
+  margin-top: 2px;
+}
+
+.global-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--secondary);
+  font-size: 12px;
+}
+
+.policy-pill {
+  background: #f3f0ff;
+  border: 1px solid #cabdfb;
+  color: #4f2d91;
+  padding: 6px 11px;
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+
+.policy-pill:hover {
+  background: #e6dffe;
+}
+
+.env {
+  background: #e8f1fc;
+  border: 1px solid #bad5f9;
+  color: #0357a5;
+  padding: 7px 10px;
+  font-weight: bold;
+  border-radius: 3px;
+  letter-spacing: 0.4px;
+}
+
+.avatar {
+  background: #d0e3fb;
+  color: #1e507f;
+  width: 33px;
+  height: 33px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+}
+
+.tabs {
+  height: 49px;
+  background: white;
+  border-bottom: 1px solid #bfc5cd;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 0 19px;
+  overflow: auto;
+}
+
+.tab {
+  background: transparent;
+  color: #454b54;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 0 15px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab.active {
+  border-bottom-color: var(--blue);
+  color: var(--blue-dark);
+  font-weight: bold;
+  background: #f8fbff;
+}
+
+.tab:hover {
+  background: #f5f9ff;
+}
+
+.tab-badge {
+  background: #eaf2fb;
+  color: #025faa;
+  border: 1px solid #c7ddf7;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.tab-badge.warn {
+  background: #fff3db;
+  color: #8b5c07;
+  border-color: #edd49b;
+}
+
+main {
+  padding: 18px 24px 12px;
+  min-height: calc(100vh - 143px);
+  max-width: 1700px;
+  margin: auto;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  align-items: center;
+  margin: 2px 0 15px;
+}
+
+.heading h1 {
+  margin: 4px 0;
+  font-size: 21px;
+  font-weight: 650;
+}
+
+.heading p {
+  margin: 4px 0 0;
+  color: var(--secondary);
+  font-size: 12px;
+}
+
+.eyebrow {
+  font-size: 10.5px;
+  font-weight: bold;
+  letter-spacing: 0.7px;
+  color: #59718e;
+  text-transform: uppercase;
+}
+
+.label-demo {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #76520c;
+  background: #fff5d7;
+  border: 1px solid #edcf79;
+  padding: 7px 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.metricstrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metricstrip.compact-strip {
+  margin-bottom: 14px;
+}
+
+.metric {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 13px 16px;
+  min-height: 98px;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.metric.compact {
+  min-height: 78px;
+  padding: 10px 14px;
+}
+
+.metric small {
+  color: var(--secondary);
+  font-size: 11px;
+}
+
+.metric b {
+  font-size: 24px;
+  margin-top: 1px;
+  color: var(--blue-dark);
+}
+
+.metric em {
+  font-size: 12px;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.metric span {
+  font-size: 11px;
+  color: #526274;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(440px, 1.08fr) minmax(490px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.panelbar {
+  min-height: 46px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #fcfdfe;
+}
+
+.panelbar b {
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.panelbar > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wa-mark {
+  background: #23c964;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.soft {
+  color: #6c7684;
+  font-size: 11px;
+}
+
+.light-text {
+  font-size: 11px;
+  color: #69798a;
+}
+
+.tiny-status {
+  font-size: 11px;
+  background: #f0f4f5;
+  border: 1px solid #e0e6ec;
+  color: #3f5860;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.case-tools {
+  padding: 10px 12px;
+  background: #fafcff;
+  border-bottom: 1px solid #e1e6ed;
+  display: grid;
+  grid-template-columns: 75px minmax(0, 1.3fr) 86px 148px 40px 104px;
+  gap: 8px;
+  align-items: center;
+}
+
+.case-tools label {
+  font-size: 11px;
+  color: #526477;
+  font-weight: 600;
+}
+
+.case-tools select {
+  max-width: 100%;
+  height: 31px;
+  border: 1px solid #bfc9d7;
+  border-radius: 4px;
+  padding: 4px 6px;
+  background: white;
+  font-size: 12px;
+}
+
+.chat-context-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 14px;
+  background: #f4f7fb;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11px;
+  color: #3e5266;
+}
+
+.ivr-pill {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 10.5px;
+}
+
+.ivr-pill.ok {
+  background: #e0f4e4;
+  color: #1a6337;
+  border: 1px solid #a9d7b4;
+}
+
+.ivr-pill.pending {
+  background: #fff2d7;
+  color: #8b5c07;
+  border: 1px solid #edd49b;
+}
+
+.chat {
+  height: 410px;
+  overflow: auto;
+  padding: 16px 16px;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event {
+  align-self: center;
+  color: #5a6d82;
+  background: #edf2f7;
+  border: 1px solid #dde5ee;
+  border-radius: 12px;
+  font-size: 10.5px;
+  text-align: center;
+  padding: 5px 12px;
+  max-width: 92%;
+}
+
+.message {
+  max-width: 84%;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.message.customer {
+  align-self: flex-start;
+  background: #ffffff;
+  border: 1px solid #e1e6ec;
+  color: #222;
+  border-radius: 8px 8px 8px 0;
+}
+
+.message.system {
+  align-self: flex-end;
+  background: #616b78;
+  color: #fff;
+  border-radius: 8px 8px 0 8px;
+}
+
+.message.proposal {
+  align-self: flex-end;
+  background: #f2f8ff;
+  border: 1.5px dashed #69a6e8;
+  color: #164370;
+  border-radius: 8px;
+}
+
+.message.advisor {
+  align-self: flex-end;
+  background: #0176d3;
+  color: #ffffff;
+  border-radius: 8px 8px 0 8px;
+}
+
+.message.escalation {
+  align-self: center;
+  max-width: 92%;
+  background: #fef2f2;
+  border: 1px solid #f3b7b7;
+  color: #9b1c1c;
+  border-radius: 6px;
+}
+
+.message .who {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  opacity: 0.92;
+}
+
+.compose {
+  border-top: 1px solid #dce3eb;
+  padding: 12px 14px 13px;
+  background: #fff;
+}
+
+.compose label {
+  display: block;
+  font-weight: 600;
+  color: #425973;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.compose textarea {
+  resize: vertical;
+  width: 100%;
+  border: 1px solid #c6d0db;
+  padding: 8px 9px;
+  border-radius: 4px;
+  min-height: 58px;
+}
+
+.actionbar {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.primary, .secondary {
+  border-radius: 4px;
+  padding: 8px 13px;
+  font-weight: bold;
+  border: 1px solid var(--blue);
+  font-size: 12px;
+}
+
+.primary {
+  color: #fff;
+  background: var(--blue);
+}
+
+.secondary {
+  background: white;
+  color: var(--blue);
+}
+
+.secondary.warn-btn {
+  border-color: #c98212;
+  color: #8b5c07;
+  background: #fffbf2;
+}
+
+.secondary.warn-btn:hover:enabled {
+  background: #fff1d0;
+}
+
+.primary:hover:enabled {
+  background: #005eac;
+}
+
+.secondary:hover:enabled {
+  background: #f0f8ff;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-icon {
+  width: 27px;
+  height: 25px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.panel-icon.blue {
+  color: #0d5fa9;
+  background: #dff0ff;
+}
+
+.panel-icon.mint {
+  color: #08714c;
+  background: #dcf7e9;
+}
+
+.panel-icon.purple {
+  color: #6a47a6;
+  background: #efe7fc;
+}
+
+.inner {
+  padding: 11px 15px 13px;
+}
+
+.classrow {
+  display: grid;
+  grid-template-columns: 95px 1fr 1.05fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.classrow small, .capacity-grid small {
+  display: block;
+  color: #647285;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.classrow strong, .capacity-grid strong {
+  font-size: 13px;
+}
+
+.classchip {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 38px;
+  min-height: 28px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 1px solid #ccd6e2;
+}
+
+.classchip.empty {
+  color: #6e7f8d;
+  background: #f2f4f7;
+}
+
+.classchip.A {
+  background: #e0f4e4;
+  color: #1a6337;
+  border-color: #a9d7b4;
+}
+
+.classchip.B {
+  background: #fff2d7;
+  color: #8b5c07;
+  border-color: #edd49b;
+}
+
+.classchip.C {
+  background: #fbe7e7;
+  color: #ab2e2e;
+  border-color: #eab0b0;
+}
+
+.keywords-box {
+  margin-top: 9px;
+  padding: 7px 9px;
+  background: #f8fafc;
+  border: 1px solid #e3e8ef;
+  border-radius: 4px;
+}
+
+.keywords-box small {
+  display: block;
+  font-size: 10.5px;
+  color: #5b6b7d;
+  margin-bottom: 5px;
+}
+
+.keywords-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.kw-chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e6f2ff;
+  color: #01549b;
+  border: 1px solid #b8d8fa;
+}
+
+.kw-chip.muted {
+  background: #edf0f3;
+  color: #6c7987;
+  border-color: #d7dde4;
+}
+
+.kw-chip.alert {
+  background: #fbe7e7;
+  color: #9e2a2a;
+  border-color: #eab0b0;
+}
+
+.faint {
+  color: #5b6877;
+  font-size: 11.5px;
+  line-height: 1.4;
+  margin: 8px 0 0;
+}
+
+.disclosure {
+  background: #f8f9fb;
+  border-left: 3px solid #91a8c6;
+  padding: 7px 10px;
+  font-size: 11px;
+  color: #596d7f;
+  margin: 9px 0 0;
+  line-height: 1.45;
+}
+
+.small-heading {
+  font-weight: bold;
+  color: #53667d;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 5px;
+}
+
+.small-heading.spaced {
+  margin-top: 10px;
+}
+
+.source-box {
+  background: #f4f8fc;
+  color: #204d7c;
+  border: 1px solid #d9e7f6;
+  padding: 7px 9px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.checklist-box {
+  margin: 0;
+  padding: 7px 10px 7px 24px;
+  background: #f9fbfd;
+  border: 1px solid #e3eaf2;
+  border-radius: 4px;
+  font-size: 11.5px;
+  color: #3f5164;
+  line-height: 1.45;
+}
+
+.checklist-box li {
+  margin-bottom: 3px;
+}
+
+.suggestion {
+  background: #fafbfc;
+  color: #2c3a47;
+  border: 1px solid #dce3eb;
+  padding: 10px;
+  border-radius: 4px;
+  min-height: 58px;
+  line-height: 1.42;
+  font-size: 12px;
+}
+
+.micro {
+  color: #52667a;
+  font-size: 11px;
+  margin: 9px 0 6px;
+}
+
+.fourbtn {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.fourbtn button {
+  border: 1px solid #b5c5d6;
+  color: #025faa;
+  background: #fff;
+  border-radius: 4px;
+  padding: 7px 0;
+  font-weight: bold;
+  font-size: 11.5px;
+}
+
+.fourbtn button:hover:enabled {
+  background: #ebf5ff;
+}
+
+.fourbtn button.active-choice {
+  background: #0176d3;
+  color: #fff;
+  border-color: #014486;
+}
+
+.result {
+  font-size: 11px;
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.result.muted {
+  color: #798692;
+  background: #f7f9fb;
+}
+
+.result.done {
+  color: #1c653f;
+  background: #eefbf3;
+  border: 1px solid #c3e6d1;
+}
+
+.result.escalated {
+  color: #9e2a2a;
+  background: #fef2f2;
+  border: 1px solid #f2b8b8;
+}
+
+.dispatch-row {
+  margin-top: 8px;
+}
+
+.capacity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+}
+
+.progress {
+  height: 8px;
+  background: #e9edf1;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 11px;
+}
+
+.progress div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #0276d3, #1e9766);
+  transition: width 0.3s;
+}
+
+.policy-compare-mini {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: #f7f5ff;
+  border: 1px solid #ded6f7;
+  border-radius: 4px;
+}
+
+.compare-row {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #3d2c6d;
+}
+
+.routing-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.footnote {
+  padding: 12px 0 1px;
+  color: #66758a;
+  font-size: 11px;
+}
+
+.tablewrap {
+  overflow: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+  text-align: left;
+}
+
+thead th {
+  color: #005fb2;
+  font-size: 11px;
+  border-bottom: 1px solid #bcc9d6;
+  padding: 13px 12px;
+  background: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+tbody tr:nth-child(odd) {
+  background: #f7f9fb;
+}
+
+tbody td {
+  padding: 12px 12px;
+  line-height: 1.4;
+  border-bottom: 1px solid #e2e6ea;
+  vertical-align: middle;
+}
+
+.status {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 7px;
+  background: #aaa;
+}
+
+.status.ok {
+  background: #2e844a;
+}
+
+.status.bad {
+  background: #c23934;
+}
+
+.status.wait {
+  background: #dfa43b;
+}
+
+.link {
+  color: #0176d3;
+  font-weight: bold;
+}
+
+.status-select {
+  padding: 4px 7px;
+  border: 1px solid #c3cfd9;
+  border-radius: 4px;
+  font-size: 11.5px;
+  background: #fff;
+}
+
+.btn-mini {
+  padding: 5px 9px;
+  font-size: 11px;
+  border-radius: 4px;
+  border: 1px solid #0176d3;
+  background: #f2f8ff;
+  color: #01549b;
+  font-weight: 600;
+}
+
+.btn-mini:hover:enabled {
+  background: #dcedff;
+}
+
+.meter {
+  height: 8px;
+  min-width: 130px;
+  background: #e7ecf1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.meter span {
+  height: 100%;
+  display: block;
+  background: #1e9766;
+  transition: width 0.25s ease;
+}
+
+.meter.full span {
+  background: #bf2a2a;
+}
+
+.twocol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 16px;
+}
+
+.twocol p {
+  color: #4b5a69;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.explain {
+  background: #fffdf5;
+  border-left: 3px solid #d0a34e;
+  padding: 13px 16px;
+  color: #79632e;
+  margin-top: 16px;
+  font-size: 12px;
+}
+
+.radio-line {
+  display: block;
+  cursor: pointer;
+  padding: 11px 12px;
+  background: #f8fafd;
+  border: 1px solid #e2e6ec;
+  border-radius: 4px;
+  margin-bottom: 9px;
+}
+
+.radio-line input {
+  margin-right: 6px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.filter-bar select {
+  padding: 4px 8px;
+  border: 1px solid #c3cfd9;
+  border-radius: 4px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.calc-grid label {
+  display: block;
+  font-size: 11.5px;
+  margin-bottom: 5px;
+  color: #3f5266;
+}
+
+.calc-result-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #eef7ff;
+  border: 1px solid #c5dff8;
+  border-radius: 5px;
+  margin-top: 8px;
+}
+
+.calc-result-box small {
+  display: block;
+  font-size: 10.5px;
+  color: #47627d;
+}
+
+.calc-result-box strong {
+  font-size: 18px;
+  color: #014486;
+}
+
+.secondary.danger-btn {
+  border-color: #c23934;
+  color: #9b1c1c;
+  background: #fdf2f2;
+}
+
+.secondary.danger-btn:hover:enabled {
+  background: #fbe3e3;
+}
+
+.case-status-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.case-status-chip.PENDIENTE_REVISION {
+  background: #f0f4f8;
+  color: #3b5066;
+  border: 1px solid #c8d5e2;
+}
+
+.case-status-chip.EDITANDO {
+  background: #fff8e6;
+  color: #8c5b00;
+  border: 1px solid #ffd580;
+}
+
+.case-status-chip.APROBADO {
+  background: #e6f7ec;
+  color: #176d38;
+  border: 1px solid #a4e0b8;
+}
+
+.case-status-chip.RECHAZADO {
+  background: #fbebeb;
+  color: #a32222;
+  border: 1px solid #f0b6b6;
+}
+
+.case-status-chip.ESCALAMIENTO_REQUERIDO {
+  background: #fbebeb;
+  color: #c23934;
+  border: 1px solid #f0b6b6;
+}
+
+.case-status-chip.ASIGNADO {
+  background: #e8f3fc;
+  color: #025faa;
+  border: 1px solid #bad5f9;
+}
+
+.case-status-chip.DERIVADO_SUPERVISOR {
+  background: #f5eefc;
+  color: #5c2b8c;
+  border: 1px solid #d4b8f5;
+}
+
+.ivr-verification-box {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #fff9e6;
+  border: 1px solid #edd69b;
+  border-radius: 4px;
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 11.5px;
+  color: #694a07;
+  line-height: 1.4;
+}
+
+.checkbox-line input {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.rev-token {
+  font-family: Consolas, monospace;
+  font-size: 11px;
+  background: #eef2f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #2b435c;
+  border: 1px solid #cbd7e3;
+}
+
+.save-edit-btn {
+  background: #e6f7ec !important;
+  border-color: #2e844a !important;
+  color: #176d38 !important;
+}
+
+.save-edit-btn:hover:enabled {
+  background: #cff0d9 !important;
+}
+
+footer {
+  padding: 10px 26px 16px;
+  color: #708094;
+  text-align: center;
+  font-size: 10.5px;
+}
+
+@media (max-width: 1180px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .case-tools {
+    grid-template-columns: 110px 1fr 90px 150px 45px 110px;
+  }
+  .chat {
+    height: 350px;
+  }
+  .tabs {
+    gap: 2px;
+  }
+  .tab {
+    padding: 0 11px;
+  }
+}
+
+</style>
 </head>
 <body>
 
@@ -481,19 +1208,22 @@
     </div>
   </div>
   <div class="global-meta">
+    <button type="button" class="policy-pill" id="quick-policy-btn" title="Clic para alternar entre Regla Actual y Política Experimental">
+      Política activa: <strong id="header-policy-label">Actual (5u)</strong> ⇄
+    </button>
     <span class="env">DEMO · DATOS SINTÉTICOS</span>
-    <span>Prototipo Académico · v0.3-r01</span>
+    <span>Prototipo Académico · v0.5-r02-verificable</span>
     <span class="avatar" title="Usuario Demostrativo">VD</span>
   </div>
 </header>
 
 <div class="tabs" role="tablist">
-  <button class="tab active" data-tab="atencion">Atención asistida</button>
-  <button class="tab" data-tab="supervision">Representantes de atención al cliente</button>
-  <button class="tab" data-tab="colas">Retraso de colas</button>
-  <button class="tab" data-tab="curso">Trabajo en curso</button>
-  <button class="tab" data-tab="bitacora">Bitácora</button>
-  <button class="tab" data-tab="config">Configuración</button>
+  <button class="tab active" data-tab="atencion">1. Atención asistida</button>
+  <button class="tab" data-tab="supervision">2. Representantes <span class="tab-badge" id="badge-agents">2 disp.</span></button>
+  <button class="tab" data-tab="colas">3. Retraso de colas <span class="tab-badge warn" id="badge-queues">2</span></button>
+  <button class="tab" data-tab="curso">4. Trabajo en curso <span class="tab-badge" id="badge-wip">2</span></button>
+  <button class="tab" data-tab="bitacora">5. Bitácora <span class="tab-badge" id="badge-logs">0</span></button>
+  <button class="tab" data-tab="config">6. Configuración y Cap. V</button>
 </div>
 
 <main>
@@ -537,10 +1267,10 @@
         <div class="panelbar">
           <div>
             <span class="wa-mark">◉</span>
-            <b>Conversación</b>
+            <b>Conversación WhatsApp</b>
             <span class="light-text">/ Casos sintéticos controlados</span>
           </div>
-          <span class="tiny-status">Canal: WhatsApp</span>
+          <span class="tiny-status" id="chat-stage-badge">Estado: En espera de triaje</span>
         </div>
 
         <div class="case-tools">
@@ -561,14 +1291,21 @@
           </select>
         </div>
 
+        <div class="chat-context-bar" id="chat-context-bar">
+          <span><strong>Caso:</strong> <span id="ctx-case-id">DEMO-001</span></span>
+          <span><strong>Tópico:</strong> <span id="ctx-topic">Envío de constancia</span></span>
+          <span><strong>Ramo:</strong> <span id="ctx-branch">Vehicular</span></span>
+          <span id="ctx-ivr-pill" class="ivr-pill ok">✓ IVR Validado</span>
+        </div>
+
         <div class="chat" id="chat"></div>
 
         <div class="compose">
-          <label for="question">Motivo de consulta (anonimizado / sintético)</label>
+          <label for="question">Motivo de consulta del cliente (anonimizado / editable para pruebas en vivo)</label>
           <textarea id="question" rows="3" placeholder="Ingrese un texto sintético o seleccione un caso para procesar..."></textarea>
           <div class="actionbar">
-            <button class="primary" id="process-btn">Procesar consulta</button>
-            <button class="secondary" id="reset-btn">Reiniciar demo</button>
+            <button class="primary" id="process-btn">⚡ Procesar consulta (Triaje + KB + Routing)</button>
+            <button class="secondary" id="reset-btn">↺ Reiniciar demo</button>
           </div>
         </div>
       </article>
@@ -582,7 +1319,7 @@
               <span class="panel-icon blue">ABC</span>
               <b>Triaje A/B/C</b>
             </div>
-            <span class="soft">M3 · Reglas preliminares</span>
+            <span class="soft" id="rule-id-badge">M3 · Reglas preliminares</span>
           </div>
           <div class="inner">
             <div class="classrow">
@@ -595,9 +1332,16 @@
                 <strong id="risk">Pendiente</strong>
               </div>
               <div>
-                <small>Confianza</small>
-                <strong>No estimada</strong>
+                <small>Estado autorización</small>
+                <div id="case-status-chip" class="case-status-chip PENDIENTE_REVISION">PENDIENTE</div>
               </div>
+            </div>
+            <div style="margin-top:6px; font-size:11px; color:#5b6877;">
+              Huella de revisión: <code id="case-revision-token" class="rev-token">—</code>
+            </div>
+            <div class="keywords-box" id="keywords-box">
+              <small>Términos detectados por el motor:</small>
+              <div id="keywords-list" class="keywords-list"><span class="kw-chip muted">Sin procesar</span></div>
             </div>
             <p id="rule-reason" class="faint">Seleccione un caso y pulse “Procesar consulta”.</p>
             <p class="disclosure">Nota metodológica: Las clases A/B/C son demostrativas y están pendientes de calibración con panel de expertos.</p>
@@ -617,17 +1361,33 @@
             <div class="small-heading">Fuente de conocimiento recuperada</div>
             <div id="kb-source" class="source-box">Pendiente de consulta</div>
 
-            <div class="small-heading spaced">Respuesta sugerida para revisión</div>
+            <div class="small-heading spaced">Protocolo de verificación del asesor</div>
+            <ul id="kb-checklist" class="checklist-box">
+              <li>Procese un caso para visualizar los pasos obligatorios de verificación.</li>
+            </ul>
+
+            <div class="small-heading spaced">Respuesta sugerida para revisión / edición</div>
             <div id="suggestion" class="suggestion">La sugerencia aparecerá cuando se procese el caso.</div>
 
-            <div class="micro"><b>Acción obligatoria del asesor</b> — Envío autónomo deshabilitado por diseño</div>
-            <div class="fourbtn">
-              <button data-action="Aceptar" disabled>Aceptar</button>
-              <button data-action="Editar" disabled>Editar</button>
-              <button data-action="Rechazar" disabled>Rechazar</button>
-              <button data-action="Escalar" disabled>Escalar</button>
+            <div id="ivr-verification-box" class="ivr-verification-box" style="display:none;">
+              <label class="checkbox-line">
+                <input type="checkbox" id="ivr-verified-check">
+                <span><strong>Verificación obligatoria de identidad:</strong> El IVR no completó la autenticación. Confirmo haber verificado los datos del titular conforme al procedimiento autorizado antes de proceder.</span>
+              </label>
             </div>
+
+            <div class="micro"><b>1. Decisión obligatoria del asesor</b> — Envío autónomo y asignación deshabilitados por diseño</div>
+            <div class="fourbtn">
+              <button data-action="Aceptar" id="btn-accept" disabled>✓ Aceptar</button>
+              <button data-action="Editar" id="btn-edit" disabled>✎ Editar</button>
+              <button data-action="Rechazar" id="btn-reject" disabled>✕ Rechazar</button>
+              <button data-action="Escalar" id="btn-escalate" disabled>⚠ Escalar</button>
+            </div>
+            <button class="secondary save-edit-btn full-width" id="save-edit-btn" style="display:none; margin-top: 6px;">✓ Guardar y aprobar texto editado</button>
             <p id="action-result" class="result muted">Sin decisión humana registrada.</p>
+            <div class="dispatch-row">
+              <button class="primary full-width" id="send-chat-btn" disabled>➤ Confirmar y despachar respuesta al chat (HITL)</button>
+            </div>
           </div>
         </article>
 
@@ -636,7 +1396,7 @@
           <div class="panelbar">
             <div>
               <span class="panel-icon purple">↪</span>
-              <b>Capacidad y routing</b>
+              <b>Capacidad y routing dinámico</b>
             </div>
             <span class="soft">M6 · Recomendación</span>
           </div>
@@ -661,7 +1421,21 @@
             </div>
             <div class="progress"><div id="progress-fill"></div></div>
             <p id="route-reason" class="faint">Se recomienda el asesor disponible con menor carga y skill compatible sin exceder 10 unidades.</p>
-            <button class="secondary" id="assign-btn" disabled>Confirmar asignación demostrativa</button>
+
+            <!-- Contraste en vivo Actual vs Experimental -->
+            <div class="policy-compare-mini" id="policy-compare-box">
+              <div class="small-heading">Contraste de Políticas en Vivo (Actual vs Experimental)</div>
+              <div class="compare-row">
+                <span><strong>Actual (Fijo 5u):</strong> <span id="cmp-actual">—</span></span>
+                <span><strong>Experimental (A4/B5/C7):</strong> <span id="cmp-exp">—</span></span>
+              </div>
+            </div>
+
+            <div class="routing-actions">
+              <button class="secondary" id="assign-btn" disabled>✓ Confirmar asignación demostrativa</button>
+              <button class="secondary warn-btn" id="enqueue-btn" disabled>⏳ Retener en cola controlada</button>
+              <button class="secondary danger-btn" id="escalate-action-btn" disabled style="display:none;">⚠ Registrar y derivar a cola de escalamiento (Clase C)</button>
+            </div>
           </div>
         </article>
       </div>
@@ -676,28 +1450,56 @@
   <section class="page" id="page-supervision">
     <div class="heading">
       <div>
-        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <span class="eyebrow">Vista de supervisión · Interactivo</span>
         <h1>Representantes de atención al cliente</h1>
-        <p>Monitoreo de estado, utilización de capacidad y canales asignados.</p>
+        <p>Monitoreo y control interactivo de estado, utilización de capacidad y canales asignados.</p>
       </div>
-      <span class="label-demo">DATOS SINTÉTICOS</span>
+      <div class="btn-group">
+        <button class="secondary" id="reset-agents-btn">↺ Restablecer asesores por defecto</button>
+        <span class="label-demo">DATOS SINTÉTICOS</span>
+      </div>
     </div>
+
+    <div class="metricstrip compact-strip" id="supervision-kpis">
+      <div class="metric compact">
+        <small>Asesores Disponibles</small>
+        <b id="kpi-avail-agents">2 / 4</b>
+        <span>En turno activo</span>
+      </div>
+      <div class="metric compact">
+        <small>Capacidad Total Turno</small>
+        <b>40 <em>u.</em></b>
+        <span>10 unidades por asesor</span>
+      </div>
+      <div class="metric compact">
+        <small>Unidades Ocupadas</small>
+        <b id="kpi-used-units">15 <em>u.</em></b>
+        <span>Carga asignada actual</span>
+      </div>
+      <div class="metric compact">
+        <small>Utilización Global</small>
+        <b id="kpi-util-pct">38<em>%</em></b>
+        <span>Sobre capacidad nominal</span>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="panelbar">
-        <b>Supervisión de asesores en turno</b>
-        <span class="soft">TODOS LOS AGENTES | AGENTES POR COLA</span>
+        <b>Supervisión de asesores en turno (Cambie estado o libere carga para probar el routing)</b>
+        <span class="soft">TODOS LOS AGENTES | CONTROL EN VIVO</span>
       </div>
       <div class="tablewrap">
         <table>
           <thead>
             <tr>
               <th>AGENTE</th>
-              <th>ESTADO</th>
+              <th>ESTADO OPERATIVO</th>
+              <th>SKILLS / RAMOS</th>
               <th>RESUMEN DE TRABAJO</th>
               <th>CANAL</th>
-              <th>CAPACIDAD PRINCIPAL</th>
-              <th>CARGA DE TRABAJO</th>
-              <th>ACCIONES</th>
+              <th>CAPACIDAD UTILIZADA</th>
+              <th>CARGA</th>
+              <th>ACCIÓN INTERACTIVA</th>
             </tr>
           </thead>
           <tbody id="agents-body"></tbody>
@@ -712,7 +1514,7 @@
           <p>• Capacidad máxima nominal: <strong>10 unidades</strong> por asesor.</p>
           <p>• Caso de correo electrónico: <strong>10 unidades</strong>.</p>
           <p>• Conversación WhatsApp: <strong>5 unidades</strong> (permite hasta 2 chats concurrentes).</p>
-          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes AG-* son sintéticos para fines demostrativos.</p>
+          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes AG-* son sintéticos e interactivos para fines demostrativos.</p>
         </div>
       </div>
       <div class="panel">
@@ -720,7 +1522,7 @@
         <div class="inner">
           <p>• Recomendar asignaciones considerando <strong>complejidad, disponibilidad, ramo/skill y carga proyectada</strong>.</p>
           <p>• Evitar sobrecargas y retener en cola cuando se agota la capacidad disponible.</p>
-          <p class="disclosure">La política experimental A/B/C es configurable de forma independiente en la pestaña Configuración.</p>
+          <p class="disclosure">La política experimental A/B/C es configurable en la pestaña Configuración o desde el botón superior.</p>
         </div>
       </div>
     </div>
@@ -732,11 +1534,15 @@
       <div>
         <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
         <h1>Resumen de retraso de colas</h1>
-        <p>Visibilidad analítica de espera por canal de atención al cliente.</p>
+        <p>Visibilidad analítica de espera por canal y gestión de casos retenidos por saturación.</p>
       </div>
       <span class="label-demo">DATOS SINTÉTICOS</span>
     </div>
     <div class="panel">
+      <div class="panelbar">
+        <b>Estado general de colas multicanal</b>
+        <span class="soft">MONITOREO DE ESPERA</span>
+      </div>
       <div class="tablewrap">
         <table>
           <thead>
@@ -755,8 +1561,32 @@
         </table>
       </div>
     </div>
+
+    <div class="panel" style="margin-top: 16px;">
+      <div class="panelbar">
+        <b>Casos retenidos en cola por saturación o falta de asesor disponible</b>
+        <span class="soft">REINTENTO DINÁMICO DE ROUTING</span>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>CASO</th>
+              <th>RAMO</th>
+              <th>CLASE</th>
+              <th>PESO REQUERIDO</th>
+              <th>MOTIVO DE RETENCIÓN</th>
+              <th>HORA DE INGRESO</th>
+              <th>ACCIÓN</th>
+            </tr>
+          </thead>
+          <tbody id="held-cases-body"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="explain">
-      Aviso metodológico: Los conteos y tiempos de espera mostrados son <strong>valores sintéticos demostrativos</strong> para validar la estructura de la consola de supervisión; no corresponden a simulación calibrada de eventos discretos ni a telemetría de Salesforce.
+      Aviso metodológico: Los conteos base y tiempos de espera mostrados son <strong>valores sintéticos demostrativos</strong> para validar la estructura de la consola de supervisión; no corresponden a simulación calibrada de eventos discretos ni a telemetría de Salesforce.
     </div>
   </section>
 
@@ -764,26 +1594,30 @@
   <section class="page" id="page-curso">
     <div class="heading">
       <div>
-        <span class="eyebrow">Vista de supervisión · Datos sintéticos</span>
+        <span class="eyebrow">Vista de supervisión · Interactivo</span>
         <h1>Resumen de trabajo en curso (WIP)</h1>
-        <p>Seguimiento de casos asignados, etapa actual y tiempo transcurrido.</p>
+        <p>Seguimiento de casos asignados, etapa actual y liberación de capacidad al finalizar la atención.</p>
       </div>
       <span class="label-demo">DATOS SINTÉTICOS</span>
     </div>
     <div class="panel">
+      <div class="panelbar">
+        <b>Conversaciones y casos activos asignados a asesores</b>
+        <span class="soft">FINALICE CASOS PARA LIBERAR CAPACIDAD EN TIEMPO REAL</span>
+      </div>
       <div class="tablewrap">
         <table>
           <thead>
             <tr>
               <th>COLA</th>
               <th>CASO</th>
-              <th>TIPO</th>
-              <th>ASESOR</th>
-              <th>ASIGNADA</th>
-              <th>ABIERTA</th>
+              <th>RAMO / TIPO</th>
+              <th>ASESOR ASIGNADO</th>
+              <th>UNIDADES</th>
               <th>AHT OBSERVADO</th>
               <th>CLASE SUGERIDA</th>
               <th>ESTADO</th>
+              <th>ACCIÓN</th>
             </tr>
           </thead>
           <tbody id="wip-body"></tbody>
@@ -791,7 +1625,7 @@
       </div>
     </div>
     <div class="explain">
-      Las asignaciones confirmadas en la pestaña “Atención asistida” se reflejan en esta tabla. El tiempo AHT aquí mostrado es ilustrativo para verificar la reactividad de la consola.
+      Las asignaciones confirmadas en la pestaña “Atención asistida” se reflejan en esta tabla. Al pulsar <strong>“Finalizar atención”</strong>, se liberan las unidades de capacidad del asesor en la pestaña Representantes y se registra el cierre en la Bitácora.
     </div>
   </section>
 
@@ -800,26 +1634,65 @@
     <div class="heading">
       <div>
         <span class="eyebrow">Control de decisiones · Trazabilidad de auditoría</span>
-        <h1>Bitácora de interacciones</h1>
-        <p>Registro de cada evento: caso, versión, clase, fuente KB, decisión humana, asesor y política.</p>
+        <h1>Bitácora de auditoría de sesión local</h1>
+        <p>Registro cronológico de eventos: caso, revisión, estado, clase, fuente KB, decisión humana, resultado de seguridad, motivo de bloqueo, asesor y política. Exportable a JSON y CSV.</p>
       </div>
       <div class="btn-group">
-        <button class="secondary" id="export-json-btn">Exportar bitácora JSON</button>
-        <button class="secondary" id="export-csv-btn">Exportar bitácora CSV</button>
-        <button class="secondary" id="clear-btn">Limpiar bitácora</button>
+        <button class="secondary" id="export-json-btn">⬇ Exportar JSON</button>
+        <button class="secondary" id="export-csv-btn">⬇ Exportar CSV</button>
+        <button class="secondary" id="clear-btn">✕ Limpiar bitácora</button>
       </div>
     </div>
+
+    <div class="metricstrip compact-strip">
+      <div class="metric compact">
+        <small>Total Eventos</small>
+        <b id="log-kpi-total">0</b>
+        <span>En sesión actual</span>
+      </div>
+      <div class="metric compact">
+        <small>Decisiones Aceptadas / Editadas</small>
+        <b id="log-kpi-accepted">0</b>
+        <span>Asistencia validada</span>
+      </div>
+      <div class="metric compact">
+        <small>Casos Escalados / Clase C</small>
+        <b id="log-kpi-escalated">0</b>
+        <span>Control de seguridad</span>
+      </div>
+      <div class="metric compact">
+        <small>Asignaciones y Despachos</small>
+        <b id="log-kpi-routed">0</b>
+        <span>Flujo completado</span>
+      </div>
+    </div>
+
     <div class="panel">
+      <div class="panelbar">
+        <b>Historial de auditoría</b>
+        <div class="filter-bar">
+          <label for="log-filter-class">Filtrar clase:</label>
+          <select id="log-filter-class">
+            <option value="ALL">Todas las clases</option>
+            <option value="A">Solo Clase A</option>
+            <option value="B">Solo Clase B</option>
+            <option value="C">Solo Clase C</option>
+          </select>
+        </div>
+      </div>
       <div class="tablewrap">
         <table>
           <thead>
             <tr>
               <th>FECHA / HORA</th>
               <th>CASO</th>
+              <th>REVISIÓN</th>
+              <th>ESTADO</th>
               <th>EVENTO</th>
               <th>CLASE</th>
-              <th>FUENTE</th>
-              <th>DECISIÓN HUMANA</th>
+              <th>RESULTADO</th>
+              <th>DECISIÓN</th>
+              <th>MOTIVO BLOQUEO / NOTA</th>
               <th>ASESOR / ROUTING</th>
               <th>POLÍTICA</th>
             </tr>
@@ -837,9 +1710,9 @@
   <section class="page" id="page-config">
     <div class="heading">
       <div>
-        <span class="eyebrow">Parámetros del escenario · Control de hipótesis</span>
-        <h1>Configuración de políticas de capacidad</h1>
-        <p>Separación estricta entre la regla operativa real y las hipótesis de experimentación.</p>
+        <span class="eyebrow">Parámetros del escenario · Control de hipótesis y Cap. V</span>
+        <h1>Configuración de políticas y calculadora de sensibilidad</h1>
+        <p>Separación estricta entre la regla operativa real, las hipótesis de experimentación y la proyección de capacidad.</p>
       </div>
       <span class="label-demo">SIN CALIBRACIÓN EMPÍRICA</span>
     </div>
@@ -849,11 +1722,11 @@
         <div class="inner">
           <label class="radio-line">
             <input type="radio" name="policy" value="actual" checked>
-            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades, Capacidad nominal = 10 unidades.</span>
+            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades, Capacidad nominal = 10 unidades (máx. 2 chats simultáneos).</span>
           </label>
           <label class="radio-line">
             <input type="radio" name="policy" value="experimental">
-            <span><b>Política experimental A/B/C</b> · A = 4, B = 5, C = 7 (valores puramente hipotéticos).</span>
+            <span><b>Política experimental A/B/C</b> · A = 4, B = 5, C = 7 (valores puramente hipotéticos para proteger casos complejos).</span>
           </label>
           <p class="disclosure">
             Advertencia de integridad metodológica: Los pesos 4, 5 y 7 son valores ilustrativos de prueba académica. No corresponden a pesos calibrados de la aseguradora y su impacto en TMO está pendiente de validación mediante simulación en el Capítulo V.
@@ -862,16 +1735,50 @@
       </div>
 
       <div class="panel">
-        <div class="panelbar"><b>Condiciones de verdad y límites del prototipo</b></div>
+        <div class="panelbar"><b>Calculadora de Capacidad Potencialmente Recuperada (Fórmula Cap. V)</b></div>
         <div class="inner">
-          <p>✓ <strong>Reglas de triaje interpretables:</strong> lógica determinista auditable y precautoria.</p>
-          <p>✓ <strong>Repositorio demostrativo:</strong> KB con identificadores y versiones explícitas.</p>
-          <p>✓ <strong>Revisión humana mandatoria:</strong> el sistema nunca envía mensajes de manera autónoma.</p>
-          <p>✓ <strong>Gestión de capacidad:</strong> ruteo respetando umbrales de 10 unidades y estados de agente.</p>
-          <p>✓ <strong>Trazabilidad completa:</strong> bitácora descargable en JSON y CSV.</p>
-          <p>✗ <strong>Sin conexión a Salesforce / WhatsApp:</strong> prototipo autónomo offline.</p>
-          <p>✗ <strong>Sin LLM ni RAG en producción:</strong> asistencia basada en recuperación y plantillas.</p>
-          <p>✗ <strong>Sin resultados To-Be inventados:</strong> la reducción de TMO no se asume sin piloto.</p>
+          <p class="faint" style="margin-top:0;">Simulación paramétrica de sensibilidad industrial: <code>Horas Liberadas/Mes = (V × ΔTMO) / 60</code></p>
+          <div class="calc-grid">
+            <div>
+              <label for="calc-vol">Volumen mensual (chats/mes): <strong id="calc-vol-val">8,000</strong></label>
+              <input type="range" id="calc-vol" min="2000" max="15000" step="500" value="8000" style="width:100%;">
+            </div>
+            <div>
+              <label for="calc-delta">Reducción hipotética ΔTMO (min): <strong id="calc-delta-val">2.0 min</strong></label>
+              <input type="range" id="calc-delta" min="0.5" max="4.5" step="0.25" value="2.0" style="width:100%;">
+            </div>
+          </div>
+          <div class="calc-result-box">
+            <div>
+              <small>Horas-Hombre Liberadas / Mes</small>
+              <strong id="calc-hours">266.7 h/mes</strong>
+            </div>
+            <div>
+              <small>Equivalencia Operativa (Turnos de 8h)</small>
+              <strong id="calc-shifts">33.3 turnos/mes</strong>
+            </div>
+          </div>
+          <p class="disclosure">
+            Criterio de Honestidad Económica (Cap. V): Las horas recuperadas representan capacidad absorbida para crecimiento de demanda, menor sobretiempo y menor abandono; <strong>nunca deben equipararse automáticamente a reducción de personal (FTE)</strong>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <div class="panelbar"><b>Condiciones de verdad y límites del prototipo (Matriz de Honestidad Cap. IV)</b></div>
+      <div class="inner twocol" style="margin-top:0;">
+        <div>
+          <p>✓ <strong>Reglas de triaje interpretables:</strong> lógica determinista auditable y precautoria con resaltado de términos.</p>
+          <p>✓ <strong>Repositorio demostrativo:</strong> KB con identificadores, versión explícita y checklist de verificación.</p>
+          <p>✓ <strong>Revisión humana mandatoria:</strong> el sistema nunca envía mensajes sin confirmación HITL del asesor.</p>
+          <p>✓ <strong>Gestión de capacidad reactiva:</strong> ruteo respetando umbrales de 10 unidades, encolamiento y liberación WIP.</p>
+        </div>
+        <div>
+          <p>✓ <strong>Trazabilidad completa:</strong> bitácora filtrable y descargable en JSON y CSV.</p>
+          <p>✗ <strong>Sin conexión a Salesforce / WhatsApp:</strong> prototipo autónomo 100% offline.</p>
+          <p>✗ <strong>Sin LLM ni RAG en producción:</strong> asistencia basada en recuperación controlada de plantillas.</p>
+          <p>✗ <strong>Sin resultados To-Be inventados:</strong> la reducción causal del TMO requiere el piloto y simulación del Cap. V.</p>
         </div>
       </div>
     </div>
@@ -879,12 +1786,18 @@
 </main>
 
 <footer>
-  SAI-GC R01 · Prototipo Académico Demostrativo Local · Inspirado en la estructura funcional de supervisión de aseguradora · Proyecto de Grado UPC
+  SAI-GC R02 (v0.5-r02-verificable) · Prototipo Académico Demostrativo Local · Inspirado en la estructura funcional de supervisión de aseguradora · Proyecto de Grado UPC
 </footer>
 
 <script>
-/** SAI-GC R01 — Lógica Autocontenida */
-const VERSION = '0.3-r01-demo';
+/** 
+ * SAI-GC R02 — Módulo de Lógica Pura
+ * Sistema de Asistencia Inteligente y Gestión de Capacidad
+ * MVP Académico Demostrativo · Datos Sintéticos
+ * Versión R02 Verificable
+ */
+
+const VERSION = '0.5-r02-verificable';
 const CAPACITY = 10;
 
 const KNOWLEDGE = {
@@ -892,18 +1805,33 @@ const KNOWLEDGE = {
     id: 'KB-DEMO-001',
     title: 'Envío de constancia · plantilla demostrativa',
     body: 'Para solicitar una constancia, verificar identidad y cobertura con el procedimiento corporativo vigente. No afirmar el envío ni la vigencia sin comprobación.',
+    checklist: [
+      'Confirmar validación previa en IVR o verificar DNI/placa del titular.',
+      'Consultar estado de vigencia en el sistema core antes de emitir constancia.',
+      'Adjuntar PDF oficial sin prometer coberturas adicionales.'
+    ],
     reply: 'Con gusto le ayudo con su constancia. Antes de continuar, revisaré la validación y la información disponible en el procedimiento autorizado. Le confirmaré los siguientes pasos.'
   },
   B: {
     id: 'KB-DEMO-002',
     title: 'Estado de cuenta y deuda · plantilla demostrativa',
     body: 'La información de deuda y cuotas requiere consulta a fuentes corporativas. La plantilla no contiene saldos ni datos personales.',
+    checklist: [
+      'Validar identidad del asegurado (obligatorio si el IVR no completó autenticación).',
+      'Consultar cronograma de pagos y estado de cuotas en módulo de cobranzas.',
+      'Informar canales oficiales de pago sin digitar importes no verificados.'
+    ],
     reply: 'Con gusto reviso su consulta sobre el estado de cuenta. Necesito validar los datos correspondientes y consultar el sistema autorizado antes de confirmarle importes o fechas.'
   },
   C: {
     id: 'KB-DEMO-003',
     title: 'Siniestros y excepciones · control reforzado',
     body: 'Los siniestros, indemnizaciones, anulaciones contractuales y casos sensibles requieren revisión o escalamiento. No prometer cobertura, pagos ni plazos.',
+    checklist: [
+      'Contención empática inicial; prohibido confirmar cobertura o indemnización.',
+      'Recopilar número de póliza, fecha del evento y documentación de sustento.',
+      'Escalar a célula especializada o supervisor según matriz de riesgo.'
+    ],
     reply: 'Comprendo su solicitud. Por tratarse de una gestión que requiere una revisión especializada, verificaré la documentación y la ruta de atención correspondiente antes de brindarle una respuesta definitiva.'
   }
 };
@@ -992,18 +1920,21 @@ const AGENTS = [
 
 const CLASS_RULES = [
   {
+    id: 'RULE-C-CRIT',
     value: 'C',
-    rx: /siniestro|indemniza|anulaci[oó]n|rescate|carta de garant[ií]a|fraude|queja grave|reclamo sensible|excepci[oó]n|modificaci[oó]n de p[oó]liza/i,
+    rx: /siniestro|indemniza\w*|anulaci[oó]n|anular|rescate|carta de garant[ií]a|fraude|queja grave|reclamo sensible|excepci[oó]n|excepcional|modificaci[oó]n de p[oó]liza|complejidad clase c/gi,
     why: 'Regla de seguridad demostrativa: consulta sensible / contractual / excepción'
   },
   {
+    id: 'RULE-B-PROC',
     value: 'B',
-    rx: /deuda|estado de cuenta|cuota|cobranza|renovaci[oó]n|deducible|beneficio|proveedor|factura|boleta/i,
+    rx: /deuda|estado de cuenta|cuota|cobranza|renovaci[oó]n|deducible|beneficio|proveedor|factura|boleta/gi,
     why: 'Procedimiento con verificaciones o consultas a sistemas internos'
   },
   {
+    id: 'RULE-A-INFO',
     value: 'A',
-    rx: /constancia|copia|duplicado|p[oó]liza digital|vigencia informativa|horario/i,
+    rx: /constancia|copia|duplicado|p[oó]liza digital|vigencia informativa|horario/gi,
     why: 'Consulta de orientación preliminar de baja complejidad'
   }
 ];
@@ -1013,23 +1944,32 @@ function classify(text) {
     return {
       level: 'C',
       risk: 'Alto',
+      ruleId: 'RULE-C-EMPTY',
+      matchedKeywords: [],
       reason: 'Entrada vacía o inválida: escalamiento precautorio',
       confidence: 'No estimada (reglas demostrativas)'
     };
   }
-  const rule = CLASS_RULES.find(r => r.rx.test(text));
-  if (!rule) {
-    return {
-      level: 'C',
-      risk: 'Alto',
-      reason: 'Baja cobertura del conocimiento: escalamiento precautorio a humano',
-      confidence: 'No estimada (reglas demostrativas)'
-    };
+  for (const rule of CLASS_RULES) {
+    const matches = text.match(rule.rx);
+    if (matches && matches.length > 0) {
+      const uniqueMatches = [...new Set(matches.map(m => m.toLowerCase()))];
+      return {
+        level: rule.value,
+        risk: rule.value === 'C' ? 'Alto' : rule.value === 'B' ? 'Medio' : 'Bajo',
+        ruleId: rule.id,
+        matchedKeywords: uniqueMatches,
+        reason: rule.why,
+        confidence: 'No estimada (reglas demostrativas)'
+      };
+    }
   }
   return {
-    level: rule.value,
-    risk: rule.value === 'C' ? 'Alto' : rule.value === 'B' ? 'Medio' : 'Bajo',
-    reason: rule.why,
+    level: 'C',
+    risk: 'Alto',
+    ruleId: 'RULE-C-FALLBACK',
+    matchedKeywords: [],
+    reason: 'Baja cobertura del conocimiento: escalamiento precautorio a humano',
     confidence: 'No estimada (reglas demostrativas)'
   };
 }
@@ -1038,7 +1978,7 @@ function weightFor(level, policy = 'actual') {
   if (policy === 'experimental') {
     return ({ A: 4, B: 5, C: 7 })[level] ?? 7;
   }
-  return 5;
+  return 5; // Regla actual confirmada: WhatsApp consume 5 unidades
 }
 
 function route(agents, level, branch, policy = 'actual') {
@@ -1049,6 +1989,7 @@ function route(agents, level, branch, policy = 'actual') {
     a.skills.includes(branch) &&
     (a.load + weight) <= CAPACITY
   );
+  // Ordenar por menor carga actual; desempate por identificador
   valid.sort((a, b) => (a.load - b.load) || a.id.localeCompare(b.id));
   const choice = valid[0];
   return {
@@ -1058,6 +1999,18 @@ function route(agents, level, branch, policy = 'actual') {
     reason: choice
       ? 'Menor carga ponderada y skill compatible'
       : 'Sin capacidad o skill disponible; mantener en cola'
+  };
+}
+
+function comparePolicies(agents, level, branch) {
+  const actual = route(agents, level, branch, 'actual');
+  const experimental = route(agents, level, branch, 'experimental');
+  return {
+    actual,
+    experimental,
+    weightDelta: experimental.weight - actual.weight,
+    maxConcurrencyActual: Math.floor(CAPACITY / actual.weight),
+    maxConcurrencyExperimental: Math.floor(CAPACITY / experimental.weight)
   };
 }
 
@@ -1072,6 +2025,28 @@ function respond(level, validated) {
   };
 }
 
+/**
+ * Genera una huella digital determinista única para una versión de caso.
+ * Cualquier cambio en texto, ramo, IVR, política o nivel invalida la revisión.
+ */
+function computeCaseRevision(caseData, policy = 'actual', classification = null) {
+  const id = caseData?.id || 'NO-ID';
+  const text = (caseData?.text || '').trim();
+  const branch = caseData?.branch || 'Vehicular';
+  const validated = Boolean(caseData?.validated);
+  const level = classification?.level || classify(text).level;
+  const pol = policy || 'actual';
+  
+  const raw = `${id}|${branch}|ivr:${validated}|pol:${pol}|lvl:${level}|len:${text.length}|txt:${text}`;
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < raw.length; i++) {
+    h ^= raw.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  const hashHex = h.toString(16).padStart(8, '0');
+  return `rev-${hashHex}`;
+}
+
 function processCase(testCase, agents, policy = 'actual') {
   const classification = classify(testCase.text);
   const hasCoverage = !classification.reason.startsWith('Baja cobertura') &&
@@ -1082,28 +2057,215 @@ function processCase(testCase, agents, policy = 'actual') {
         id: 'KB-NO-COBERTURA',
         title: 'Sin fuente aplicable: escalamiento obligatorio',
         body: 'La base demo no cubre este caso sintético.',
+        checklist: [
+          'Caso fuera de dominio del repositorio demostrativo.',
+          'No emitir respuesta informativa al cliente sin validación.',
+          'Derivar inmediatamente a supervisor o nivel 2.'
+        ],
         text: 'No se dispone de información suficiente en el repositorio de prueba. El asesor debe revisar y escalar; no generar una respuesta de contenido.'
       };
-  const recommendation = route(agents, classification.level, testCase.branch || 'Vehicular', policy);
+  const branch = testCase.branch || 'Vehicular';
+  const recommendation = route(agents, classification.level, branch, policy);
+  const policyComparison = comparePolicies(agents, classification.level, branch);
+  const revision = computeCaseRevision(testCase, policy, classification);
+  
+  const initialCaseStatus = classification.level === 'C' 
+    ? 'ESCALAMIENTO_REQUERIDO' 
+    : 'PENDIENTE_REVISION';
+
   return {
     classification,
     guidance,
     recommendation,
+    policyComparison,
+    revision,
+    caseStatus: initialCaseStatus,
     caseId: testCase.id,
     policy,
     version: VERSION
   };
 }
 
+/**
+ * Función central de autorización y control de seguridad R02 (canConfirmAssignment).
+ * Valida de forma pura las 9 barreras de negocio exigidas antes de autorizar cualquier asignación.
+ */
+function canConfirmAssignment({
+  caseData,
+  output,
+  decision,
+  approvedRevision,
+  isEditing = false,
+  editApproved = false,
+  agents = [],
+  policy = 'actual',
+  activeAssignments = []
+}) {
+  if (!caseData || !output || !output.classification) {
+    return {
+      allowed: false,
+      code: 'ERR_NO_OUTPUT',
+      reason: 'El caso no ha sido procesado aún por el motor de triaje.'
+    };
+  }
+
+  const level = output.classification.level;
+  const branch = caseData.branch || 'Vehicular';
+  const currentRevision = output.revision || computeCaseRevision(caseData, policy, output.classification);
+
+  // Barrera 1: Clase C o Sin Cobertura exige escalamiento obligatorio (T06, T07)
+  if (level === 'C' || output.guidance?.id === 'KB-NO-COBERTURA') {
+    return {
+      allowed: false,
+      code: 'ERR_CLASS_C_ESCALATION',
+      reason: 'Clase C o consulta sensible/desconocida exige escalamiento obligatorio a supervisor. Asignación ordinaria bloqueada por seguridad operacional.'
+    };
+  }
+
+  // Barrera 2: Modo edición activo sin aprobación de texto final (T04)
+  if (isEditing && !editApproved) {
+    return {
+      allowed: false,
+      code: 'ERR_EDIT_NOT_APPROVED',
+      reason: 'El borrador se encuentra en modo edición. Debe guardar y aprobar el texto final antes de confirmar la asignación.'
+    };
+  }
+
+  // Barrera 3: Rechazo explícito (T05)
+  if (decision === 'Rechazar') {
+    return {
+      allowed: false,
+      code: 'ERR_REJECTED',
+      reason: 'La recomendación fue rechazada por el asesor. Asignación ordinaria bloqueada hasta nueva revisión.'
+    };
+  }
+
+  // Barrera 4: Escalamiento explícito
+  if (decision === 'Escalar') {
+    return {
+      allowed: false,
+      code: 'ERR_ESCALATED',
+      reason: 'El caso fue marcado para escalamiento. Asignación ordinaria bloqueada.'
+    };
+  }
+
+  // Barrera 5: Aprobación humana explícita (T01, T02)
+  const hasValidApproval = (decision === 'Aceptar') || (decision === 'Editar' && editApproved);
+  if (!hasValidApproval) {
+    return {
+      allowed: false,
+      code: 'ERR_NO_APPROVAL',
+      reason: 'Se requiere aprobación humana explícita (Aceptar o Guardar y aprobar edición) antes de confirmar la asignación.'
+    };
+  }
+
+  // Barrera 6: Coincidencia estricta de la revisión aprobada (T08, T09)
+  if (!approvedRevision || approvedRevision !== currentRevision) {
+    return {
+      allowed: false,
+      code: 'ERR_STALE_REVISION',
+      reason: 'La aprobación registrada es obsoleta o no coincide con los parámetros/contenido actuales del caso.'
+    };
+  }
+
+  // Barrera 7: Validación de identidad IVR (R02-06)
+  if (!caseData.validated && !caseData.ivrManualVerified) {
+    return {
+      allowed: false,
+      code: 'ERR_IVR_UNVERIFIED',
+      reason: 'Validación IVR pendiente: el asesor debe confirmar la verificación manual de identidad del titular antes de la asignación.'
+    };
+  }
+
+  // Barrera 8: Idempotencia / duplicados (T13)
+  const isDuplicate = (activeAssignments || []).some(
+    item => item.id === caseData.id && (item.status === 'En curso' || item.status === 'Asignado')
+  );
+  if (isDuplicate) {
+    return {
+      allowed: false,
+      code: 'ERR_DUPLICATE_ASSIGNMENT',
+      reason: `El caso ${caseData.id} ya cuenta con una asignación activa en trabajo en curso.`
+    };
+  }
+
+  // Barrera 9: Revalidación en tiempo real de capacidad, estado y skill del asesor (T10, T11, T12)
+  const weight = weightFor(level, policy);
+  const validAgents = (agents || []).filter(a =>
+    a.status === 'Disponible' &&
+    Array.isArray(a.skills) &&
+    a.skills.includes(branch) &&
+    (a.load + weight) <= CAPACITY
+  );
+  validAgents.sort((a, b) => (a.load - b.load) || a.id.localeCompare(b.id));
+  const choice = validAgents[0] || null;
+
+  if (!choice) {
+    return {
+      allowed: false,
+      code: 'ERR_NO_CAPACITY_OR_SKILL',
+      reason: 'No hay capacidad disponible o no existe asesor disponible con skill compatible en este momento; mantener en cola.',
+      weight
+    };
+  }
+
+  return {
+    allowed: true,
+    code: 'OK_APPROVED',
+    reason: 'Aprobación humana vigente y capacidad verificada en tiempo real.',
+    targetAgent: choice,
+    weight,
+    projected: choice.load + weight
+  };
+}
+
+/**
+ * Registra y estructura un escalamiento operacional formal.
+ */
+function registerEscalation({ caseData, output, reason, actorRole = 'Asesor WhatsApp' }) {
+  const caseId = caseData?.id || 'DEMO-???';
+  const level = output?.classification?.level || 'C';
+  const targetQueue = level === 'C' ? 'Cola de Supervisión / Siniestros y Excepciones' : 'Cola de Nivel 2';
+  return {
+    caseId,
+    level,
+    targetQueue,
+    reason: reason || output?.classification?.reason || 'Escalamiento mandatorio de seguridad operacional',
+    actorRole,
+    timestampIso: new Date().toISOString(),
+    status: 'DERIVADO_SUPERVISOR'
+  };
+}
+
+function calculateCapacityRecovery(monthlyVolume = 8000, deltaTmoMinutes = 2.0) {
+  const vol = Math.max(0, Number(monthlyVolume) || 0);
+  const delta = Math.max(0, Number(deltaTmoMinutes) || 0);
+  const hoursRecovered = Number(((vol * delta) / 60).toFixed(1));
+  return {
+    monthlyVolume: vol,
+    deltaTmoMinutes: delta,
+    hoursRecovered,
+    equivalentShifts8h: Number((hoursRecovered / 8).toFixed(1)),
+    disclaimer: 'Cálculo hipotético de sensibilidad (Cap. V). No equivale a reducción automática de FTE.'
+  };
+}
+
 function log_event(logs, entry) {
+  const timestampIso = entry.timestampIso || new Date().toISOString();
   const time = entry.time || new Date().toLocaleString('es-PE');
   const record = {
+    timestampIso,
     time,
     case: entry.caseId || entry.case || '—',
+    revision: entry.revision || '—',
+    caseStatus: entry.caseStatus || '—',
     event: entry.event || 'Evento',
     level: entry.level || '—',
     source: entry.source || '—',
     action: entry.action || '—',
+    result: entry.result || 'PERMITIDO', // 'PERMITIDO' | 'BLOQUEADO' | 'ESCALADO' | 'INVALIDADO'
+    blockReason: entry.blockReason || '—',
+    actorRole: entry.actorRole || 'Asesor WhatsApp',
     agent: entry.agent || '—',
     policy: entry.policy || 'actual',
     version: entry.version || VERSION
@@ -1114,14 +2276,36 @@ function log_event(logs, entry) {
 function export_evidence(logs, format = 'json') {
   const records = logs || [];
   if (format === 'csv') {
-    const headers = ['Fecha_Hora', 'Caso', 'Evento', 'Clase', 'Fuente', 'Decision_Humana', 'Asesor_Routing', 'Politica', 'Version'];
+    const headers = [
+      'Timestamp_ISO',
+      'Fecha_Hora',
+      'Caso',
+      'Revision',
+      'Estado_Caso',
+      'Evento',
+      'Clase',
+      'Fuente',
+      'Decision_Humana',
+      'Resultado',
+      'Motivo_Bloqueo',
+      'Rol_Actor',
+      'Asesor_Routing',
+      'Politica',
+      'Version'
+    ];
     const rows = records.map(r => [
+      r.timestampIso || '',
       r.time,
       r.case,
+      r.revision || '—',
+      r.caseStatus || '—',
       r.event,
       r.level,
       r.source,
       r.action,
+      r.result || 'PERMITIDO',
+      r.blockReason || '—',
+      r.actorRole || 'Asesor WhatsApp',
       r.agent,
       r.policy,
       r.version
@@ -1137,11 +2321,43 @@ function export_evidence(logs, format = 'json') {
   }, null, 2);
 }
 
-// Interfaz e Interacción
 const $ = id => document.getElementById(id);
 const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
 }[c]));
+
+const INITIAL_WIP = [
+  {
+    uid: 'WIP-BASE-1',
+    queue: 'WhatsApp',
+    id: 'DEMO-WIP-001',
+    branch: 'Vida',
+    type: 'Conversación',
+    agentId: 'AG-02',
+    agent: 'Asesor Demo 02',
+    weight: 5,
+    age: '05:40',
+    level: 'B',
+    status: 'En curso'
+  },
+  {
+    uid: 'WIP-BASE-2',
+    queue: 'Correo',
+    id: 'DEMO-WIP-002',
+    branch: 'Salud',
+    type: 'Caso Correo',
+    agentId: 'AG-03',
+    agent: 'Asesor Demo 03',
+    weight: 10,
+    age: '12:30',
+    level: 'N/A',
+    status: 'En curso'
+  }
+];
 
 const state = {
   agents: structuredClone(AGENTS),
@@ -1150,8 +2366,17 @@ const state = {
   output: null,
   policy: 'actual',
   logs: [],
-  decisions: {},
-  assignments: [],
+  caseStatus: 'PENDIENTE_REVISION',
+  decisions: {},           // { [caseId]: 'Aceptar' | 'Editar' | 'Rechazar' | 'Escalar' }
+  approvedRevisions: {},   // { [caseId]: 'rev-xxxx' }
+  isEditing: false,
+  editApproved: false,
+  ivrManualVerified: false,
+  chatMessages: {},        // { [caseId]: Array<{ type, sender, decision, time, text }> }
+  assignments: structuredClone(INITIAL_WIP),
+  heldCases: [],
+  escalatedCases: [],
+  logFilterClass: 'ALL',
   counter: 0
 };
 
@@ -1163,6 +2388,7 @@ function navigate(name) {
 
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => navigate(b.dataset.tab)));
 
+// Inicializar selector de casos
 const select = $('case-select');
 for (const c of state.cases) {
   const o = document.createElement('option');
@@ -1172,12 +2398,56 @@ for (const c of state.cases) {
 }
 select.addEventListener('change', () => setCase(select.value));
 
+function updateContextBar() {
+  const c = state.selected;
+  const check = $('validation').value === 'true';
+  const branch = $('branch').value;
+  $('ctx-case-id').textContent = c.id;
+  $('ctx-topic').textContent = c.topic || c.name;
+  $('ctx-branch').textContent = branch;
+  const pill = $('ctx-ivr-pill');
+  if (check) {
+    pill.className = 'ivr-pill ok';
+    pill.textContent = '✓ IVR Validado';
+    $('ivr-verification-box').style.display = 'none';
+  } else {
+    pill.className = state.ivrManualVerified ? 'ivr-pill ok' : 'ivr-pill pending';
+    pill.textContent = state.ivrManualVerified ? '✓ Verificado por Asesor' : '! IVR Pendiente (Verifica Asesor)';
+    $('ivr-verification-box').style.display = 'block';
+    $('ivr-verified-check').checked = state.ivrManualVerified;
+  }
+}
+
+function invalidateCurrentApproval(reason = 'Cambio de parámetros') {
+  const cid = state.selected.id;
+  if (state.approvedRevisions[cid]) {
+    addLog(
+      'Invalidación de aprobación previa',
+      'Revocación automática',
+      'Motor R02',
+      cid,
+      state.output?.classification?.level || '—',
+      'SEGURIDAD-R02',
+      'INVALIDADO',
+      reason
+    );
+  }
+  delete state.approvedRevisions[cid];
+  delete state.decisions[cid];
+  state.isEditing = false;
+  state.editApproved = false;
+  state.caseStatus = 'PENDIENTE_REVISION';
+}
+
 function setCase(id) {
   const c = state.cases.find(x => x.id === id);
   if (!c) return;
   state.selected = c;
   state.output = null;
+  state.ivrManualVerified = false;
+  invalidateCurrentApproval('Cambio de caso activo');
 
+  // Ajustes especiales de simulación según el escenario
   if (c.scenario === 'all_busy') {
     state.agents = AGENTS.map(a => ({ ...a, status: 'Ocupado', load: 10 }));
   } else if (c.scenario === 'agent_paused') {
@@ -1198,6 +2468,7 @@ function setCase(id) {
   $('question').value = c.text;
   $('validation').value = String(c.validated);
   $('branch').value = c.branch;
+  updateContextBar();
   renderChat();
   resetOutput();
   renderTables();
@@ -1207,71 +2478,213 @@ function renderChat() {
   const d = $('chat');
   const c = state.selected;
   const check = $('validation').value === 'true';
-  d.innerHTML = `
-    <div class="event">◉ Cliente inicia contacto en canal WhatsApp · caso ${escapeHTML(c.id)}</div>
-    <div class="message customer"><span class="who">Cliente (demostración)</span>Hola, necesito asistencia con mi póliza.</div>
-    <div class="message system"><span class="who">IVR actual · demostración</span>Gracias por comunicarse. Por favor, indique brevemente el motivo de su consulta.</div>
-    <div class="message customer"><span class="who">Cliente (demostración)</span>${escapeHTML($('question').value || c.text)}</div>
-    <div class="event">${check ? '✓ Identidad previamente validada por IVR.' : '! Identidad sin validar: asesor debe ejecutar verificación.'}<br>Transferencia simulada a cola WhatsApp.</div>
+  const branch = $('branch').value;
+  const customMsgs = state.chatMessages[c.id] || [];
+
+  let html = `
+    <div class="event">◉ Cliente inicia contacto en canal WhatsApp · Caso <strong>${escapeHTML(c.id)}</strong> · Ramo ${escapeHTML(branch)}</div>
+    <div class="message customer">
+      <span class="who"><span>Cliente (demostración)</span><span>10:14 ✓✓</span></span>Hola, necesito asistencia con mi póliza de seguro (${escapeHTML(branch)}).
+    </div>
+    <div class="message system">
+      <span class="who"><span>Bot IVR · Canal Digital</span><span>10:14</span></span>Gracias por comunicarse. Por favor, indique brevemente el motivo de su consulta.
+    </div>
+    <div class="message customer">
+      <span class="who"><span>Cliente (demostración)</span><span>10:15 ✓✓</span></span>${escapeHTML($('question').value || c.text)}
+    </div>
+    <div class="event">${check ? '✓ Identidad previamente validada por IVR.' : (state.ivrManualVerified ? '✓ Identidad validada manualmente por el asesor en turno.' : '! Identidad sin validar: asesor debe ejecutar verificación antes de informar datos.')} · Transferencia a cola WhatsApp.</div>
   `;
+
   if (state.output) {
     const o = state.output;
-    d.innerHTML += `
-      <div class="message system">
-        <span class="who">SAI-GC · propuesta interna (no enviada al cliente)</span>
-        Clase ${o.classification.level} · Fuente: ${o.guidance.id}<br>
-        <em>Acción humana requerida: el asesor debe validar y decidir.</em>
+    html += `
+      <div class="message proposal">
+        <span class="who"><span>⚙ SAI-GC · BORRADOR INTERNO (No visible para el cliente)</span><span>Clase ${escapeHTML(o.classification.level)} · ${escapeHTML(o.guidance.id)}</span></span>
+        <strong>Sugerencia recuperada:</strong> "${escapeHTML(o.guidance.text)}"<br>
+        <em style="font-size: 11px;">🔒 Control Human-in-the-Loop activo: revise, valide identidad y apruebe antes de despachar o asignar.</em>
       </div>
     `;
   }
+
+  for (const m of customMsgs) {
+    if (m.type === 'advisor') {
+      html += `
+        <div class="message advisor">
+          <span class="who"><span>👤 ${escapeHTML(m.sender)} (Validado HITL: ${escapeHTML(m.decision)})</span><span>${escapeHTML(m.time)} ✓✓</span></span>${escapeHTML(m.text)}
+        </div>
+      `;
+    } else if (m.type === 'escalation') {
+      html += `
+        <div class="message escalation">
+          <span class="who"><span>⚠ ESCALAMIENTO OPERACIONAL REGISTRADO</span><span>${escapeHTML(m.time)}</span></span>${escapeHTML(m.text)}
+        </div>
+      `;
+    }
+  }
+
+  d.innerHTML = html;
   d.scrollTop = d.scrollHeight;
 }
 
 $('validation').addEventListener('change', () => {
+  invalidateCurrentApproval('Modificación de estado IVR');
   state.output = null;
+  state.ivrManualVerified = false;
+  updateContextBar();
   renderChat();
   resetOutput();
 });
 
 $('branch').addEventListener('change', () => {
+  invalidateCurrentApproval('Modificación de ramo');
   state.output = null;
+  updateContextBar();
+  renderChat();
   resetOutput();
 });
 
+$('question').addEventListener('input', () => {
+  invalidateCurrentApproval('Modificación de texto de consulta');
+  if (!state.output) {
+    renderChat();
+  }
+});
+
+$('ivr-verified-check').addEventListener('change', e => {
+  state.ivrManualVerified = e.target.checked;
+  updateContextBar();
+  renderChat();
+  updateAuthUI();
+});
+
 function resetOutput() {
+  $('chat-stage-badge').textContent = 'Estado: En espera de triaje';
   $('class-chip').className = 'classchip empty';
   $('class-chip').textContent = '—';
   $('risk').textContent = 'Pendiente';
+  $('rule-id-badge').textContent = 'M3 · Reglas preliminares';
+  $('keywords-list').innerHTML = '<span class="kw-chip muted">Sin procesar</span>';
   $('rule-reason').textContent = 'Seleccione un caso y pulse “Procesar consulta”.';
   $('kb-source').textContent = 'Pendiente de consulta';
+  $('kb-checklist').innerHTML = '<li>Procese un caso para visualizar los pasos obligatorios de verificación.</li>';
   $('suggestion').textContent = 'La asistencia aparecerá cuando se procese el caso.';
   $('suggestion').contentEditable = 'false';
   $('suggestion').style.background = '';
   $('suggestion').style.outline = '';
+  $('save-edit-btn').style.display = 'none';
   $('action-result').className = 'result muted';
   $('action-result').textContent = 'Sin decisión humana registrada.';
-  document.querySelectorAll('[data-action]').forEach(b => b.disabled = true);
+
+  document.querySelectorAll('.fourbtn button').forEach(b => {
+    b.disabled = true;
+    b.classList.remove('active-choice');
+  });
+  $('send-chat-btn').disabled = true;
   $('weight').textContent = state.policy === 'experimental' ? 'Depende de clase' : '5 unidades';
   $('recommended').textContent = 'Pendiente';
   $('projected').textContent = '—';
   $('route-reason').textContent = 'Se recomienda el asesor disponible con menor carga y skill compatible.';
   $('progress-fill').style.width = '0%';
+  $('cmp-actual').textContent = '—';
+  $('cmp-exp').textContent = '—';
   $('assign-btn').disabled = true;
+  $('assign-btn').style.display = 'inline-block';
+  $('enqueue-btn').disabled = true;
+  $('escalate-action-btn').style.display = 'none';
+  $('escalate-action-btn').disabled = true;
+
+  updateStatusChip('PENDIENTE_REVISION');
+  $('case-revision-token').textContent = '—';
 }
 
-function addLog(type, action = '—', agent = '—') {
+function updateStatusChip(status) {
+  state.caseStatus = status;
+  const chip = $('case-status-chip');
+  chip.className = `case-status-chip ${status}`;
+  chip.textContent = status.replace(/_/g, ' ');
+}
+
+function addLog(type, action = '—', agent = '—', customCaseId = null, customLevel = null, customSource = null, result = 'PERMITIDO', blockReason = '—') {
   const o = state.output || {};
+  const currentCase = {
+    ...state.selected,
+    text: $('question').value,
+    branch: $('branch').value,
+    validated: $('validation').value === 'true'
+  };
+  const rev = o.revision || computeCaseRevision(currentCase, state.policy, o.classification);
   state.logs = log_event(state.logs, {
-    caseId: state.selected.id,
+    timestampIso: new Date().toISOString(),
+    caseId: customCaseId || state.selected.id,
+    revision: rev,
+    caseStatus: state.caseStatus,
     event: type,
-    level: o.classification?.level || '—',
-    source: o.guidance?.id || '—',
+    level: customLevel || o.classification?.level || '—',
+    source: customSource || o.guidance?.id || '—',
     action,
+    result,
+    blockReason,
+    actorRole: 'Asesor WhatsApp (HITL)',
     agent,
     policy: state.policy,
     version: VERSION
   });
   renderTables();
+}
+
+function getCurrentAuthCheck() {
+  const c = {
+    ...state.selected,
+    text: $('question').value,
+    validated: $('validation').value === 'true',
+    branch: $('branch').value,
+    ivrManualVerified: state.ivrManualVerified
+  };
+  return canConfirmAssignment({
+    caseData: c,
+    output: state.output,
+    decision: state.decisions[c.id],
+    approvedRevision: state.approvedRevisions[c.id],
+    isEditing: state.isEditing,
+    editApproved: state.editApproved,
+    agents: state.agents,
+    policy: state.policy,
+    activeAssignments: state.assignments
+  });
+}
+
+function updateAuthUI() {
+  if (!state.output) return;
+  const cid = state.selected.id;
+  const level = state.output.classification.level;
+  const auth = getCurrentAuthCheck();
+
+  $('case-revision-token').textContent = state.output.revision;
+  updateStatusChip(state.caseStatus);
+
+  if (level === 'C') {
+    // Clase C: bloqueo estricto de asignación ordinaria (R02-02)
+    $('assign-btn').style.display = 'none';
+    $('assign-btn').disabled = true;
+    $('escalate-action-btn').style.display = 'inline-block';
+    $('escalate-action-btn').disabled = (state.caseStatus === 'DERIVADO_SUPERVISOR');
+    $('route-reason').textContent = '🔒 Regla de seguridad R02: Clase C exige derivación obligatoria a supervisor. Asignación directa bloqueada.';
+    $('btn-accept').disabled = true; // Bloqueado aceptar directo en Clase C
+    $('btn-accept').title = 'No permitido en Clase C por salvaguarda de seguridad operacional';
+  } else {
+    $('assign-btn').style.display = 'inline-block';
+    $('escalate-action-btn').style.display = 'none';
+    $('btn-accept').disabled = false;
+    $('btn-accept').title = '';
+
+    if (auth.allowed) {
+      $('assign-btn').disabled = false;
+      $('route-reason').textContent = `✓ Autorizado para confirmación: ${auth.targetAgent.display} (${auth.projected}/10 u.)`;
+    } else {
+      $('assign-btn').disabled = true;
+      $('route-reason').textContent = `🔒 Asignación pendiente: ${auth.reason}`;
+    }
+  }
 }
 
 function runCase() {
@@ -1285,24 +2698,61 @@ function runCase() {
   state.output = processCase(c, state.agents, state.policy);
   const o = state.output;
 
+  // Si se reprocesa, la aprobación previa se invalida
+  delete state.approvedRevisions[c.id];
+  delete state.decisions[c.id];
+  state.isEditing = false;
+  state.editApproved = false;
+  state.caseStatus = o.caseStatus;
+
+  $('chat-stage-badge').textContent = `Estado: Triaje Clase ${o.classification.level} · Revisión HITL`;
   $('class-chip').className = `classchip ${o.classification.level}`;
   $('class-chip').textContent = o.classification.level;
   $('risk').textContent = o.classification.risk;
+  $('rule-id-badge').textContent = `M3 · ${o.classification.ruleId || 'RULE-DEMO'}`;
   $('rule-reason').textContent = o.classification.reason;
+
+  const kws = o.classification.matchedKeywords || [];
+  if (kws.length > 0) {
+    $('keywords-list').innerHTML = kws.map(k => `<span class="kw-chip">“${escapeHTML(k)}”</span>`).join('');
+  } else {
+    $('keywords-list').innerHTML = '<span class="kw-chip alert">0 coincidencias en catálogo → Salvaguarda Precautoria Clase C</span>';
+  }
+
   $('kb-source').textContent = `${o.guidance.id} · ${o.guidance.title}`;
+  const checklist = o.guidance.checklist || [];
+  $('kb-checklist').innerHTML = checklist.map(item => `<li>${escapeHTML(item)}</li>`).join('');
   $('suggestion').textContent = o.guidance.text;
+
   $('weight').textContent = `${o.recommendation.weight} unidades`;
-  $('recommended').textContent = o.recommendation.agent?.display || 'En cola';
-  $('projected').textContent = o.recommendation.agent ? `${o.recommendation.projected} / 10` : '—';
-  $('route-reason').textContent = o.recommendation.reason;
+  $('recommended').textContent = o.recommendation.agent?.display || 'En cola (Sin capacidad)';
+  $('projected').textContent = o.recommendation.agent ? `${o.recommendation.projected} / 10` : 'Saturado';
   $('progress-fill').style.width = `${100 * (o.recommendation.projected || 0) / CAPACITY}%`;
 
-  $('assign-btn').disabled = !o.recommendation.agent;
-  document.querySelectorAll('[data-action]').forEach(b => b.disabled = false);
+  if (o.policyComparison) {
+    const act = o.policyComparison.actual;
+    const exp = o.policyComparison.experimental;
+    $('cmp-actual').textContent = `${act.weight}u → ${act.agent ? `${act.agent.display} (${act.projected}/10)` : 'En cola'}`;
+    $('cmp-exp').textContent = `${exp.weight}u → ${exp.agent ? `${exp.agent.display} (${exp.projected}/10)` : 'En cola'}`;
+  }
 
-  $('action-result').textContent = 'Pendiente: el asesor debe decidir antes de actuar.';
-  $('action-result').className = 'result muted';
+  $('enqueue-btn').disabled = Boolean(o.recommendation.agent);
 
+  document.querySelectorAll('.fourbtn button').forEach(b => {
+    b.disabled = false;
+    b.classList.remove('active-choice');
+  });
+  $('send-chat-btn').disabled = true;
+
+  if (o.classification.level === 'C') {
+    $('action-result').textContent = '⚠ Caso sensible Clase C: pulse "Escalar" para derivar formalmente al supervisor.';
+    $('action-result').className = 'result escalated';
+  } else {
+    $('action-result').textContent = 'Pendiente: el asesor debe elegir una acción HITL antes de despachar o confirmar.';
+    $('action-result').className = 'result muted';
+  }
+
+  updateAuthUI();
   renderChat();
   addLog('Triaje y recomendación');
 }
@@ -1313,107 +2763,535 @@ $('reset-btn').addEventListener('click', () => {
   state.agents = structuredClone(AGENTS);
   state.logs = [];
   state.decisions = {};
-  state.assignments = [];
+  state.approvedRevisions = {};
+  state.chatMessages = {};
+  state.assignments = structuredClone(INITIAL_WIP);
+  state.heldCases = [];
+  state.escalatedCases = [];
+  state.ivrManualVerified = false;
   state.counter = 0;
   setCase(CASES[0].id);
   select.value = CASES[0].id;
   renderTables();
 });
 
-for (const b of document.querySelectorAll('[data-action]')) {
-  b.addEventListener('click', () => {
-    if (!state.output) return;
-    const act = b.dataset.action;
-    if (act === 'Editar') {
-      $('suggestion').contentEditable = 'true';
-      $('suggestion').style.background = '#fffef0';
-      $('suggestion').style.outline = '2px solid #94bce6';
-      $('suggestion').focus();
-    } else {
-      $('suggestion').contentEditable = 'false';
-      $('suggestion').style.background = '';
-      $('suggestion').style.outline = '';
-    }
-    state.decisions[state.selected.id] = act;
-    $('action-result').textContent = `Decisión registrada: ${act}. ${act === 'Escalar' ? 'Requiere revisión humana reforzada.' : 'Sugerencia no enviada automáticamente.'}`;
-    $('action-result').className = 'result done';
-    addLog('Decisión humana', act, state.output.recommendation.agent?.display || '—');
-  });
-}
+// Botones de acción Human-in-the-Loop
+$('btn-accept').addEventListener('click', () => {
+  if (!state.output) return;
+  const cid = state.selected.id;
+  const isIvrPending = $('validation').value !== 'true';
 
-$('assign-btn').addEventListener('click', () => {
-  if (!state.output || !state.output.recommendation.agent) return;
-  const choice = state.agents.find(a => a.id === state.output.recommendation.agent.id);
-  const w = state.output.recommendation.weight;
-  if (!choice || (choice.load + w > CAPACITY)) {
-    alert('No hay capacidad disponible; reprocesar el caso.');
+  if (state.output.classification.level === 'C') {
+    alert('Bloqueado por seguridad R02: Las consultas Clase C no admiten aceptación directa; deben ser escaladas.');
     return;
   }
+
+  if (isIvrPending && !state.ivrManualVerified) {
+    alert('Validación IVR pendiente: Debe marcar la casilla de verificación manual de identidad antes de autorizar la sugerencia.');
+    $('ivr-verified-check').focus();
+    return;
+  }
+
+  document.querySelectorAll('.fourbtn button').forEach(b => b.classList.remove('active-choice'));
+  $('btn-accept').classList.add('active-choice');
+
+  state.decisions[cid] = 'Aceptar';
+  state.approvedRevisions[cid] = state.output.revision;
+  state.isEditing = false;
+  state.editApproved = false;
+  state.caseStatus = 'APROBADO';
+
+  $('suggestion').contentEditable = 'false';
+  $('suggestion').style.background = '';
+  $('suggestion').style.outline = '';
+  $('save-edit-btn').style.display = 'none';
+  $('send-chat-btn').disabled = false;
+
+  $('action-result').textContent = '✓ Sugerencia aprobada por el asesor humano. Autorización concedida para despacho y asignación.';
+  $('action-result').className = 'result done';
+
+  addLog('Decisión humana', 'Aceptar', state.output.recommendation.agent?.display || '—', cid, state.output.classification.level, state.output.guidance.id, 'PERMITIDO');
+  updateAuthUI();
+});
+
+$('btn-edit').addEventListener('click', () => {
+  if (!state.output) return;
+  const cid = state.selected.id;
+
+  document.querySelectorAll('.fourbtn button').forEach(b => b.classList.remove('active-choice'));
+  $('btn-edit').classList.add('active-choice');
+
+  state.decisions[cid] = 'Editar';
+  delete state.approvedRevisions[cid]; // Editar invalida aprobación hasta pulsar Guardar y Aprobar
+  state.isEditing = true;
+  state.editApproved = false;
+  state.caseStatus = 'EDITANDO';
+
+  $('suggestion').contentEditable = 'true';
+  $('suggestion').style.background = '#fffef0';
+  $('suggestion').style.outline = '2px solid #0176d3';
+  $('suggestion').focus();
+  $('save-edit-btn').style.display = 'block';
+  $('send-chat-btn').disabled = true; // No se puede enviar hasta guardar
+
+  $('action-result').textContent = 'Modo edición activo: modifique el texto y pulse “✓ Guardar y aprobar texto editado” para validar.';
+  $('action-result').className = 'result done';
+
+  addLog('Decisión humana', 'Editar (iniciado)', state.output.recommendation.agent?.display || '—', cid, state.output.classification.level, state.output.guidance.id, 'PERMITIDO');
+  updateAuthUI();
+});
+
+$('save-edit-btn').addEventListener('click', () => {
+  if (!state.output) return;
+  const cid = state.selected.id;
+  const isIvrPending = $('validation').value !== 'true';
+
+  if (isIvrPending && !state.ivrManualVerified) {
+    alert('Validación IVR pendiente: Debe marcar la casilla de verificación manual de identidad antes de aprobar la versión editada.');
+    $('ivr-verified-check').focus();
+    return;
+  }
+
+  const finalTxt = $('suggestion').textContent.trim();
+  if (!finalTxt) {
+    alert('El texto de respuesta no puede estar vacío.');
+    return;
+  }
+
+  state.isEditing = false;
+  state.editApproved = true;
+  state.approvedRevisions[cid] = state.output.revision;
+  state.caseStatus = 'APROBADO';
+
+  $('suggestion').contentEditable = 'false';
+  $('suggestion').style.background = '#f2fff5';
+  $('suggestion').style.outline = '1px solid #7bc696';
+  $('save-edit-btn').style.display = 'none';
+  $('send-chat-btn').disabled = false;
+
+  $('action-result').textContent = '✓ Texto editado guardado y aprobado por el asesor humano. Autorización concedida.';
+  $('action-result').className = 'result done';
+
+  addLog('Edición aprobada', 'Guardar y aprobar', state.output.recommendation.agent?.display || '—', cid, state.output.classification.level, state.output.guidance.id, 'PERMITIDO');
+  updateAuthUI();
+});
+
+$('btn-reject').addEventListener('click', () => {
+  if (!state.output) return;
+  const cid = state.selected.id;
+
+  document.querySelectorAll('.fourbtn button').forEach(b => b.classList.remove('active-choice'));
+  $('btn-reject').classList.add('active-choice');
+
+  state.decisions[cid] = 'Rechazar';
+  delete state.approvedRevisions[cid];
+  state.isEditing = false;
+  state.editApproved = false;
+  state.caseStatus = 'RECHAZADO';
+
+  $('suggestion').contentEditable = 'false';
+  $('suggestion').style.background = '';
+  $('suggestion').style.outline = '';
+  $('save-edit-btn').style.display = 'none';
+  $('send-chat-btn').disabled = true;
+
+  $('action-result').textContent = '✕ Recomendación rechazada. Asignación y despacho automático bloqueados.';
+  $('action-result').className = 'result muted';
+
+  addLog('Decisión humana', 'Rechazar', state.output.recommendation.agent?.display || '—', cid, state.output.classification.level, state.output.guidance.id, 'PERMITIDO', 'Sugerencia rechazada');
+  updateAuthUI();
+});
+
+function executeEscalation() {
+  if (!state.output) return;
+  const cid = state.selected.id;
+  const esc = registerEscalation({
+    caseData: state.selected,
+    output: state.output,
+    reason: state.output.classification.reason,
+    actorRole: 'Asesor WhatsApp'
+  });
+
+  document.querySelectorAll('.fourbtn button').forEach(b => b.classList.remove('active-choice'));
+  $('btn-escalate').classList.add('active-choice');
+
+  state.decisions[cid] = 'Escalar';
+  delete state.approvedRevisions[cid];
+  state.caseStatus = 'DERIVADO_SUPERVISOR';
+  state.escalatedCases.unshift(esc);
+
+  $('suggestion').contentEditable = 'false';
+  $('suggestion').style.background = '';
+  $('suggestion').style.outline = '';
+  $('save-edit-btn').style.display = 'none';
+  $('send-chat-btn').disabled = true;
+  $('chat-stage-badge').textContent = 'Estado: Escalado formal a Supervisor';
+
+  $('action-result').textContent = `⚠ Caso derivado formalmente a ${esc.targetQueue}. Envío ordinario bloqueado por seguridad.`;
+  $('action-result').className = 'result escalated';
+
+  if (!state.chatMessages[cid]) state.chatMessages[cid] = [];
+  state.chatMessages[cid].push({
+    type: 'escalation',
+    time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+    text: `Caso ${cid} (Clase ${state.output.classification.level}) derivado a supervisión. Motivo: ${esc.reason}. No se emite respuesta ordinaria al cliente.`
+  });
+
+  addLog('Escalamiento registrado', 'Derivado a Supervisor', esc.targetQueue, cid, state.output.classification.level, state.output.guidance.id, 'ESCALADO', esc.reason);
+  updateAuthUI();
+  renderChat();
+}
+
+$('btn-escalate').addEventListener('click', executeEscalation);
+$('escalate-action-btn').addEventListener('click', executeEscalation);
+
+// Despacho controlado al hilo del chat
+$('send-chat-btn').addEventListener('click', () => {
+  if (!state.output) return;
+  const cid = state.selected.id;
+  const decision = state.decisions[cid] || 'Aceptar';
+  const finalReply = $('suggestion').textContent.trim();
+  if (!finalReply) return;
+
+  const sender = state.output.recommendation.agent?.display || 'Asesor en Turno';
+  if (!state.chatMessages[cid]) state.chatMessages[cid] = [];
+  state.chatMessages[cid].push({
+    type: 'advisor',
+    sender,
+    decision,
+    time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+    text: finalReply
+  });
+
+  $('send-chat-btn').disabled = true;
+  $('chat-stage-badge').textContent = 'Estado: Respuesta despachada (HITL)';
+  $('action-result').textContent = `✓ Respuesta despachada al cliente tras validación humana (${decision}).`;
+  $('action-result').className = 'result done';
+
+  renderChat();
+  addLog('Respuesta despachada (HITL)', decision, sender, cid, state.output.classification.level, state.output.guidance.id, 'PERMITIDO');
+});
+
+// Confirmar asignación ordinaria (Sometido a canConfirmAssignment)
+$('assign-btn').addEventListener('click', () => {
+  const auth = getCurrentAuthCheck();
+  const cid = state.selected.id;
+
+  if (!auth.allowed) {
+    alert(`Asignación bloqueada por seguridad R02 [${auth.code}]:\n${auth.reason}`);
+    addLog(
+      'Intento de asignación bloqueado',
+      auth.code,
+      '—',
+      cid,
+      state.output?.classification?.level || '—',
+      'SEGURIDAD-R02',
+      'BLOQUEADO',
+      auth.reason
+    );
+    return;
+  }
+
+  const choice = state.agents.find(a => a.id === auth.targetAgent.id);
+  const w = auth.weight;
+
   choice.load += w;
+  if (choice.load >= CAPACITY) {
+    choice.status = 'Ocupado';
+  }
   state.counter++;
-  state.assignments.push({
-    id: state.selected.id,
+  state.caseStatus = 'ASIGNADO';
+
+  state.assignments.unshift({
+    uid: `WIP-${Date.now()}-${state.counter}`,
+    queue: 'WhatsApp',
+    id: cid,
+    branch: $('branch').value,
+    type: 'Conversación',
+    agentId: choice.id,
     agent: choice.display,
+    weight: w,
+    age: '00:10',
     level: state.output.classification.level,
-    age: '00:00',
     status: 'En curso'
   });
+
   $('assign-btn').disabled = true;
-  addLog('Asignación confirmada', state.decisions[state.selected.id] || 'Pendiente', choice.display);
-  $('route-reason').textContent = `Asignación DEMO confirmada: ${choice.display} · ${choice.load}/10 unidades ocupadas.`;
+  addLog(
+    'Asignación confirmada',
+    state.decisions[cid] || 'Aprobado',
+    choice.display,
+    cid,
+    state.output.classification.level,
+    state.output.guidance.id,
+    'PERMITIDO'
+  );
+  $('route-reason').textContent = `✓ Asignación confirmada: ${choice.display} · ${choice.load}/10 u. ocupadas.`;
+  updateAuthUI();
   renderTables();
 });
 
-document.querySelectorAll('input[name="policy"]').forEach(x => {
-  x.addEventListener('change', () => {
-    state.policy = x.value;
-    state.output = null;
-    resetOutput();
-    renderChat();
+// Retener caso en cola cuando no hay capacidad
+$('enqueue-btn').addEventListener('click', () => {
+  if (!state.output) return;
+  const cid = state.selected.id;
+  const branch = $('branch').value;
+  const level = state.output.classification.level;
+  const weight = state.output.recommendation.weight;
+
+  state.heldCases.push({
+    uid: `HELD-${Date.now()}`,
+    id: cid,
+    branch,
+    level,
+    weight,
+    reason: state.output.recommendation.reason,
+    time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   });
+
+  $('enqueue-btn').disabled = true;
+  $('route-reason').textContent = `⏳ Caso ${cid} retenido en cola controlada (Pestaña 3). Libere un asesor para reintentar routing.`;
+  addLog('Caso retenido en cola', 'Retención por saturación', 'Cola WhatsApp', cid, level, 'P3-COLA', 'PERMITIDO', 'Capacidad agotada');
+  renderTables();
 });
 
+// Sincronizar cambio de política
+function setPolicy(newPolicy) {
+  state.policy = newPolicy;
+  $('header-policy-label').textContent = newPolicy === 'experimental' ? 'Experimental (A4/B5/C7)' : 'Actual (5u)';
+  document.querySelectorAll('input[name="policy"]').forEach(r => {
+    r.checked = (r.value === newPolicy);
+  });
+  invalidateCurrentApproval('Cambio de política operativa');
+  if (state.output) {
+    runCase();
+  } else {
+    resetOutput();
+    renderChat();
+  }
+}
+
+$('quick-policy-btn').addEventListener('click', () => {
+  setPolicy(state.policy === 'actual' ? 'experimental' : 'actual');
+});
+
+document.querySelectorAll('input[name="policy"]').forEach(x => {
+  x.addEventListener('change', () => setPolicy(x.value));
+});
+
+$('reset-agents-btn').addEventListener('click', () => {
+  state.agents = structuredClone(AGENTS);
+  addLog('Supervisión de turno', 'Restablecer asesores', 'Supervisor', 'SUPERVISIÓN', '—', 'P2-CONTROL', 'PERMITIDO');
+  renderTables();
+  updateAuthUI();
+});
+
+$('log-filter-class').addEventListener('change', e => {
+  state.logFilterClass = e.target.value;
+  renderTables();
+});
+
+function updateCalculator() {
+  const vol = Number($('calc-vol').value);
+  const delta = Number($('calc-delta').value);
+  $('calc-vol-val').textContent = vol.toLocaleString('es-PE');
+  $('calc-delta-val').textContent = `${delta.toFixed(2)} min`;
+  const res = calculateCapacityRecovery(vol, delta);
+  $('calc-hours').textContent = `${res.hoursRecovered.toLocaleString('es-PE')} h/mes`;
+  $('calc-shifts').textContent = `${res.equivalentShifts8h.toLocaleString('es-PE')} turnos/mes`;
+}
+$('calc-vol').addEventListener('input', updateCalculator);
+$('calc-delta').addEventListener('input', updateCalculator);
+
 function renderTables() {
+  const availCount = state.agents.filter(a => a.status === 'Disponible' && a.load < CAPACITY).length;
+  const totalUsedUnits = state.agents.reduce((acc, a) => acc + a.load, 0);
+  const totalCapacity = state.agents.length * CAPACITY;
+  const utilPct = Math.round((totalUsedUnits / totalCapacity) * 100);
+
+  $('badge-agents').textContent = `${availCount} disp.`;
+  const waPendingCount = 2 + state.heldCases.length;
+  $('badge-queues').textContent = String(waPendingCount + 1);
+  $('badge-wip').textContent = String(state.assignments.filter(a => a.status === 'En curso').length);
+  $('badge-logs').textContent = String(state.logs.length);
+
+  $('kpi-avail-agents').textContent = `${availCount} / ${state.agents.length}`;
+  $('kpi-used-units').innerHTML = `${totalUsedUnits} <em>u.</em>`;
+  $('kpi-util-pct').innerHTML = `${utilPct}<em>%</em>`;
+
+  // 1. Representantes (P2)
   $('agents-body').innerHTML = state.agents.map(a => `
     <tr>
-      <td><span class="link">${escapeHTML(a.display)}</span></td>
-      <td><span class="status ${a.status === 'Disponible' ? 'ok' : a.status === 'Ocupado' ? 'bad' : 'wait'}"></span>${escapeHTML(a.status)}</td>
-      <td>${a.load === 0 ? '0 casos' : `${Math.ceil(a.load / 5)} caso(s)`}</td>
+      <td><span class="link">${escapeHTML(a.display)}</span> <small style="color:#6c7684;">(${escapeHTML(a.id)})</small></td>
+      <td>
+        <span class="status ${a.status === 'Disponible' ? 'ok' : a.status === 'Ocupado' ? 'bad' : 'wait'}"></span>
+        <select class="status-select" data-agent-status="${escapeHTML(a.id)}">
+          <option value="Disponible" ${a.status === 'Disponible' ? 'selected' : ''}>Disponible</option>
+          <option value="Ocupado" ${a.status === 'Ocupado' ? 'selected' : ''}>Ocupado</option>
+          <option value="Refrigerio" ${a.status === 'Refrigerio' ? 'selected' : ''}>Refrigerio</option>
+        </select>
+      </td>
+      <td>${escapeHTML(a.skills.join(', '))}</td>
+      <td>${a.load === 0 ? '0 casos' : `${Math.ceil(a.load / 5)} activo(s)`}</td>
       <td>WhatsApp</td>
-      <td><div class="meter ${a.load === 10 ? 'full' : ''}"><span style="width:${a.load * 10}%"></span></div><small>${a.load * 10}%</small></td>
-      <td>${a.load} / 10</td>
-      <td><span class="link">Ver carga</span></td>
+      <td><div class="meter ${a.load >= 10 ? 'full' : ''}"><span style="width:${Math.min(100, a.load * 10)}%"></span></div><small>${a.load * 10}%</small></td>
+      <td><strong>${a.load} / 10</strong></td>
+      <td>
+        <button class="btn-mini" data-release-agent="${escapeHTML(a.id)}" ${a.load === 0 && a.status === 'Disponible' ? 'disabled' : ''}>
+          ↺ Liberar / Activar
+        </button>
+      </td>
     </tr>
   `).join('');
 
+  document.querySelectorAll('[data-agent-status]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const ag = state.agents.find(x => x.id === sel.dataset.agentStatus);
+      if (!ag) return;
+      ag.status = sel.value;
+      if (ag.status === 'Disponible' && ag.load >= CAPACITY) {
+        ag.load = 5;
+      }
+      addLog('Cambio estado asesor', `Estado → ${ag.status}`, ag.display, 'SUPERVISIÓN', '—', 'P2-CONTROL', 'PERMITIDO');
+      renderTables();
+      updateAuthUI();
+    });
+  });
+
+  document.querySelectorAll('[data-release-agent]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ag = state.agents.find(x => x.id === btn.dataset.releaseAgent);
+      if (!ag) return;
+      ag.load = 0;
+      ag.status = 'Disponible';
+      addLog('Capacidad liberada manual', 'Carga → 0/10 (Disponible)', ag.display, 'SUPERVISIÓN', '—', 'P2-CONTROL', 'PERMITIDO');
+      renderTables();
+      updateAuthUI();
+    });
+  });
+
+  // 2. Colas (P3)
   const queues = [
-    ['WhatsApp', '3', `${state.counter > 0 ? 3 : 2} pendientes`, 'Mensajería', '06:40', '04:25', '03:20', 'Monitorizar'],
+    ['WhatsApp', '3', `${waPendingCount} pendientes`, 'Mensajería', '06:40', '04:25', '03:20', waPendingCount > 2 ? 'Alto (Saturación)' : 'Monitorizar'],
     ['Correo', '11', '1 pendiente', 'Caso', '05:10', '05:10', '05:10', 'Monitorizar'],
     ['Facebook', '1', '0 pendientes', 'Mensajería', '00:00', '—', '—', 'Normal']
   ];
   $('queues-body').innerHTML = queues.map(q => `<tr>${q.map(v => `<td>${escapeHTML(v)}</td>`).join('')}</tr>`).join('');
 
-  const rows = [
-    ...state.assignments.map(x => ['WhatsApp', x.id, 'Conversación', x.agent, '1', '1', x.age, x.level, x.status]),
-    ['WhatsApp', 'DEMO-WIP-001', 'Conversación', 'Asesor Demo 02', '1', '1', '05:40', 'B', 'En curso'],
-    ['Correo', 'DEMO-WIP-002', 'Caso', 'Asesor Demo 03', '1', '1', '12:30', 'N/A', 'En curso']
-  ];
-  $('wip-body').innerHTML = rows.map(q => `<tr>${q.map(v => `<td>${escapeHTML(v)}</td>`).join('')}</tr>`).join('');
-
-  $('log-body').innerHTML = state.logs.length
-    ? state.logs.map(r => `
+  // Casos retenidos en cola dinámica (P3)
+  $('held-cases-body').innerHTML = state.heldCases.length
+    ? state.heldCases.map(h => `
         <tr>
-          <td>${escapeHTML(r.time)}</td>
-          <td>${escapeHTML(r.case)}</td>
-          <td>${escapeHTML(r.event)}</td>
-          <td>${escapeHTML(r.level)}</td>
-          <td>${escapeHTML(r.source)}</td>
-          <td>${escapeHTML(r.action)}</td>
-          <td>${escapeHTML(r.agent)}</td>
-          <td>${escapeHTML(r.policy)}</td>
+          <td><strong>${escapeHTML(h.id)}</strong></td>
+          <td>${escapeHTML(h.branch)}</td>
+          <td><span class="classchip ${escapeHTML(h.level)}" style="min-width:26px;min-height:22px;font-size:12px;">${escapeHTML(h.level)}</span></td>
+          <td>${escapeHTML(h.weight)} u.</td>
+          <td>${escapeHTML(h.reason)}</td>
+          <td>${escapeHTML(h.time)}</td>
+          <td><button class="btn-mini" data-retry-held="${escapeHTML(h.uid)}">↪ Reintentar routing</button></td>
         </tr>
       `).join('')
-    : '<tr><td colspan="8">Aún no se han registrado eventos. Procese consultas en “Atención asistida”.</td></tr>';
+    : '<tr><td colspan="7">No hay casos retenidos por saturación en este momento. Puede simular saturación con DEMO-006 o DEMO-007 en “Atención asistida”.</td></tr>';
+
+  document.querySelectorAll('[data-retry-held]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = state.heldCases.findIndex(x => x.uid === btn.dataset.retryHeld);
+      if (idx === -1) return;
+      const h = state.heldCases[idx];
+      const rec = route(state.agents, h.level, h.branch, state.policy);
+      if (!rec.agent) {
+        alert(`Aún no hay un asesor disponible con skill ${h.branch} y capacidad para ${rec.weight} unidades. Libere carga en la pestaña Representantes o Trabajo en Curso.`);
+        return;
+      }
+      const target = state.agents.find(a => a.id === rec.agent.id);
+      target.load += rec.weight;
+      if (target.load >= CAPACITY) target.status = 'Ocupado';
+      state.heldCases.splice(idx, 1);
+      state.assignments.unshift({
+        uid: `WIP-RETRY-${Date.now()}`,
+        queue: 'WhatsApp',
+        id: h.id,
+        branch: h.branch,
+        type: 'Conversación (Desencolado)',
+        agentId: target.id,
+        agent: target.display,
+        weight: rec.weight,
+        age: '00:05',
+        level: h.level,
+        status: 'En curso'
+      });
+      addLog('Desencolado y asignado', `Asignado tras liberar cola (${rec.weight}u)`, target.display, h.id, h.level, 'P3-COLA', 'PERMITIDO');
+      renderTables();
+    });
+  });
+
+  // 3. Trabajo en curso (P4)
+  $('wip-body').innerHTML = state.assignments.map(x => `
+    <tr>
+      <td>${escapeHTML(x.queue)}</td>
+      <td><strong>${escapeHTML(x.id)}</strong></td>
+      <td>${escapeHTML(x.branch)} · ${escapeHTML(x.type)}</td>
+      <td>${escapeHTML(x.agent)}</td>
+      <td>${escapeHTML(x.weight)} u.</td>
+      <td>${escapeHTML(x.age)}</td>
+      <td>${escapeHTML(x.level)}</td>
+      <td><span class="status ${x.status === 'En curso' ? 'ok' : 'wait'}"></span>${escapeHTML(x.status)}</td>
+      <td>
+        ${x.status === 'En curso'
+          ? `<button class="btn-mini" data-complete-wip="${escapeHTML(x.uid)}">✓ Finalizar (Liberar ${escapeHTML(x.weight)}u)</button>`
+          : '<small style="color:#6c7684;">Cerrado</small>'}
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('[data-complete-wip]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = state.assignments.find(x => x.uid === btn.dataset.completeWip);
+      if (!item || item.status !== 'En curso') return;
+      item.status = 'Completado';
+      const ag = state.agents.find(a => a.id === item.agentId || a.display === item.agent);
+      if (ag) {
+        ag.load = Math.max(0, ag.load - (item.weight || 5));
+        if (ag.status === 'Ocupado' && ag.load < CAPACITY) {
+          ag.status = 'Disponible';
+        }
+      }
+      addLog('Atención finalizada (WIP)', `Liberadas ${item.weight}u`, item.agent, item.id, item.level, 'P4-WIP', 'PERMITIDO');
+      renderTables();
+      updateAuthUI();
+    });
+  });
+
+  // 4. Bitácora (P5)
+  $('log-kpi-total').textContent = String(state.logs.length);
+  $('log-kpi-accepted').textContent = String(state.logs.filter(l => l.action === 'Aceptar' || l.action === 'Guardar y aprobar').length);
+  $('log-kpi-escalated').textContent = String(state.logs.filter(l => l.result === 'ESCALADO' || l.action === 'Escalar' || l.level === 'C').length);
+  $('log-kpi-routed').textContent = String(state.logs.filter(l => l.event.includes('Asignación') || l.event.includes('despachada')).length);
+
+  const filteredLogs = state.logFilterClass === 'ALL'
+    ? state.logs
+    : state.logs.filter(r => r.level === state.logFilterClass);
+
+  $('log-body').innerHTML = filteredLogs.length
+    ? filteredLogs.map(r => `
+        <tr>
+          <td><small>${escapeHTML(r.time)}</small></td>
+          <td><strong>${escapeHTML(r.case)}</strong></td>
+          <td><code class="rev-token">${escapeHTML(r.revision || '—')}</code></td>
+          <td><small>${escapeHTML(r.caseStatus || '—')}</small></td>
+          <td>${escapeHTML(r.event)}</td>
+          <td>${r.level !== '—' ? `<span class="classchip ${escapeHTML(r.level)}" style="min-width:24px;min-height:20px;font-size:11px;">${escapeHTML(r.level)}</span>` : '—'}</td>
+          <td>
+            <span class="status ${r.result === 'PERMITIDO' ? 'ok' : (r.result === 'BLOQUEADO' ? 'bad' : 'wait')}"></span>
+            <strong>${escapeHTML(r.result || 'PERMITIDO')}</strong>
+          </td>
+          <td>${escapeHTML(r.action)}</td>
+          <td><small style="color:${r.result === 'BLOQUEADO' ? '#c23934' : '#555'}">${escapeHTML(r.blockReason || '—')}</small></td>
+          <td>${escapeHTML(r.agent)}</td>
+          <td><small>${escapeHTML(r.policy)}</small></td>
+        </tr>
+      `).join('')
+    : '<tr><td colspan="11">No hay eventos para el filtro seleccionado. Procese consultas en “Atención asistida”.</td></tr>';
 }
 
 function downloadFile(content, fileName, mimeType) {
@@ -1428,12 +3306,12 @@ function downloadFile(content, fileName, mimeType) {
 
 $('export-json-btn').addEventListener('click', () => {
   const jsonContent = export_evidence(state.logs, 'json');
-  downloadFile(jsonContent, 'SAI_GC_BITACORA_DEMO.json', 'application/json');
+  downloadFile(jsonContent, 'SAI_GC_BITACORA_R02.json', 'application/json');
 });
 
 $('export-csv-btn').addEventListener('click', () => {
   const csvContent = export_evidence(state.logs, 'csv');
-  downloadFile(csvContent, 'SAI_GC_BITACORA_DEMO.csv', 'text/csv;charset=utf-8;');
+  downloadFile(csvContent, 'SAI_GC_BITACORA_R02.csv', 'text/csv;charset=utf-8;');
 });
 
 $('clear-btn').addEventListener('click', () => {
@@ -1441,8 +3319,10 @@ $('clear-btn').addEventListener('click', () => {
   renderTables();
 });
 
+updateCalculator();
 setCase(CASES[0].id);
 renderTables();
+
 </script>
 </body>
 </html>

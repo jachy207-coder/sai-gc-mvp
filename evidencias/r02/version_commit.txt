@@ -1,0 +1,23 @@
+================================================================================
+SAI-GC R02: CONTROL DE VERSIÓN Y METADATOS DE TRAZABILIDAD
+================================================================================
+
+Proyecto: Sistema de Asistencia Inteligente y Gestión de Capacidad para WhatsApp Posventa
+Institución: Universidad Peruana de Ciencias Aplicadas (UPC) - Ingeniería Industrial
+Autor / Tesista: Víctor Chunga
+Rama de trabajo: feat/r02-controles-humanos
+Commit base: 97e0b0a219d8a7aa738fdce23956f487934d4b56
+Versión semántica: v0.5-r02-verificable
+Fecha de liberación de evidencias: 2026-10-30T23:10:00Z
+
+Resumen de entregables de versión:
+- 15 controles humanos y barreras de seguridad operacional (T01 a T15).
+- Función pura centralizada de autorización: canConfirmAssignment / can_confirm_assignment.
+- Huella de revisión criptográfica/hashing: computeCaseRevision / compute_case_revision.
+- Escalamiento obligatorio de Clase C y consultas fuera de dominio a Supervisión.
+- Prevención de asignaciones duplicadas e idempotencia estricta.
+- Verificación manual obligatoria de identidad para casos con validación IVR pendiente.
+- Revalidación en tiempo real de capacidad (<= 10 unidades), estado de disponibilidad y skill del asesor.
+- Paridad 100% entre Modular Web (JS), Monolítico (SAI_GC_MVP_ABRIR.html) y Python (Streamlit / CLI).
+- Suite automatizada de 31 pruebas unitarias pasando al 100% (31/31).
+- Módulo de benchmark experimental comparativo entre 4 políticas de enrutamiento.

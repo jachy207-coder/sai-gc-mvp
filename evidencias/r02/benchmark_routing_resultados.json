@@ -1,0 +1,1889 @@
+{
+  "metadata": {
+    "generatedAt": "2026-10-30T23:09:29.110Z",
+    "sampleSize": 60,
+    "description": "Benchmark comparativo de políticas de asignación sobre carga sintética demostrativa (UPC SAI-GC R02)"
+  },
+  "workloadSample": [
+    {
+      "id": "SYNTH-001",
+      "text": "Buenas tardes, deseo duplicado de certificado vigente",
+      "branch": "Salud",
+      "validated": false
+    },
+    {
+      "id": "SYNTH-002",
+      "text": "Deseo actualizar mi dirección fiscal y número de contacto",
+      "branch": "Vehicular",
+      "validated": true
+    },
+    {
+      "id": "SYNTH-003",
+      "text": "Solicito copia de póliza digital y vigencia informativa",
+      "branch": "Salud",
+      "validated": false
+    },
+    {
+      "id": "SYNTH-004",
+      "text": "Solicito copia de póliza digital y vigencia informativa",
+      "branch": "Vida",
+      "validated": false
+    },
+    {
+      "id": "SYNTH-005",
+      "text": "Cotización de paquete turístico internacional no asegurado",
+      "branch": "Vida",
+      "validated": true
+    }
+  ],
+  "policies": {
+    "FIFO": {
+      "policy": "FIFO",
+      "totalCases": 60,
+      "assigned": 8,
+      "queued": 52,
+      "escalated": 0,
+      "blockedSecurity": 0,
+      "agentUtilization": {
+        "AG-01": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-02": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-03": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-04": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        }
+      },
+      "casesLog": [
+        {
+          "id": "SYNTH-001",
+          "level": "A",
+          "agent": "AG-01",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-002",
+          "level": "C",
+          "agent": "AG-01",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-003",
+          "level": "A",
+          "agent": "AG-03",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-004",
+          "level": "A",
+          "agent": "AG-02",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-005",
+          "level": "C",
+          "agent": "AG-02",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-006",
+          "level": "C",
+          "agent": "AG-03",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-007",
+          "level": "C",
+          "agent": "AG-04",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-008",
+          "level": "C",
+          "agent": "AG-04",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-009",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-010",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-011",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-012",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-013",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-014",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-015",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-016",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-017",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-018",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-019",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-020",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-021",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-022",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-023",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-024",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-025",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-026",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-027",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-028",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-029",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-030",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-031",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-032",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-033",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-034",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-035",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-036",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-037",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-038",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-039",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-040",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-041",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-042",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-043",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-044",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-045",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-046",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-047",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-048",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-049",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-050",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-051",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-052",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-053",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-054",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-055",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-056",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-057",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-058",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-059",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-060",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        }
+      ],
+      "metrics": {
+        "avgLoad": 10,
+        "stdDev": 0,
+        "maxLoad": 10,
+        "minLoad": 10,
+        "loadSpread": 0,
+        "assignedRatePct": 13,
+        "queuedRatePct": 87,
+        "escalatedRatePct": 0
+      }
+    },
+    "Regla Actual": {
+      "policy": "Regla Actual",
+      "totalCases": 60,
+      "assigned": 8,
+      "queued": 52,
+      "escalated": 0,
+      "blockedSecurity": 0,
+      "agentUtilization": {
+        "AG-01": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-02": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-03": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-04": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        }
+      },
+      "casesLog": [
+        {
+          "id": "SYNTH-001",
+          "level": "A",
+          "agent": "AG-01",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-002",
+          "level": "C",
+          "agent": "AG-02",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-003",
+          "level": "A",
+          "agent": "AG-03",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-004",
+          "level": "A",
+          "agent": "AG-04",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-005",
+          "level": "C",
+          "agent": "AG-02",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-006",
+          "level": "C",
+          "agent": "AG-01",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-007",
+          "level": "C",
+          "agent": "AG-03",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-008",
+          "level": "C",
+          "agent": "AG-04",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-009",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-010",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-011",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-012",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-013",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-014",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-015",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-016",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-017",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-018",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-019",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-020",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-021",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-022",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-023",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-024",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-025",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-026",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-027",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-028",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-029",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-030",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-031",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-032",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-033",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-034",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-035",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-036",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-037",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-038",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-039",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-040",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-041",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-042",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-043",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-044",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-045",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-046",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-047",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-048",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-049",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-050",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-051",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-052",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-053",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-054",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-055",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-056",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-057",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-058",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-059",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-060",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        }
+      ],
+      "metrics": {
+        "avgLoad": 10,
+        "stdDev": 0,
+        "maxLoad": 10,
+        "minLoad": 10,
+        "loadSpread": 0,
+        "assignedRatePct": 13,
+        "queuedRatePct": 87,
+        "escalatedRatePct": 0
+      }
+    },
+    "LBF Adaptada": {
+      "policy": "LBF Adaptada",
+      "totalCases": 60,
+      "assigned": 8,
+      "queued": 52,
+      "escalated": 0,
+      "blockedSecurity": 0,
+      "agentUtilization": {
+        "AG-01": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-02": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-03": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        },
+        "AG-04": {
+          "finalLoad": 10,
+          "maxCapacity": 10,
+          "utilizationPct": 100
+        }
+      },
+      "casesLog": [
+        {
+          "id": "SYNTH-001",
+          "level": "A",
+          "agent": "AG-01",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-002",
+          "level": "C",
+          "agent": "AG-02",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-003",
+          "level": "A",
+          "agent": "AG-03",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-004",
+          "level": "A",
+          "agent": "AG-04",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-005",
+          "level": "C",
+          "agent": "AG-02",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-006",
+          "level": "C",
+          "agent": "AG-01",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-007",
+          "level": "C",
+          "agent": "AG-03",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-008",
+          "level": "C",
+          "agent": "AG-04",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-009",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-010",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-011",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-012",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-013",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-014",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-015",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-016",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-017",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-018",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-019",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-020",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-021",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-022",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-023",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-024",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-025",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-026",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-027",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-028",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-029",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-030",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-031",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-032",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-033",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-034",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-035",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-036",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-037",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-038",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-039",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-040",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-041",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-042",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-043",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-044",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-045",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-046",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-047",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-048",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-049",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-050",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-051",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-052",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-053",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-054",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-055",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-056",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-057",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-058",
+          "level": "C",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-059",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-060",
+          "level": "A",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        }
+      ],
+      "metrics": {
+        "avgLoad": 10,
+        "stdDev": 0,
+        "maxLoad": 10,
+        "minLoad": 10,
+        "loadSpread": 0,
+        "assignedRatePct": 13,
+        "queuedRatePct": 87,
+        "escalatedRatePct": 0
+      }
+    },
+    "SAI-GC R02": {
+      "policy": "SAI-GC R02",
+      "totalCases": 60,
+      "assigned": 8,
+      "queued": 31,
+      "escalated": 21,
+      "blockedSecurity": 0,
+      "agentUtilization": {
+        "AG-01": {
+          "finalLoad": 8,
+          "maxCapacity": 10,
+          "utilizationPct": 80
+        },
+        "AG-02": {
+          "finalLoad": 8,
+          "maxCapacity": 10,
+          "utilizationPct": 80
+        },
+        "AG-03": {
+          "finalLoad": 9,
+          "maxCapacity": 10,
+          "utilizationPct": 90
+        },
+        "AG-04": {
+          "finalLoad": 8,
+          "maxCapacity": 10,
+          "utilizationPct": 80
+        }
+      },
+      "casesLog": [
+        {
+          "id": "SYNTH-001",
+          "level": "A",
+          "agent": "AG-01",
+          "weight": 4,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-002",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-003",
+          "level": "A",
+          "agent": "AG-03",
+          "weight": 4,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-004",
+          "level": "A",
+          "agent": "AG-02",
+          "weight": 4,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-005",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-006",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-007",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-008",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-009",
+          "level": "A",
+          "agent": "AG-04",
+          "weight": 4,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-010",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-011",
+          "level": "A",
+          "agent": "AG-02",
+          "weight": 4,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-012",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-013",
+          "level": "B",
+          "agent": "AG-03",
+          "weight": 5,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-014",
+          "level": "A",
+          "agent": "AG-01",
+          "weight": 4,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-015",
+          "level": "A",
+          "agent": "AG-04",
+          "weight": 4,
+          "status": "ASIGNADO"
+        },
+        {
+          "id": "SYNTH-016",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-017",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-018",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-019",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-020",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-021",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-022",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-023",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-024",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-025",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-026",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-027",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-028",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-029",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-030",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-031",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-032",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-033",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-034",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-035",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-036",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-037",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-038",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-039",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-040",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-041",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-042",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-043",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-044",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-045",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-046",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-047",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-048",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-049",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-050",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-051",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-052",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-053",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-054",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-055",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-056",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-057",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-058",
+          "level": "C",
+          "agent": "SUPERVISION",
+          "weight": 0,
+          "status": "ESCALADO_SUPERVISOR"
+        },
+        {
+          "id": "SYNTH-059",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        },
+        {
+          "id": "SYNTH-060",
+          "level": "A",
+          "agent": null,
+          "weight": 4,
+          "status": "EN_COLA"
+        }
+      ],
+      "metrics": {
+        "avgLoad": 8.25,
+        "stdDev": 0.43,
+        "maxLoad": 9,
+        "minLoad": 8,
+        "loadSpread": 1,
+        "assignedRatePct": 13,
+        "queuedRatePct": 52,
+        "escalatedRatePct": 35
+      }
+    }
+  }
+}

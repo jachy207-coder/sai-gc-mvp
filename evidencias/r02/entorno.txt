@@ -1,0 +1,13 @@
+================================================================================
+SAI-GC R02: ESPECIFICACIÓN DEL ENTORNO DE EJECUCIÓN Y PRUEBAS
+================================================================================
+
+Sistema Operativo: Microsoft Windows 11 Home 64-bit (Build 26300 / Versión 10.0.26300)
+Arquitectura: x86_64 / amd64
+Entorno de Ejecución JavaScript: Node.js v24.19.0 (Motor V8, soporte nativo de ESM y node:test)
+Entorno de Ejecución Python: Diseñado para Python 3.10+ / Streamlit 1.28+ / SQLite 3
+Navegador de Validación de Interfaz: Google Chrome / Edge Chromium (HTML5, CSS3 Variables, ES Modules nativos)
+Ruta Base del Repositorio: C:\Users\JAVIER CHUNGA\Desktop\SGI VICTOR UPC
+Herramienta de Control de Versiones: Git 2.4x+
+Harness de Pruebas: node:test (Runner nativo de Node.js sin dependencias externas)
+Modo de Aislamiento: Pruebas unitarias en memoria, sin llamadas a red externa ni telemetría no autorizada.

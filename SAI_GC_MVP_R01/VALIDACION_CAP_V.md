@@ -131,3 +131,17 @@ Para un volumen representativo de 8,000 interacciones mensuales:
   3. Reducción del estrés cognitivo y rotación del personal (turnover).
   4. Reducción del abandono del cliente (mayor satisfacción y retención).
 - **Lo que NUNCA se debe declarar:** No equiparar automáticamente las horas recuperadas con "reducción de personal o despido de asesores (FTE)", ya que en operaciones de postventa de seguros la capacidad excedente se reasigna a retención proactiva y cobranza.
+
+---
+
+## 7. Compuerta de Entrada Metodológica: Verificación R02 Previa al Piloto
+
+Antes de autorizar la ejecución del juicio de expertos o del piloto cuasiexperimental descritos en este capítulo, el prototipo debe haber aprobado sin excepciones la suite de control de calidad y seguridad operacional de la versión **R02 (`v0.5-r02-verificable`)**:
+
+1. **Protocolo Automatizado de Pruebas Unitarias (T01 a T15):**  
+   Verificación al 100% (31/31 pruebas aprobadas) en `tests/logic.test.mjs` y `tests/test_logic.py`, acreditando que ningún caso sensible Clase C o consulta no cubierta sea asignada a cola estándar sin revisión ni escalamiento supervisor.
+2. **Benchmark Preliminar de Enrutamiento:**  
+   Resultados de la simulación algorítmica (`experiments/benchmark_routing.mjs`) que evidencian la viabilidad estocástica de la política propuesta frente a FIFO, Regla Actual y LBF Adaptada (`evidencias/r02/benchmark_routing_resumen.md`).
+3. **Trazabilidad y Bitácora Estructurada:**  
+   Conformidad del esquema de auditoría con registro de `timestampIso`, `revision`, `caseStatus`, `resultado`, `motivo_bloqueo` y `rol_actor` (`evidencias/r02/log_eventos_sinteticos.json` y `evidencias/r02/matriz_T01_T15.csv`).
+
