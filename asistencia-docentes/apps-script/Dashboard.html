@@ -267,7 +267,7 @@
     $('vivo').classList.toggle('pausa', !d.esHoy);
     $('vivo-txt').textContent = d.esHoy ? 'En vivo · actualizado ' + d.hora + ' · cada 30 s' : DIAS[d.dia] + ' ' + d.fecha + ' (histórico)';
     $('aviso-dni').innerHTML = d.docentesSinDni.length
-      ? '<span class="chip rojo" title="' + esc(d.docentesSinDni.join(', ')) + '">⚠ ' + d.docentesSinDni.length + ' docente(s) sin DNI en la hoja “Docentes”</span>' : '';
+      ? '<span class="chip rojo" title="' + esc(d.docentesSinDni.join(', ')) + '">⚠ ' + d.docentesSinDni.length + ' docente(s) sin DNI (marcan con su celular)</span>' : '';
     var k = d.kpi;
     $('kpis').innerHTML =
       kpi('Docentes que llegaron', k.llegaron, 'de ' + k.programados, 'destacado', k.programados ? k.llegaron / k.programados * 100 : 0) +
@@ -368,12 +368,12 @@
     api('getDocentesQR', S.pin).then(function (r) {
       $('qr-grid').innerHTML = r.docentes.map(function (d, i) {
         return '<div class="fotocheck"><div class="cab">CVI · Monte Azul</div>' +
-          (d.dni ? '<div class="qr" id="qr-' + i + '"></div>' : '<div class="qr"><div class="sin">Falta registrar el DNI<br>en la hoja “Docentes”</div></div>') +
-          '<div class="nom">' + esc(d.docente) + '</div><div class="dni">' + (d.dni ? 'DNI ' + esc(d.dni) : '&nbsp;') + '</div></div>';
+          ((d.dni || d.celular) ? '<div class="qr" id="qr-' + i + '"></div>' : '<div class="qr"><div class="sin">Falta registrar el DNI<br>en la hoja “Docentes”</div></div>') +
+          '<div class="nom">' + esc(d.docente) + '</div><div class="dni">' + (d.dni ? 'DNI ' + esc(d.dni) : d.celular ? 'Cel. ' + esc(d.celular) + ' (falta DNI)' : '&nbsp;') + '</div></div>';
       }).join('');
       r.docentes.forEach(function (d, i) {
-        if (!d.dni || typeof QRCode === 'undefined') return;
-        new QRCode($('qr-' + i), { text: (r.appUrl || S.appUrl) + '?dni=' + d.dni, width: 340, height: 340, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+        var cod = d.dni || d.celular; if (!cod || typeof QRCode === 'undefined') return;
+        new QRCode($('qr-' + i), { text: (r.appUrl || S.appUrl) + '?dni=' + cod, width: 340, height: 340, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
       });
     }).catch(function (e) { $('qr-grid').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
   }

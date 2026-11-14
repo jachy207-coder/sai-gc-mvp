@@ -58,12 +58,15 @@ function norm(s) {
     .toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-/** Extrae un DNI (8 dígitos) de lo que se escriba o escanee (texto, URL de QR, etc.). */
+/**
+ * Extrae el código de marcación de lo que se escriba o escanee (texto, URL de QR, etc.):
+ * DNI (8 dígitos) o celular (9 dígitos).
+ */
 function extraerDni(texto) {
   var s = String(texto || '');
-  var url = s.match(/[?&]dni=(\d{8})/i);
+  var url = s.match(/[?&]dni=(\d{8,9})(?!\d)/i);
   if (url) return url[1];
-  var m = s.match(/\d{8}/);
+  var m = s.replace(/[\s-]/g, '').match(/\d{8,9}/);
   return m ? m[0] : null;
 }
 

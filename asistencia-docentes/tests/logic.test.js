@@ -28,6 +28,8 @@ test('extraerDni acepta DNI, texto y URL del QR', () => {
   assert.equal(L.extraerDni('08579858'), '08579858');
   assert.equal(L.extraerDni('https://script.google.com/macros/s/X/exec?dni=12345678'), '12345678');
   assert.equal(L.extraerDni('1234'), null);
+  assert.equal(L.extraerDni('982 391 670'), '982391670'); // celular
+  assert.equal(L.extraerDni('https://x/exec?dni=931000890'), '931000890');
 });
 
 test('tolerancia de 5 minutos', () => {

@@ -39,7 +39,7 @@ seed = (
 NEGRO, ROJO, AMARILLO = "000000", "920000", "EEBE4F"
 ENC = {
     "Config": ["Clave", "Valor", "Descripción"],
-    "Docentes": ["DNI", "Docente (igual que en Horario)", "Especialidad", "Celular", "Activo (SI/NO)"],
+    "Docentes": ["DNI", "Docente (igual que en Horario)", "Nombre completo", "Especialidad", "Celular", "Correo", "Activo (SI/NO)"],
     "Horario": ["ID", "Salón", "Día", "Inicio", "Fin", "Curso", "Docente", "Nota"],
     "Marcaciones": ["ID", "Fecha", "DNI", "Docente", "Hora ingreso", "Hora salida", "Estado ingreso", "Min. tardanza",
                     "Clases propias (IDs)", "Reemplazos (IDs)", "Observación", "Detalle observación", "Dispositivo",

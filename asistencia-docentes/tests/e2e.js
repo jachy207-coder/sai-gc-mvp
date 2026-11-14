@@ -100,6 +100,9 @@ async function marcar(page, dni, { reemplazo = null, obs = null, detalle = '', d
   await movil.waitForSelector('#paso-docente:not(.oculto)');
   assert((await movil.textContent('#nombre-docente')).includes('Nicol'), 'QR con ?dni= carga a la docente directamente');
   await movil.screenshot({ path: OUT + '/7_movil.png', fullPage: true });
+  await movil.goto(BASE + '/?dni=931000890');
+  await movil.waitForSelector('#paso-docente:not(.oculto)');
+  assert((await movil.textContent('#nombre-docente')).includes('Marleny'), 'también se identifica con el celular (sin DNI)');
   await movil.goto(BASE + '/');
   await movil.screenshot({ path: OUT + '/8_movil_inicio.png' });
 

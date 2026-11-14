@@ -8,6 +8,8 @@
  */
 
 var TZ = 'America/Lima';
+// Hoja de datos (se usa si el script no está vinculado a la hoja).
+var SHEET_ID = '1OACwpEZr4D1KEGePQIO4_MCItTWOAUnMbPeL5iOfx2U';
 
 var HOJAS = {
   CONFIG: 'Config',
@@ -21,8 +23,8 @@ var HOJAS = {
 // Esquemas: [clave interna, encabezado visible, formato texto?]
 var ESQUEMAS = {
   Config: [['clave', 'Clave', true], ['valor', 'Valor', true], ['descripcion', 'Descripción', true]],
-  Docentes: [['dni', 'DNI', true], ['docente', 'Docente (igual que en Horario)', true], ['especialidad', 'Especialidad', true],
-    ['celular', 'Celular', true], ['activo', 'Activo (SI/NO)', true]],
+  Docentes: [['dni', 'DNI', true], ['docente', 'Docente (igual que en Horario)', true], ['nombreCompleto', 'Nombre completo', true],
+    ['especialidad', 'Especialidad', true], ['celular', 'Celular', true], ['correo', 'Correo', true], ['activo', 'Activo (SI/NO)', true]],
   Horario: [['id', 'ID', true], ['salon', 'Salón', true], ['dia', 'Día', true], ['inicio', 'Inicio', true], ['fin', 'Fin', true],
     ['curso', 'Curso', true], ['docente', 'Docente', true], ['nota', 'Nota', true]],
   Marcaciones: [['id', 'ID', true], ['fecha', 'Fecha', true], ['dni', 'DNI', true], ['docente', 'Docente', true],
@@ -50,7 +52,8 @@ var CONFIG_DEFAULT = [
 function doGet(e) {
   var p = (e && e.parameter) || {};
   var page = p.page === 'panel' ? 'Dashboard' : 'Index';
-  var t = HtmlService.createTemplateFromFile(page);
+  // En la versión "todo en uno" (dist/) el HTML viene embebido en __HTML.
+  var t = typeof __HTML !== 'undefined' ? HtmlService.createTemplate(__HTML[page]) : HtmlService.createTemplateFromFile(page);
   t.dniInicial = extraerDni(p.dni || '') || '';
   t.appUrl = ScriptApp.getService().getUrl();
   return t.evaluate()
@@ -60,12 +63,13 @@ function doGet(e) {
 }
 
 function include(nombre) {
+  if (typeof __HTML !== 'undefined') return __HTML[nombre];
   return HtmlService.createHtmlOutputFromFile(nombre).getContent();
 }
 
 /* ============================ Utilidades de hoja ============================ */
 
-function ss_() { return SpreadsheetApp.getActiveSpreadsheet(); }
+function ss_() { return SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(SHEET_ID); }
 
 function hoja_(nombre) {
   var sh = ss_().getSheetByName(nombre);
@@ -112,8 +116,10 @@ function hoy_() { return Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'); }
 function ahora_() { return Utilities.formatDate(new Date(), TZ, 'HH:mm'); }
 function sello_() { return Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd HH:mm:ss'); }
 
+function normCel_(v) { return String(v || '').replace(/\.0+$/, '').replace(/\D/g, '').replace(/^51(\d{9})$/, '$1'); }
+
 function normDni_(v) {
-  var s = String(v || '').replace(/\D/g, '');
+  var s = String(v || '').replace(/\.0+$/, '').replace(/\D/g, '');
   if (s.length === 7) s = '0' + s; // Sheets a veces borra el 0 inicial
   return s;
 }
@@ -130,6 +136,7 @@ function horario_() {
 function docentes_() {
   return leer_(HOJAS.DOCENTES).map(function (d) {
     d.dni = normDni_(d.dni);
+    d.celular = normCel_(d.celular);
     d.activo = norm(d.activo) !== 'no';
     return d;
   });
@@ -175,10 +182,12 @@ function getLogo() {
 }
 
 function buscarDocente(texto) {
-  var dni = extraerDni(texto) || normDni_(texto);
-  if (!dni || dni.length !== 8) return { ok: false, error: 'Ingresa un DNI válido de 8 dígitos.' };
-  var doc = docentes_().filter(function (d) { return d.dni === dni; })[0];
-  if (!doc) return { ok: false, error: 'El DNI ' + dni + ' no está registrado. Comunícate con coordinación.' };
+  var cod = extraerDni(texto) || normDni_(texto);
+  if (!cod || (cod.length !== 8 && cod.length !== 9)) return { ok: false, error: 'Ingresa tu DNI (8 dígitos) o tu celular (9 dígitos).' };
+  // Se identifica por DNI (8 dígitos) o, mientras no se registre el DNI, por celular (9 dígitos).
+  var doc = docentes_().filter(function (d) { return cod.length === 8 ? d.dni === cod : d.celular === cod; })[0];
+  if (!doc) return { ok: false, error: (cod.length === 8 ? 'El DNI ' : 'El celular ') + cod + ' no está registrado. Comunícate con coordinación.' };
+  var dni = doc.dni || doc.celular; // identificador que se guarda en las marcaciones
   if (!doc.activo) return { ok: false, error: 'El docente está inactivo. Comunícate con coordinación.' };
 
   var fecha = hoy_(), dia = diaDeFecha(fecha);
@@ -332,7 +341,7 @@ function getPanel(pin, fecha) {
     bloques: estados,
     marcaciones: marc.map(function (m) { delete m._fila; return m; }),
     faltan: faltan,
-    docentesSinDni: docs.filter(function (d) { return !d.dni; }).map(function (d) { return d.docente; })
+    docentesSinDni: docs.filter(function (d) { return d.activo && !d.dni; }).map(function (d) { return d.docente; })
   };
 }
 

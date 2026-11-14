@@ -13,12 +13,12 @@
   .bienvenida p { margin: 6px 0 0; color: var(--texto-2); }
   .dni-box { max-width: 420px; margin: 0 auto; }
   .dni-input {
-    width: 100%; text-align: center; font-size: 40px; font-weight: 800; letter-spacing: .25em;
+    width: 100%; text-align: center; font-size: 40px; font-weight: 800; letter-spacing: .18em;
     padding: 16px 10px 16px calc(10px + .25em); border-radius: 16px; border: 2px solid var(--borde); background: var(--blanco);
     font-variant-numeric: tabular-nums; outline: none;
   }
   .dni-input:focus { border-color: var(--rojo); box-shadow: 0 0 0 4px rgba(146,0,0,.12); }
-  .dni-input::placeholder { color: #cfc8bd; letter-spacing: .25em; }
+  .dni-input::placeholder { color: #cfc8bd; letter-spacing: .02em; font-size: 26px; font-weight: 600; }
   .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
   .tecla {
     height: 64px; border-radius: 14px; border: 1px solid var(--borde); background: var(--blanco); font-size: 26px; font-weight: 700;
@@ -119,10 +119,10 @@
     <section id="paso-dni">
       <div class="bienvenida">
         <h1>Marca tu asistencia</h1>
-        <p>Escribe tu DNI o escanea tu código QR</p>
+        <p>Escribe tu DNI o tu celular, o escanea tu código QR</p>
       </div>
       <div class="dni-box">
-        <input id="dni" class="dni-input" inputmode="numeric" autocomplete="off" maxlength="40" placeholder="········" aria-label="DNI">
+        <input id="dni" class="dni-input" inputmode="numeric" autocomplete="off" maxlength="40" placeholder="DNI o celular" aria-label="DNI o celular">
         <div class="teclado" id="teclado"></div>
         <div id="error-dni" class="alerta oculto"></div>
         <div class="ayuda-qr">
@@ -208,7 +208,7 @@
   function iniciales(n) { return String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(function (p) { return p[0]; }).join('').toUpperCase(); }
   function mostrar(paso) { ['paso-dni', 'paso-docente', 'paso-listo'].forEach(function (p) { $(p).classList.toggle('oculto', p !== paso); }); window.scrollTo(0, 0); }
   function error(id, msg) { var el = $(id); el.textContent = msg || ''; el.classList.toggle('oculto', !msg); }
-  function extraerDni(t) { var s = String(t || ''); var u = s.match(/[?&]dni=(\d{8})/i); if (u) return u[1]; var m = s.match(/\d{8}/); return m ? m[0] : null; }
+  function extraerDni(t) { var s = String(t || ''); var u = s.match(/[?&]dni=(\d{8,9})(?!\d)/i); if (u) return u[1]; var m = s.replace(/[\s-]/g, '').match(/\d{8,9}/); return m ? m[0] : null; }
 
   /* ---------- Reloj sincronizado con el servidor ---------- */
   function tic() {
@@ -236,7 +236,7 @@
     var t = b.getAttribute('data-t'), inp = $('dni');
     if (t === '⌫') inp.value = inp.value.slice(0, -1);
     else if (t === 'OK') buscar();
-    else if (inp.value.replace(/\D/g, '').length < 8) inp.value = inp.value.replace(/\D/g, '') + t;
+    else if (inp.value.replace(/\D/g, '').length < 9) inp.value = inp.value.replace(/\D/g, '') + t;
     error('error-dni');
   });
   $('dni').addEventListener('keydown', function (e) { if (e.key === 'Enter') buscar(); });
@@ -249,7 +249,7 @@
 
   function buscar() {
     var dni = extraerDni($('dni').value) || $('dni').value.replace(/\D/g, '');
-    if (dni.length !== 8) { error('error-dni', 'El DNI debe tener 8 dígitos.'); return; }
+    if (dni.length !== 8 && dni.length !== 9) { error('error-dni', 'Escribe tu DNI (8 dígitos) o tu celular (9 dígitos).'); return; }
     var ok = document.querySelector('.tecla.ok'); ok.disabled = true; ok.innerHTML = '<span class="spinner"></span>';
     api('buscarDocente', dni).then(function (r) {
       if (!r.ok) { error('error-dni', r.error); return; }

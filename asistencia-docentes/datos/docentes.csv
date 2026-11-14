@@ -1,21 +1,27 @@
-dni,nombre,especialidad,celular,activo
-,Jhon Vásquez,Trigonometría,,SI
-,Jhonatan Hilario,Raz. Matemático,,SI
-,Ivonne,Comunicación e Inglés,,SI
-,Alberto Yanac,Álgebra y Trigonometría,,SI
-,Jorge Adama,Física,,SI
-,Alan Sosa,Geometría,,SI
-,Jhon Quispe,Aritmética,,SI
-,Wilber,Ciencias Sociales,,SI
-,Susan Adama,Ciencias,,SI
-,Jordy,Educ. Física y Ajedrez,,SI
-,Redoberto Martin,Química,,SI
-,Fabián,Ciencias Sociales,,SI
-,Erika Ramírez,Arte y Computación,,SI
-,Yuly,Matemática,,SI
-,Nicol Vallejos,Polidocencia Creadores 3-4,,SI
-,Justin,Geometría,,SI
-,Marleny Landeo,Polidocencia Aventureros 1-2,,SI
-,Alanis Tambo,Tutoría Líderes 5-6,,SI
-,Ariana,Inicial Exploradores 4-5,,SI
-,Cherceni,Inicial Pequeñines 3,,SI
+dni,docente,nombre_completo,especialidad,celular,correo,activo
+,Jhon Vásquez,,Trigonometría,,,SI
+,Jhonatan Hilario,Jhonatan Hilario Maldonado,Raz. Matemático,940509635,jhonatan_19847@hotmail.com,SI
+,Ivonne Solórzano,Ivonne Taira Solorzano Amacifuen,"Lenguaje, Raz. Verbal, Inglés",925841033,solorzano.taira@gmail.com,SI
+,Alberto Yanac,Alberto Calixto Yanac Hurtado,Álgebra y Trigonometría,946234715,alberto.yanac.h@uni.pe,SI
+,Jorge Adama,,Física,,,SI
+,Alan Sosa,Alan Paul Sosa Cauti,Geometría,938898881,paulsosa32@hotmail.com,SI
+,Jhon Quispe,Jhon Marcy Quispe Yaganqui,Aritmética,902061340,jhonmqy@gmail.com,SI
+,Wilber Escobar,Wilber Escobar Navarro,Historia y Geografía,965700105,wilber.escobar@unmsm.edu.pe,SI
+,Susan Adama,,Ciencias,,,SI
+,Jordi San Miguel,Jordi Cristofer San Miguel Ibarra,Educ. Física y Ajedrez,920577362,jordisanmiguel24@gmail.com,SI
+,Redoberto Martin,Redoberto Martin Aguirre,Química,926526458,redobaldo@gmail.com,SI
+,Fabián Vargas,Fabián Azarías Vargas Silva,"Geografía, Filosofía y Economía",986025541,fabianazarias.380@gmail.com,SI
+,Erika Ramírez,Erika Beatriz Ramírez Montesinos,Arte y Computación,963559152,erikamontesinos1984@gmail.com,SI
+,Yuly,,Matemática,,,SI
+,Nicol Vallejos,Nicol Andrea Vallejos Suárez,Polidocencia Creadores 3-4,906608891,nicolvallejos05@gmail.com,SI
+,Justin Guillén,Justin Anthony Guillén López,Geometría,987702349,justinguillenlopez.sjb@gmail.com,SI
+,Marleny Landeo,Marleny Landeo Daniel,Polidocencia Aventureros 1-2,931000890,marlenylandeodaniel@gmail.com,SI
+,Alanis Cárdenas,Alanis Romina Cárdenas Tambo,Tutoría Líderes 5-6,941072934,alanina.miau@gmail.com,SI
+,Ariana Cancino,Ariana Naomi Cancino Guardamino,Inicial Exploradores 4-5,982391670,cancinoariana71@gmail.com,SI
+,Cherceni Floridas,Cherceni Alexandra Floridas Piña,Inicial Pequeñines 3,970414409,cherceni1234floridas@gmail.com,SI
+,Alexander Yanac,Alexander Yanac Hurtado,Física y Trigonometría,920077386,alexanderyanachurtado@gmail.com,NO
+,Mitzi Matias,Mitzi Marjorie Matias Rodriguez,Comunicación,941112806,mitzimatias7@gmail.com,NO
+,María Narciso,María de Jesús Narciso Quispe,Ciencias Sociales,987801210,esxoterika@gmail.com,NO
+,Jeremy Loarte,Jeremy Imanol Loarte Fuentes Rivera,,978420702,jeremyloarte3@gmail.com,NO
+,Gladys Rodas,Gladys Milagros Rodas Zapana,Inglés,937589188,gmilagrosrodas24@gmail.com,NO
+,Kevin Albán,Kevin Alexis Albán Becerra,Educ. Física,923073349,kevinalban15@gmail.com,NO
