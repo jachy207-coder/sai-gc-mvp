@@ -1,0 +1,82 @@
+# Control de Asistencia Docente — CVI Monte Azul (piloto desde el lunes 16/11/2026)
+
+Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servidores). Los docentes marcan ingreso y salida con su **DNI** o con el **QR** de su fotocheck, desde la PC del colegio o desde su celular. Coordinación ve todo **en vivo** en un panel y saca el **reporte mensual de horas dictadas** para gestionar los pagos.
+
+| Pantalla | Para quién | Qué hace |
+|---|---|---|
+| **Marcación** (URL de la app) | Docentes | DNI o QR → marca los salones del día (casillas) → **Marcar INGRESO**. Al irse: DNI → **Marcar SALIDA**. Puede cubrir la clase de otro docente (reemplazo) y dejar una observación. |
+| **Panel** (`URL?page=panel`, con PIN) | Coordinación / Dirección | En vivo (se actualiza cada 30 s): docentes que llegaron, tardanzas, línea de tiempo por salón, quién falta. Reporte mensual **Docente · Mes · Salón · N.º horas dictadas**. Fotochecks QR para imprimir. |
+
+## Reglas del piloto
+
+- **Horas cronológicas.** Las *horas dictadas* son el tiempo entre el ingreso y la salida que coincide con las clases marcadas en el horario. Ejemplo: si el docente llega 8:10 a una clase de 8:00 a 10:00, cuenta 1 h 50 min.
+- **Tolerancia de 5 minutos.** Después de ese plazo el ingreso queda como *tardanza*, con los minutos de retraso. Por ahora solo se registra; no se descuenta nada.
+- **Clases simultáneas.** Si un docente dicta en varios salones a la vez (por ejemplo, Jordy los lunes a la 1:00 pm), esa hora cuenta **una sola vez** y se reparte entre los salones.
+- **Reemplazo.** Otro docente marca la clase en la opción "¿Vas a cubrir la clase de otro docente?", y la hora va a quien la dictó. Si nadie la cubre, en el panel aparece como **No dictado**.
+- **Observaciones disponibles.** Tardanza justificada, Permiso, Salida anticipada, Reemplazo de docente, Clase de recuperación, Salud, Problema de transporte, y **Otro** (con comentario libre).
+- **Hora del servidor.** La hora se toma del servidor de Google en hora de Lima, no del reloj de la PC ni del celular, para que no se pueda adelantar.
+
+## Instalación (10 minutos, una sola vez)
+
+1. Abre la hoja **"CVI Asistencia Docente - Monte Azul (piloto)"**, que ya está en tu Drive dentro de *CVI MONTE AZUL 2026*.
+2. Completa la columna **DNI** de la pestaña **Docentes**. El nombre debe ser igual al que aparece en la pestaña **Horario**.
+3. Revisa la pestaña **Horario**. Las filas con texto rojo en *Nota* son celdas que hay que confirmar (ver la lista abajo).
+4. Instala el código de la aplicación:
+   1. En la hoja ve a **Extensiones → Apps Script**.
+   2. Borra el contenido de `Código.gs` y pega el de [`apps-script/Code.gs`](apps-script/Code.gs).
+   3. Crea los archivos **Secuencia de comandos** `Logic` y `Seed`, y pega en cada uno el contenido de [`Logic.gs`](apps-script/Logic.gs) y [`Seed.gs`](apps-script/Seed.gs).
+   4. Crea los archivos **HTML** `Index`, `Dashboard` y `Styles`, y pega en cada uno el contenido de [`Index.html`](apps-script/Index.html), [`Dashboard.html`](apps-script/Dashboard.html) y [`Styles.html`](apps-script/Styles.html).
+   5. Ve a ⚙ **Configuración del proyecto**, activa *Mostrar el archivo de manifiesto "appsscript.json"* y reemplaza su contenido por el de [`appsscript.json`](apps-script/appsscript.json).
+5. En el editor, elige la función **`setup`** y pulsa **Ejecutar**. Acepta los permisos: la app usa solo esta hoja y lee el logo desde tu Drive. Esto aplica los formatos y no borra nada.
+6. Publica la aplicación:
+   1. Ve a **Implementar → Nueva implementación → Tipo: Aplicación web**.
+   2. En *Ejecutar como* elige **Yo**.
+   3. En *Quién tiene acceso* elige **Cualquier usuario**.
+   4. Copia la **URL**. Esa es la página de marcación.
+7. Prepara el uso diario:
+   - **Panel:** agrega `?page=panel` al final de la URL. El PIN inicial es **2026**; cámbialo en la pestaña **Config**.
+   - **PC del colegio:** deja la página de marcación abierta en pantalla completa (F11).
+   - **Fotochecks:** entra al panel, abre la pestaña **Fotochecks QR** e imprímelos.
+   - **Si cambias el código:** ve a **Implementar → Gestionar implementaciones → Editar → Versión: nueva** para que la URL siga siendo la misma.
+
+> **Actualizar el horario:** edita la pestaña **Horario** directamente. Cada fila es un bloque con este formato: `ID único | Salón | Día (LUNES…SABADO) | Inicio HH:mm | Fin HH:mm | Curso | Docente`.
+
+## Por confirmar en el horario (tomado de `HORARIO MONTE AZUL 2026 - 21.03.26.xlsx`)
+
+- **Celdas con dos cursos** (por ejemplo, Lunes 12:15 "Biología Susan / Edu. Física Jordy" en Anual Integral): las dividí por la mitad.
+- **Celdas sin docente:** las asigné por deducción.
+  - Aritmética de Anual Integral (martes 9:30 y 12:15) → Jhon Quispe.
+  - Inglés de Líderes y Creadores → Ivonne.
+  - Tutoría de Líderes → Alanis Tambo.
+- **Prácticas de los sábados** (Anual Integral, 11:00–12:00): no tienen docente.
+- **Inicial** (Exploradores y Pequeñines): lo registré como "Jornada inicial" de 8:00 a 13:00 con la tutora.
+- **Hora de salida de los bloques de 12:15:** asumí 14:00.
+
+## Estructura
+
+```
+asistencia-docentes/
+├── apps-script/         ← código para pegar en Apps Script
+│   ├── Code.gs          backend: marcación, panel, reportes, setup()
+│   ├── Logic.gs         reglas de negocio (tolerancia, horas, estados, resumen)
+│   ├── Seed.gs          horario y docentes base (generado)
+│   ├── Index.html       pantalla de marcación (PC y celular)
+│   ├── Dashboard.html   panel en vivo + reporte + QR
+│   ├── Styles.html      branding CVI (negro, rojo #920000, amarillo #eebe4f, Cantata One)
+│   └── appsscript.json
+├── datos/               horario y docentes en CSV + hoja base .xlsx
+├── tools/
+│   ├── generar_seed.py  CSV → Seed.gs y .xlsx
+│   └── servidor-local.js  simulador de Apps Script para probar sin desplegar
+└── tests/
+    ├── logic.test.js    pruebas de reglas  (node --test tests/logic.test.js)
+    └── e2e.js           flujo completo con navegador (requiere el simulador)
+```
+
+Para probar en local, ejecuta `FAKE_NOW="2026-11-16T07:58:00-05:00" node tools/servidor-local.js` y abre http://localhost:8787. El simulador asigna DNIs de prueba del 70000001 al 70000020; el PIN del panel es 2026.
+
+## Limitaciones del piloto
+
+- Cualquier persona que tenga la URL y el DNI de un docente puede marcar por él. El panel muestra el dispositivo (PC o celular) de cada marcación; si hace falta, se puede desactivar el celular con `PERMITIR_CELULAR = NO` en la pestaña **Config**.
+- Las horas se calculan cuando el docente marca **salida**. Si olvida marcarla, el panel lo muestra como "En el colegio" y coordinación puede completar la hora de salida a mano en la pestaña *Marcaciones*.
+- El próximo módulo es **Control de clases**: tema dictado y avance académico.

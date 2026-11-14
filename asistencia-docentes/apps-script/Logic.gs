@@ -1,0 +1,225 @@
+/**
+ * Logic.gs — Reglas de negocio puras (sin APIs de Google).
+ * Se pueden probar en Node: ver tests/logic.test.js
+ *
+ * Convenciones:
+ *  - Horas como texto "HH:mm" (24 h). Minutos desde medianoche para cálculos.
+ *  - Días: LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, SABADO, DOMINGO (sin tildes).
+ */
+
+var DIAS = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+var DIAS_LABEL = {
+  DOMINGO: 'Domingo', LUNES: 'Lunes', MARTES: 'Martes', MIERCOLES: 'Miércoles',
+  JUEVES: 'Jueves', VIERNES: 'Viernes', SABADO: 'Sábado'
+};
+
+var OBSERVACIONES = [
+  'Tardanza justificada',
+  'Permiso',
+  'Salida anticipada',
+  'Reemplazo de docente',
+  'Clase de recuperación',
+  'Salud',
+  'Problema de transporte',
+  'Otro'
+];
+
+/** "8:05" | "08:05" | Date-like → minutos desde 00:00. Devuelve null si no es válido. */
+function toMin(hhmm) {
+  if (hhmm === null || hhmm === undefined || hhmm === '') return null;
+  var m = String(hhmm).trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  var h = Number(m[1]), mi = Number(m[2]);
+  if (h > 23 || mi > 59) return null;
+  return h * 60 + mi;
+}
+
+/** minutos → "HH:mm" */
+function fmtMin(min) {
+  if (min === null || min === undefined) return '';
+  var h = Math.floor(min / 60), m = min % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+
+/** Redondea horas a 2 decimales. */
+function round2(n) { return Math.round(n * 100) / 100; }
+
+/** "2026-11-16" → "LUNES" (sin depender de la zona horaria). */
+function diaDeFecha(isoDate) {
+  var p = String(isoDate).split('-').map(Number);
+  var d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+  return DIAS[d.getUTCDay()];
+}
+
+/** Normaliza texto para comparar nombres (sin tildes, minúsculas, espacios simples). */
+function norm(s) {
+  return String(s || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/** Extrae un DNI (8 dígitos) de lo que se escriba o escanee (texto, URL de QR, etc.). */
+function extraerDni(texto) {
+  var s = String(texto || '');
+  var url = s.match(/[?&]dni=(\d{8})/i);
+  if (url) return url[1];
+  var m = s.match(/\d{8}/);
+  return m ? m[0] : null;
+}
+
+/** Bloques del horario para un día (opcionalmente de un docente), ordenados por hora. */
+function bloquesDelDia(horario, dia, docente) {
+  var nd = docente ? norm(docente) : null;
+  return horario
+    .filter(function (b) { return b.dia === dia && (!nd || norm(b.docente) === nd); })
+    .sort(function (a, b) { return toMin(a.inicio) - toMin(b.inicio) || String(a.salon).localeCompare(b.salon); });
+}
+
+/**
+ * Evalúa la puntualidad de un ingreso contra el primer bloque seleccionado.
+ * @return {{estado:string, minTarde:number, referencia:string}}
+ */
+function evaluarIngreso(horaIngreso, bloques, toleranciaMin) {
+  var tol = Number(toleranciaMin || 0);
+  var ing = toMin(horaIngreso);
+  if (!bloques || !bloques.length) return { estado: 'SIN HORARIO', minTarde: 0, referencia: '' };
+  var primero = bloques.slice().sort(function (a, b) { return toMin(a.inicio) - toMin(b.inicio); })[0];
+  var ref = toMin(primero.inicio);
+  var diff = ing - ref;
+  if (diff <= tol) return { estado: 'PUNTUAL', minTarde: 0, referencia: primero.inicio };
+  return { estado: 'TARDANZA', minTarde: diff, referencia: primero.inicio };
+}
+
+/** Horas (decimales) en que [ini, fin] se superpone con el bloque. */
+function horasSuperpuestas(ini, fin, bloque) {
+  var a = Math.max(toMin(ini), toMin(bloque.inicio));
+  var b = Math.min(toMin(fin), toMin(bloque.fin));
+  return b > a ? round2((b - a) / 60) : 0;
+}
+
+/** Minutos cubiertos por al menos un bloque (sin contar dos veces los simultáneos). */
+function minutosUnion(bloques) {
+  var tramos = bloques.map(function (b) { return [toMin(b.inicio), toMin(b.fin)]; }).sort(function (x, y) { return x[0] - y[0]; });
+  var total = 0, ca = null, cz = null;
+  tramos.forEach(function (t) {
+    if (ca === null || t[0] > cz) { if (ca !== null) total += cz - ca; ca = t[0]; cz = t[1]; } else cz = Math.max(cz, t[1]);
+  });
+  if (ca !== null) total += cz - ca;
+  return total;
+}
+
+/** Duración en horas de un bloque. */
+function horasBloque(b) { return round2((toMin(b.fin) - toMin(b.inicio)) / 60); }
+
+/**
+ * Calcula horas de una marcación cerrada.
+ *  - marcadas: tiempo total entre ingreso y salida (horas cronológicas).
+ *  - efectivas: tiempo marcado que coincide con las clases seleccionadas (corroborado con horario).
+ *  - programadas: suma de la duración de las clases seleccionadas.
+ */
+function calcularHoras(ini, fin, bloques) {
+  bloques = bloques || [];
+  var a = toMin(ini), z = toMin(fin);
+  var marcadas = Math.max(0, round2((z - a) / 60));
+  // Minuto a minuto: si el docente tiene salones simultáneos (clases juntas), ese minuto se
+  // cuenta UNA sola vez y se reparte entre los salones, para no duplicar horas de pago.
+  var minutos = bloques.map(function () { return 0; });
+  var unionMin = 0;
+  for (var t = a; t < z; t++) {
+    var activos = [];
+    bloques.forEach(function (b, i) { if (t >= toMin(b.inicio) && t < toMin(b.fin)) activos.push(i); });
+    if (!activos.length) continue;
+    unionMin += 1;
+    activos.forEach(function (i) { minutos[i] += 1 / activos.length; });
+  }
+  var detalle = bloques.map(function (b, i) {
+    return { id: b.id, horas: Math.round(minutos[i] / 60 * 1000) / 1000, programadas: horasBloque(b) };
+  });
+  var efectivas = round2(unionMin / 60);
+  var programadas = round2(minutosUnion(bloques) / 60);
+  return { marcadas: marcadas, efectivas: efectivas, programadas: programadas, detalle: detalle };
+}
+
+/**
+ * Estado de cada bloque del día para el dashboard.
+ * @param bloques  bloques del día
+ * @param marcaciones  marcaciones del día [{dni, docente, inicio, fin, bloques:[id], reemplazos:[id]}]
+ * @param ahora  "HH:mm" (hora actual; si la fecha es pasada usar "23:59")
+ */
+function estadoBloques(bloques, marcaciones, ahora) {
+  var now = toMin(ahora);
+  return bloques.map(function (b) {
+    var quien = null, tipo = null, enCurso = false;
+    marcaciones.forEach(function (m) {
+      var esTitular = (m.bloques || []).indexOf(b.id) >= 0;
+      var esReemp = (m.reemplazos || []).indexOf(b.id) >= 0;
+      if (!esTitular && !esReemp) return;
+      // Solo cuenta si la marcación se cruza con el bloque (o sigue abierta).
+      var cubre = toMin(m.inicio) < toMin(b.fin) && (!m.fin || toMin(m.fin) > toMin(b.inicio));
+      if (!cubre || quien) return;
+      quien = m.docente; tipo = esReemp ? 'REEMPLAZO' : 'TITULAR';
+      enCurso = !m.fin;
+    });
+    var estado;
+    if (quien) {
+      if (now < toMin(b.inicio)) estado = 'CONFIRMADO';
+      else if (now < toMin(b.fin) && enCurso) estado = tipo === 'REEMPLAZO' ? 'REEMPLAZO' : 'EN CLASE';
+      else estado = tipo === 'REEMPLAZO' ? 'REEMPLAZO' : 'DICTADO';
+    } else if (!b.docente) {
+      estado = 'SIN DOCENTE';
+    } else if (now < toMin(b.inicio)) {
+      estado = 'PROGRAMADO';
+    } else if (now < toMin(b.fin)) {
+      estado = 'SIN MARCAR';
+    } else {
+      estado = 'NO DICTADO';
+    }
+    return {
+      id: b.id, salon: b.salon, curso: b.curso, inicio: b.inicio, fin: b.fin,
+      titular: b.docente, dicto: quien, tipo: tipo, estado: estado
+    };
+  });
+}
+
+/**
+ * Resumen para pagos: Docente | Mes | Salón | N.º horas dictadas.
+ * @param clases filas de la hoja Clases [{fecha, salon, docente, tipo, horas, ...}]
+ * @param mes "2026-11"
+ */
+function resumenMensual(clases, mes, marcaciones) {
+  var mapa = {};
+  clases.forEach(function (c) {
+    if (String(c.fecha).slice(0, 7) !== mes) return;
+    var k = c.docente + '||' + c.salon;
+    if (!mapa[k]) mapa[k] = { docente: c.docente, dni: c.dni, mes: mes, salon: c.salon, horas: 0, clases: 0, reemplazos: 0, dias: {} };
+    mapa[k].horas = round2(mapa[k].horas + Number(c.horas || 0));
+    mapa[k].clases += 1;
+    if (c.tipo === 'REEMPLAZO') mapa[k].reemplazos += 1;
+    mapa[k].dias[c.fecha] = true;
+  });
+  var tard = {};
+  (marcaciones || []).forEach(function (m) {
+    if (String(m.fecha).slice(0, 7) !== mes) return;
+    if (!tard[m.docente]) tard[m.docente] = { n: 0, min: 0 };
+    if (m.estado === 'TARDANZA') { tard[m.docente].n += 1; tard[m.docente].min += Number(m.minTarde || 0); }
+  });
+  var filas = Object.keys(mapa).map(function (k) {
+    var r = mapa[k];
+    r.dias = Object.keys(r.dias).length;
+    r.tardanzas = tard[r.docente] ? tard[r.docente].n : 0;
+    r.minTarde = tard[r.docente] ? tard[r.docente].min : 0;
+    return r;
+  });
+  filas.sort(function (a, b) { return a.docente.localeCompare(b.docente) || a.salon.localeCompare(b.salon); });
+  return filas;
+}
+
+// Exportar para pruebas en Node (ignorado en Apps Script).
+if (typeof module !== 'undefined') {
+  module.exports = {
+    DIAS: DIAS, OBSERVACIONES: OBSERVACIONES, toMin: toMin, fmtMin: fmtMin, diaDeFecha: diaDeFecha, norm: norm,
+    extraerDni: extraerDni, bloquesDelDia: bloquesDelDia, evaluarIngreso: evaluarIngreso,
+    horasSuperpuestas: horasSuperpuestas, calcularHoras: calcularHoras,
+    estadoBloques: estadoBloques, resumenMensual: resumenMensual
+  };
+}

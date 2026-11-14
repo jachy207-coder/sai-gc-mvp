@@ -1,0 +1,101 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cantata+One&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --negro: #000000;
+    --rojo: #920000;
+    --rojo-2: #b31212;
+    --rojo-suave: #f7e6e6;
+    --amarillo: #eebe4f;
+    --amarillo-suave: #fbf1d8;
+    --blanco: #ffffff;
+    --fondo: #f5f2ec;
+    --tarjeta: #ffffff;
+    --texto: #1b1b1b;
+    --texto-2: #5c5752;
+    --borde: #e4ddd2;
+    --ok: #1f7a3a;
+    --ok-suave: #e3f3e8;
+    --warn: #a86200;
+    --warn-suave: #fdf0d9;
+    --gris: #8a847c;
+    --gris-suave: #efebe5;
+    --radio: 16px;
+    --sombra: 0 1px 2px rgba(0,0,0,.06), 0 6px 20px rgba(0,0,0,.06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: var(--fondo); color: var(--texto); font-size: 16px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased; min-height: 100vh;
+  }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  .marca { font-family: 'Cantata One', Georgia, serif; letter-spacing: .01em; }
+
+  /* ---------- Barra superior ---------- */
+  .topbar {
+    background: var(--negro); color: var(--blanco);
+    border-bottom: 4px solid var(--amarillo);
+    padding: 12px 20px; display: flex; align-items: center; gap: 14px;
+  }
+  .topbar .logo {
+    width: 52px; height: 52px; border-radius: 12px; background: var(--blanco);
+    display: grid; place-items: center; overflow: hidden; flex: none;
+  }
+  .topbar .logo img { width: 100%; height: 100%; object-fit: contain; }
+  .topbar .logo .fallback { color: var(--rojo); font-family: 'Cantata One', serif; font-size: 18px; font-weight: 700; }
+  .topbar .titulo { flex: 1; min-width: 0; }
+  .topbar .titulo .nombre { font-family: 'Cantata One', serif; font-size: 18px; color: var(--amarillo); line-height: 1.1; }
+  .topbar .titulo .sub { font-size: 13px; color: #d9d4cc; margin-top: 2px; }
+  .reloj { text-align: right; flex: none; }
+  .reloj .h { font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 800; letter-spacing: .02em; }
+  .reloj .f { font-size: 12px; color: #d9d4cc; text-transform: capitalize; }
+
+  /* ---------- Componentes ---------- */
+  .contenedor { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  .tarjeta { background: var(--tarjeta); border-radius: var(--radio); box-shadow: var(--sombra); border: 1px solid var(--borde); }
+  .pad { padding: 22px; }
+  h1, h2, h3 { margin: 0; }
+  .h-seccion { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-2); margin: 22px 0 10px; }
+  .muted { color: var(--texto-2); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; background: var(--gris-suave); color: var(--texto-2); white-space: nowrap;
+  }
+  .chip.ok { background: var(--ok-suave); color: var(--ok); }
+  .chip.warn { background: var(--warn-suave); color: var(--warn); }
+  .chip.rojo { background: var(--rojo-suave); color: var(--rojo); }
+  .chip.oscuro { background: var(--negro); color: var(--amarillo); }
+  .chip .punto { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+  .btn {
+    border: 0; border-radius: 14px; padding: 14px 20px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; transition: transform .05s, filter .15s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-rojo { background: var(--rojo); color: var(--blanco); }
+  .btn-rojo:hover:not(:disabled) { filter: brightness(1.12); }
+  .btn-negro { background: var(--negro); color: var(--amarillo); }
+  .btn-amarillo { background: var(--amarillo); color: var(--negro); }
+  .btn-claro { background: var(--gris-suave); color: var(--texto); }
+  .btn-grande { width: 100%; font-size: 20px; padding: 20px; border-radius: 16px; }
+  .link { background: none; border: 0; color: var(--rojo); font-weight: 600; cursor: pointer; padding: 8px; text-decoration: underline; }
+
+  .alerta { padding: 12px 16px; border-radius: 12px; background: var(--rojo-suave); color: var(--rojo); font-weight: 600; margin-top: 14px; }
+  .alerta.info { background: var(--amarillo-suave); color: #6b4d00; }
+
+  .spinner { width: 22px; height: 22px; border: 3px solid rgba(255,255,255,.35); border-top-color: currentColor; border-radius: 50%; animation: gira .8s linear infinite; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+  .oculto { display: none !important; }
+
+  @media (max-width: 560px) {
+    .topbar { padding: 10px 14px; gap: 10px; }
+    .topbar .logo { width: 42px; height: 42px; }
+    .topbar .titulo .nombre { font-size: 15px; }
+    .topbar .titulo .sub { font-size: 12px; }
+    .reloj .h { font-size: 20px; }
+    .pad { padding: 18px; }
+  }
+</style>

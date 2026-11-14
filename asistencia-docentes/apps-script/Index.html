@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asistencia Docente · CVI</title>
+<?!= include('Styles'); ?>
+<style>
+  /* ---------- Paso 1: DNI ---------- */
+  .bienvenida { text-align: center; margin: 8px 0 20px; }
+  .bienvenida h1 { font-family: 'Cantata One', serif; font-size: 30px; }
+  .bienvenida p { margin: 6px 0 0; color: var(--texto-2); }
+  .dni-box { max-width: 420px; margin: 0 auto; }
+  .dni-input {
+    width: 100%; text-align: center; font-size: 40px; font-weight: 800; letter-spacing: .25em;
+    padding: 16px 10px 16px calc(10px + .25em); border-radius: 16px; border: 2px solid var(--borde); background: var(--blanco);
+    font-variant-numeric: tabular-nums; outline: none;
+  }
+  .dni-input:focus { border-color: var(--rojo); box-shadow: 0 0 0 4px rgba(146,0,0,.12); }
+  .dni-input::placeholder { color: #cfc8bd; letter-spacing: .25em; }
+  .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+  .tecla {
+    height: 64px; border-radius: 14px; border: 1px solid var(--borde); background: var(--blanco); font-size: 26px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  }
+  .tecla:active { background: var(--amarillo-suave); }
+  .tecla.ok { background: var(--rojo); color: var(--blanco); border-color: var(--rojo); font-size: 20px; }
+  .tecla.borrar { font-size: 20px; color: var(--texto-2); }
+  .ayuda-qr { display: flex; gap: 12px; align-items: center; margin-top: 18px; padding: 14px; border-radius: 14px; background: var(--amarillo-suave); color: #5d4300; font-size: 14px; }
+  .ayuda-qr svg { flex: none; }
+
+  /* ---------- Paso 2: Docente ---------- */
+  .docente-head { display: flex; gap: 16px; align-items: center; }
+  .avatar {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--rojo); color: var(--blanco);
+    display: grid; place-items: center; font-weight: 800; font-size: 24px; flex: none; border: 3px solid var(--amarillo);
+  }
+  .docente-head h2 { font-size: 24px; }
+  .docente-head .esp { color: var(--texto-2); font-size: 14px; }
+  .estado-hoy { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .clases { display: grid; gap: 10px; }
+  .clase {
+    display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--borde);
+    background: var(--blanco); cursor: pointer; user-select: none; transition: border-color .15s, background .15s;
+  }
+  .clase input { display: none; }
+  .clase .check {
+    width: 28px; height: 28px; border-radius: 8px; border: 2px solid #c9c1b5; flex: none; display: grid; place-items: center;
+    color: transparent; background: var(--blanco);
+  }
+  .clase.sel { border-color: var(--rojo); background: #fffafa; }
+  .clase.sel .check { background: var(--rojo); border-color: var(--rojo); color: var(--blanco); }
+  .clase.bloq { opacity: .45; cursor: not-allowed; }
+  .clase .info { flex: 1; min-width: 0; }
+  .clase .salon { font-weight: 800; font-size: 17px; }
+  .clase .curso { color: var(--texto-2); font-size: 14px; }
+  .clase .hora { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; text-align: right; white-space: nowrap; }
+  .clase .hora small { display: block; font-weight: 500; color: var(--texto-2); font-size: 12px; }
+  .vacio { padding: 16px; border-radius: 14px; background: var(--gris-suave); color: var(--texto-2); font-size: 15px; }
+
+  .reemplazo-toggle {
+    width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center;
+    background: var(--blanco); border: 2px dashed #cfc6b8; border-radius: 14px; padding: 14px 16px; cursor: pointer; font-weight: 700;
+  }
+  .reemplazo-toggle .flecha { transition: transform .2s; }
+  .reemplazo-toggle.abierto .flecha { transform: rotate(180deg); }
+  .grupo-salon { font-size: 13px; font-weight: 700; color: var(--rojo); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .05em; }
+
+  .obs-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .obs-chip {
+    border: 2px solid var(--borde); background: var(--blanco); border-radius: 999px; padding: 9px 14px; font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+  .obs-chip.sel { border-color: var(--negro); background: var(--negro); color: var(--amarillo); }
+  textarea { width: 100%; min-height: 84px; border-radius: 12px; border: 2px solid var(--borde); padding: 12px; margin-top: 10px; resize: vertical; outline: none; }
+  textarea:focus { border-color: var(--rojo); }
+
+  .acciones { position: sticky; bottom: 0; padding: 16px 0 4px; background: linear-gradient(to top, var(--fondo) 75%, rgba(245,242,236,0)); margin-top: 18px; }
+  .acciones .resumen { text-align: center; font-size: 14px; color: var(--texto-2); margin-bottom: 8px; }
+
+  /* ---------- Paso 3: Confirmación ---------- */
+  .listo { text-align: center; padding: 34px 22px; }
+  .listo .icono { width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px; display: grid; place-items: center; }
+  .listo .icono.ingreso { background: var(--ok-suave); color: var(--ok); }
+  .listo .icono.salida { background: var(--amarillo-suave); color: #7a5600; }
+  .listo h2 { font-family: 'Cantata One', serif; font-size: 28px; }
+  .listo .hora-grande { font-size: 56px; font-weight: 800; font-variant-numeric: tabular-nums; margin: 8px 0; }
+  .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0; }
+  .metrica { background: var(--fondo); border-radius: 12px; padding: 12px 8px; }
+  .metrica .v { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .metrica .l { font-size: 12px; color: var(--texto-2); }
+  .lista-clases { text-align: left; margin: 12px auto 0; max-width: 420px; display: grid; gap: 6px; }
+  .lista-clases div { padding: 10px 12px; background: var(--fondo); border-radius: 10px; font-size: 14px; display: flex; justify-content: space-between; gap: 10px; }
+  .cuenta { margin-top: 18px; font-size: 13px; color: var(--texto-2); }
+
+  .pie { text-align: center; font-size: 12px; color: var(--gris); margin-top: 26px; }
+  .pie a { color: var(--gris); }
+  @media (max-width: 560px) {
+    .bienvenida h1 { font-size: 24px; }
+    .dni-input { font-size: 30px; }
+    .tecla { height: 56px; }
+    .listo .hora-grande { font-size: 44px; }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo" id="logo"><span class="fallback">CVI</span></div>
+    <div class="titulo">
+      <div class="nombre">César Vallejo Ingenieros</div>
+      <div class="sub">Sede <span id="sede">Monte Azul</span> · Asistencia docente</div>
+    </div>
+    <div class="reloj"><div class="h" id="reloj">--:--:--</div><div class="f" id="fecha"></div></div>
+  </header>
+
+  <main class="contenedor">
+    <!-- PASO 1: DNI -->
+    <section id="paso-dni">
+      <div class="bienvenida">
+        <h1>Marca tu asistencia</h1>
+        <p>Escribe tu DNI o escanea tu código QR</p>
+      </div>
+      <div class="dni-box">
+        <input id="dni" class="dni-input" inputmode="numeric" autocomplete="off" maxlength="40" placeholder="········" aria-label="DNI">
+        <div class="teclado" id="teclado"></div>
+        <div id="error-dni" class="alerta oculto"></div>
+        <div class="ayuda-qr">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>
+          <div><b>¿Tienes tu fotocheck con QR?</b> Escanéalo con la cámara de tu celular y se abrirá esta página con tu DNI listo.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PASO 2: Docente -->
+    <section id="paso-docente" class="oculto">
+      <div class="tarjeta pad">
+        <div class="docente-head">
+          <div class="avatar" id="avatar">--</div>
+          <div>
+            <h2 id="nombre-docente">—</h2>
+            <div class="esp" id="esp-docente"></div>
+            <div class="estado-hoy" id="estado-hoy"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="h-seccion" id="titulo-clases">Tus salones de hoy</div>
+      <div class="clases" id="lista-propias"></div>
+
+      <div style="margin-top:12px">
+        <button class="reemplazo-toggle" id="btn-reemplazo" type="button">
+          <span>🔁 ¿Vas a cubrir la clase de otro docente? <span class="muted" style="font-weight:500">(reemplazo)</span></span>
+          <svg class="flecha" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="lista-reemplazos" class="oculto"></div>
+      </div>
+
+      <div class="h-seccion">Observación <span style="text-transform:none;font-weight:500">(opcional)</span></div>
+      <div class="obs-chips" id="obs-chips"></div>
+      <textarea id="obs-detalle" class="oculto" placeholder="Escribe aquí tu comentario…"></textarea>
+
+      <div id="error-marca" class="alerta oculto"></div>
+
+      <div class="acciones">
+        <div class="resumen" id="resumen-sel"></div>
+        <button class="btn btn-rojo btn-grande" id="btn-marcar" type="button">Marcar ingreso</button>
+        <div style="text-align:center"><button class="link" id="btn-cancelar" type="button">No soy yo · volver</button></div>
+      </div>
+    </section>
+
+    <!-- PASO 3: Listo -->
+    <section id="paso-listo" class="oculto">
+      <div class="tarjeta listo">
+        <div class="icono ingreso" id="listo-icono">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h2 id="listo-titulo">¡Ingreso registrado!</h2>
+        <div class="muted" id="listo-nombre"></div>
+        <div class="hora-grande" id="listo-hora">--:--</div>
+        <div id="listo-estado"></div>
+        <div class="metricas oculto" id="listo-metricas"></div>
+        <div class="lista-clases" id="listo-clases"></div>
+        <div style="margin-top:22px"><button class="btn btn-negro" id="btn-listo" type="button" style="min-width:200px">Listo</button></div>
+        <div class="cuenta" id="cuenta"></div>
+      </div>
+    </section>
+
+    <div class="pie">CVI Monte Azul · Control de asistencia docente · Piloto 2026</div>
+  </main>
+
+<script>
+(function () {
+  var DNI_INICIAL = '<?= dniInicial ?>';
+  var estado = { info: null, docente: null, obs: '', offset: 0, timer: null };
+  var $ = function (id) { return document.getElementById(id); };
+  var DIAS = { LUNES: 'lunes', MARTES: 'martes', MIERCOLES: 'miércoles', JUEVES: 'jueves', VIERNES: 'viernes', SABADO: 'sábado', DOMINGO: 'domingo' };
+  var esCelular = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  function api(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (ok, mal) {
+      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function (e) { mal(e && e.message ? e : new Error(String(e))); });
+      r[fn].apply(r, args);
+    });
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function iniciales(n) { return String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(function (p) { return p[0]; }).join('').toUpperCase(); }
+  function mostrar(paso) { ['paso-dni', 'paso-docente', 'paso-listo'].forEach(function (p) { $(p).classList.toggle('oculto', p !== paso); }); window.scrollTo(0, 0); }
+  function error(id, msg) { var el = $(id); el.textContent = msg || ''; el.classList.toggle('oculto', !msg); }
+  function extraerDni(t) { var s = String(t || ''); var u = s.match(/[?&]dni=(\d{8})/i); if (u) return u[1]; var m = s.match(/\d{8}/); return m ? m[0] : null; }
+
+  /* ---------- Reloj sincronizado con el servidor ---------- */
+  function tic() {
+    var d = new Date(Date.now() + estado.offset);
+    var lima = new Date(d.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    $('reloj').textContent = p(lima.getHours()) + ':' + p(lima.getMinutes()) + ':' + p(lima.getSeconds());
+    $('fecha').textContent = lima.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  setInterval(tic, 1000); tic();
+
+  api('getInfo').then(function (i) {
+    estado.info = i; estado.offset = i.epoch - Date.now(); $('sede').textContent = i.sede; tic(); pintarObs();
+  }).catch(function () {});
+  api('getLogo').then(function (url) { if (url) $('logo').innerHTML = '<img alt="Logo CVI" src="' + url + '">'; }).catch(function () {});
+
+  /* ---------- Paso 1: teclado DNI ---------- */
+  var teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'];
+  $('teclado').innerHTML = teclas.map(function (t) {
+    var cls = t === 'OK' ? 'tecla ok' : t === '⌫' ? 'tecla borrar' : 'tecla';
+    return '<button type="button" class="' + cls + '" data-t="' + t + '">' + (t === 'OK' ? 'Continuar' : t) + '</button>';
+  }).join('');
+  $('teclado').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-t]'); if (!b) return;
+    var t = b.getAttribute('data-t'), inp = $('dni');
+    if (t === '⌫') inp.value = inp.value.slice(0, -1);
+    else if (t === 'OK') buscar();
+    else if (inp.value.replace(/\D/g, '').length < 8) inp.value = inp.value.replace(/\D/g, '') + t;
+    error('error-dni');
+  });
+  $('dni').addEventListener('keydown', function (e) { if (e.key === 'Enter') buscar(); });
+  $('dni').addEventListener('input', function () {
+    error('error-dni');
+    var inp = $('dni');
+    // Un lector QR USB "escribe" la URL completa: extraemos el DNI.
+    if (/dni=|http/i.test(inp.value)) { var d = extraerDni(inp.value); if (d) { inp.value = d; buscar(); } }
+  });
+
+  function buscar() {
+    var dni = extraerDni($('dni').value) || $('dni').value.replace(/\D/g, '');
+    if (dni.length !== 8) { error('error-dni', 'El DNI debe tener 8 dígitos.'); return; }
+    var ok = document.querySelector('.tecla.ok'); ok.disabled = true; ok.innerHTML = '<span class="spinner"></span>';
+    api('buscarDocente', dni).then(function (r) {
+      if (!r.ok) { error('error-dni', r.error); return; }
+      estado.docente = r; pintarDocente();
+    }).catch(function (e) { error('error-dni', 'Sin conexión con el servidor. Intenta de nuevo. (' + e.message + ')'); })
+      .then(function () { ok.disabled = false; ok.textContent = 'Continuar'; });
+  }
+
+  /* ---------- Paso 2 ---------- */
+  function tarjetaClase(b, opts) {
+    var bloqueada = opts.bloqueada;
+    return '<label class="clase' + (opts.sel ? ' sel' : '') + (bloqueada ? ' bloq' : '') + '" data-id="' + esc(b.id) + '" data-tipo="' + opts.tipo + '">' +
+      '<input type="checkbox"' + (opts.sel ? ' checked' : '') + (bloqueada ? ' disabled' : '') + '>' +
+      '<span class="check"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></span>' +
+      '<span class="info"><div class="salon">' + esc(b.salon) + '</div><div class="curso">' + esc(b.curso) +
+      (opts.tipo === 'R' ? ' · titular: ' + esc(b.docente || 'sin docente') : '') +
+      (bloqueada ? ' · ya lo marcó ' + esc(b.tomadoPor) : '') + '</div></span>' +
+      '<span class="hora">' + esc(b.inicio) + ' – ' + esc(b.fin) + '<small>' + duracion(b) + '</small></span></label>';
+  }
+  function duracion(b) {
+    var m = function (h) { var p = h.split(':'); return +p[0] * 60 + +p[1]; };
+    var d = m(b.fin) - m(b.inicio); var h = Math.floor(d / 60), mi = d % 60;
+    return (h ? h + ' h' : '') + (mi ? ' ' + mi + ' min' : '');
+  }
+
+  function pintarDocente() {
+    var d = estado.docente, ab = d.abierta;
+    $('avatar').textContent = iniciales(d.docente);
+    $('nombre-docente').textContent = d.docente;
+    $('esp-docente').textContent = d.especialidad || '';
+    var chips = [];
+    if (ab) {
+      chips.push('<span class="chip ' + (ab.estado === 'TARDANZA' ? 'warn' : 'ok') + '"><span class="punto"></span>Ingresaste ' + esc(ab.inicio) +
+        ' · ' + (ab.estado === 'TARDANZA' ? 'tardanza ' + esc(ab.minTarde) + ' min' : 'puntual') + '</span>');
+    } else {
+      chips.push('<span class="chip"><span class="punto"></span>Aún no marcas ingreso</span>');
+    }
+    if (d.cerradasHoy) chips.push('<span class="chip oscuro">' + d.cerradasHoy + ' marcación(es) cerrada(s) hoy</span>');
+    $('estado-hoy').innerHTML = chips.join('');
+    $('titulo-clases').textContent = (ab ? 'Salones que dictaste hoy' : 'Marca los salones que dictarás hoy') + ' · ' + (DIAS[d.dia] || '');
+
+    var selPropias = ab ? ab.bloques : d.propios.map(function (b) { return b.id; });
+    var selReemp = ab ? ab.reemplazos : [];
+    $('lista-propias').innerHTML = d.propios.length
+      ? d.propios.map(function (b) { return tarjetaClase(b, { sel: selPropias.indexOf(b.id) >= 0, tipo: 'P' }); }).join('')
+      : '<div class="vacio">No tienes clases programadas hoy en el horario. Si vienes a reemplazar a un colega, usa la opción de abajo.</div>';
+
+    var grupos = {};
+    d.otros.forEach(function (b) { (grupos[b.salon] = grupos[b.salon] || []).push(b); });
+    $('lista-reemplazos').innerHTML = Object.keys(grupos).length ? Object.keys(grupos).map(function (s) {
+      return '<div class="grupo-salon">' + esc(s) + '</div><div class="clases">' + grupos[s].map(function (b) {
+        return tarjetaClase(b, { sel: selReemp.indexOf(b.id) >= 0, tipo: 'R', bloqueada: !!b.tomadoPor && selReemp.indexOf(b.id) < 0 });
+      }).join('') + '</div>';
+    }).join('') : '<div class="vacio" style="margin-top:10px">No hay otras clases hoy.</div>';
+    var abrir = selReemp.length > 0 || !d.propios.length;
+    $('lista-reemplazos').classList.toggle('oculto', !abrir);
+    $('btn-reemplazo').classList.toggle('abierto', abrir);
+
+    estado.obs = ''; $('obs-detalle').value = ''; pintarObs();
+    error('error-marca');
+    var btn = $('btn-marcar');
+    btn.className = 'btn btn-grande ' + (ab ? 'btn-negro' : 'btn-rojo');
+    actualizarResumen();
+    mostrar('paso-docente');
+  }
+
+  function pintarObs() {
+    var lista = (estado.info && estado.info.observaciones) || ['Tardanza justificada', 'Permiso', 'Salida anticipada', 'Reemplazo de docente', 'Clase de recuperación', 'Salud', 'Problema de transporte', 'Otro'];
+    $('obs-chips').innerHTML = ['Ninguna'].concat(lista).map(function (o) {
+      var sel = (o === 'Ninguna' && !estado.obs) || o === estado.obs;
+      return '<button type="button" class="obs-chip' + (sel ? ' sel' : '') + '" data-o="' + esc(o) + '">' + esc(o) + '</button>';
+    }).join('');
+    $('obs-detalle').classList.toggle('oculto', estado.obs !== 'Otro');
+  }
+  $('obs-chips').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-o]'); if (!b) return;
+    var o = b.getAttribute('data-o'); estado.obs = o === 'Ninguna' ? '' : o; pintarObs();
+    if (estado.obs === 'Otro') $('obs-detalle').focus();
+  });
+
+  document.addEventListener('click', function (e) {
+    var c = e.target.closest('.clase'); if (!c || c.classList.contains('bloq')) return;
+    e.preventDefault();
+    var inp = c.querySelector('input'); inp.checked = !inp.checked; c.classList.toggle('sel', inp.checked);
+    actualizarResumen();
+  });
+  $('btn-reemplazo').addEventListener('click', function () {
+    var l = $('lista-reemplazos'); l.classList.toggle('oculto'); this.classList.toggle('abierto', !l.classList.contains('oculto'));
+  });
+
+  function seleccion() {
+    var p = [], r = [];
+    document.querySelectorAll('.clase.sel').forEach(function (c) { (c.getAttribute('data-tipo') === 'R' ? r : p).push(c.getAttribute('data-id')); });
+    return { bloques: p, reemplazos: r };
+  }
+  function actualizarResumen() {
+    var s = seleccion(), n = s.bloques.length + s.reemplazos.length, ab = estado.docente && estado.docente.abierta;
+    $('resumen-sel').textContent = n ? n + ' salón(es) seleccionado(s)' + (s.reemplazos.length ? ' · ' + s.reemplazos.length + ' reemplazo(s)' : '') : 'Selecciona al menos un salón';
+    $('btn-marcar').innerHTML = (ab ? '⏹ Marcar SALIDA' : '▶ Marcar INGRESO') + ' · <span id="hora-btn">' + $('reloj').textContent.slice(0, 5) + '</span>';
+  }
+  setInterval(function () { var h = $('hora-btn'); if (h) h.textContent = $('reloj').textContent.slice(0, 5); }, 1000);
+
+  $('btn-cancelar').addEventListener('click', reiniciar);
+
+  $('btn-marcar').addEventListener('click', function () {
+    var d = estado.docente, s = seleccion(), btn = this;
+    if (!s.bloques.length && !s.reemplazos.length && !estado.obs) { error('error-marca', 'Selecciona al menos un salón o indica una observación.'); return; }
+    if (estado.obs === 'Otro' && !$('obs-detalle').value.trim()) { error('error-marca', 'Escribe el detalle de tu observación.'); return; }
+    var payload = { dni: d.dni, bloques: s.bloques, reemplazos: s.reemplazos, obs: estado.obs, obsDetalle: $('obs-detalle').value.trim(), dispositivo: esCelular ? 'Celular' : 'PC' };
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Registrando…';
+    api(d.abierta ? 'marcarSalida' : 'marcarIngreso', payload).then(function (r) {
+      if (!r.ok) { error('error-marca', r.error); return; }
+      pintarListo(r);
+    }).catch(function (e) { error('error-marca', 'No se pudo registrar: ' + e.message); })
+      .then(function () { btn.disabled = false; actualizarResumen(); });
+  });
+
+  /* ---------- Paso 3 ---------- */
+  function pintarListo(r) {
+    var ingreso = r.tipo === 'INGRESO';
+    $('listo-icono').className = 'icono ' + (ingreso ? 'ingreso' : 'salida');
+    $('listo-titulo').textContent = ingreso ? '¡Ingreso registrado!' : '¡Salida registrada!';
+    $('listo-nombre').textContent = (ingreso ? 'Bienvenido(a), ' : 'Hasta pronto, ') + r.docente;
+    $('listo-hora').textContent = r.hora;
+    if (ingreso) {
+      $('listo-estado').innerHTML = r.estado === 'TARDANZA'
+        ? '<span class="chip warn"><span class="punto"></span>Tardanza de ' + r.minTarde + ' min (inicio ' + esc(r.referencia) + ')</span>'
+        : r.estado === 'PUNTUAL' ? '<span class="chip ok"><span class="punto"></span>Puntual</span>' : '<span class="chip">Sin clase programada</span>';
+      $('listo-metricas').classList.add('oculto');
+    } else {
+      $('listo-estado').innerHTML = '<span class="chip oscuro">Ingreso ' + esc(r.inicio) + ' → Salida ' + esc(r.hora) + '</span>';
+      $('listo-metricas').innerHTML =
+        '<div class="metrica"><div class="v">' + r.horas.efectivas.toFixed(2) + '</div><div class="l">Horas dictadas</div></div>' +
+        '<div class="metrica"><div class="v">' + r.horas.programadas.toFixed(2) + '</div><div class="l">Horas programadas</div></div>' +
+        '<div class="metrica"><div class="v">' + r.horas.marcadas.toFixed(2) + '</div><div class="l">Horas en el colegio</div></div>';
+      $('listo-metricas').classList.remove('oculto');
+    }
+    $('listo-clases').innerHTML = (r.clases || []).map(function (b) {
+      return '<div><b>' + esc(b.salon) + '</b><span class="muted">' + esc(b.curso) + ' · ' + esc(b.inicio) + '–' + esc(b.fin) + '</span></div>';
+    }).join('');
+    mostrar('paso-listo');
+    var s = 10; $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s';
+    clearInterval(estado.timer);
+    estado.timer = setInterval(function () { s--; $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s'; if (s <= 0) reiniciar(); }, 1000);
+  }
+  $('btn-listo').addEventListener('click', reiniciar);
+
+  function reiniciar() {
+    clearInterval(estado.timer); estado.docente = null; $('dni').value = ''; error('error-dni'); mostrar('paso-dni');
+    if (!esCelular) $('dni').focus();
+  }
+
+  if (DNI_INICIAL) { $('dni').value = DNI_INICIAL; buscar(); } else if (!esCelular) { $('dni').focus(); }
+})();
+</script>
+</body>
+</html>

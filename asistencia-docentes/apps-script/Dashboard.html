@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Asistencia · CVI</title>
+<?!= include('Styles'); ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  .contenedor { max-width: 1240px; }
+  .login { max-width: 380px; margin: 60px auto; text-align: center; }
+  .login h1 { font-family: 'Cantata One', serif; font-size: 26px; margin-bottom: 6px; }
+  .login input { width: 100%; text-align: center; font-size: 28px; letter-spacing: .3em; padding: 14px; border-radius: 14px; border: 2px solid var(--borde); margin: 18px 0 12px; outline: none; }
+  .login input:focus { border-color: var(--rojo); }
+
+  .tabs { display: flex; gap: 6px; background: var(--blanco); padding: 6px; border-radius: 14px; border: 1px solid var(--borde); width: max-content; max-width: 100%; overflow-x: auto; }
+  .tab { border: 0; background: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; color: var(--texto-2); white-space: nowrap; }
+  .tab.activo { background: var(--negro); color: var(--amarillo); }
+  .barra { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .controles { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .controles input[type=date], .controles input[type=month] { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--blanco); }
+  .vivo { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto-2); }
+  .vivo .punto { width: 10px; height: 10px; border-radius: 50%; background: #2bb15a; box-shadow: 0 0 0 0 rgba(43,177,90,.6); animation: pulso 2s infinite; }
+  .vivo.pausa .punto { background: var(--gris); animation: none; }
+  @keyframes pulso { 0% { box-shadow: 0 0 0 0 rgba(43,177,90,.5); } 70% { box-shadow: 0 0 0 10px rgba(43,177,90,0); } 100% { box-shadow: 0 0 0 0 rgba(43,177,90,0); } }
+
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .kpi { padding: 16px; }
+  .kpi .l { font-size: 13px; color: var(--texto-2); font-weight: 600; }
+  .kpi .v { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; margin-top: 4px; }
+  .kpi .v small { font-size: 16px; color: var(--texto-2); font-weight: 600; }
+  .kpi .barra-p { height: 6px; border-radius: 3px; background: var(--gris-suave); margin-top: 10px; overflow: hidden; }
+  .kpi .barra-p span { display: block; height: 100%; background: var(--rojo); }
+  .kpi.destacado { background: var(--negro); color: var(--blanco); border-color: var(--negro); }
+  .kpi.destacado .l { color: var(--amarillo); }
+  .kpi.alerta-k .v { color: var(--rojo); }
+
+  .seccion-t { display: flex; justify-content: space-between; align-items: baseline; margin: 26px 0 12px; gap: 10px; flex-wrap: wrap; }
+  .seccion-t h2 { font-family: 'Cantata One', serif; font-size: 20px; }
+  .leyenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--texto-2); }
+  .leyenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+
+  /* Línea de tiempo por salón */
+  .timeline { overflow-x: auto; }
+  .tl-inner { min-width: 860px; padding: 14px 16px 10px; }
+  .tl-escala, .tl-fila { display: grid; grid-template-columns: 150px 1fr; align-items: center; }
+  .tl-escala .marcas { position: relative; height: 22px; font-size: 11px; color: var(--texto-2); }
+  .tl-escala .marcas span { position: absolute; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+  .tl-fila { min-height: 54px; border-top: 1px solid var(--gris-suave); }
+  .tl-salon { font-weight: 800; font-size: 13px; padding-right: 10px; }
+  .tl-pista { position: relative; height: 44px; }
+  .tl-ahora { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--rojo); z-index: 3; }
+  .tl-fila:nth-child(2) .tl-ahora::before { content: 'Ahora'; position: absolute; top: -14px; left: -14px; font-size: 10px; font-weight: 800; color: var(--rojo); }
+  .blq {
+    position: absolute; top: 4px; bottom: 4px; border-radius: 8px; padding: 4px 7px; overflow: hidden; font-size: 11px; line-height: 1.2;
+    border: 1px solid transparent; cursor: default;
+  }
+  .blq b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11.5px; }
+  .blq span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85; }
+  .e-DICTADO { background: #2e8b4e; color: #fff; }
+  .e-EN-CLASE { background: #1f7a3a; color: #fff; box-shadow: 0 0 0 2px #9be0b0 inset; }
+  .e-REEMPLAZO { background: var(--amarillo); color: #3d2c00; }
+  .e-CONFIRMADO { background: var(--ok-suave); color: var(--ok); border-color: #9fd3ae; }
+  .e-PROGRAMADO { background: var(--gris-suave); color: var(--texto-2); border-color: #ddd5c9; }
+  .e-SIN-MARCAR { background: #ffe1e1; color: var(--rojo); border-color: #f2a5a5; }
+  .e-NO-DICTADO { background: var(--rojo); color: #fff; }
+  .e-SIN-DOCENTE { background: repeating-linear-gradient(45deg, #f1ede6, #f1ede6 6px, #e6e0d6 6px, #e6e0d6 12px); color: var(--texto-2); }
+
+  .dos-col { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--texto-2); padding: 10px 12px; border-bottom: 2px solid var(--borde); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--gris-suave); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.subtotal td { background: var(--amarillo-suave); font-weight: 700; }
+  tr.total td { background: var(--negro); color: var(--amarillo); font-weight: 800; }
+  .tabla-scroll { overflow-x: auto; }
+  .vacio-t { padding: 28px; text-align: center; color: var(--texto-2); }
+  .pend { display: flex; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--gris-suave); }
+  .pend:last-child { border-bottom: 0; }
+  .pend .n { font-weight: 700; }
+  .pend .d { font-size: 13px; color: var(--texto-2); }
+
+  .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .fotocheck { background: var(--blanco); border-radius: 14px; overflow: hidden; border: 1px solid var(--borde); text-align: center; break-inside: avoid; }
+  .fotocheck .cab { background: var(--negro); color: var(--amarillo); padding: 10px; font-family: 'Cantata One', serif; font-size: 14px; border-bottom: 3px solid var(--amarillo); }
+  .fotocheck .qr { padding: 14px; display: grid; place-items: center; min-height: 190px; }
+  .fotocheck .qr img, .fotocheck .qr canvas { width: 170px !important; height: 170px !important; }
+  .fotocheck .nom { font-weight: 800; font-size: 16px; padding: 0 10px; }
+  .fotocheck .dni { font-size: 13px; color: var(--texto-2); padding: 2px 10px 14px; }
+  .fotocheck .sin { color: var(--rojo); font-weight: 700; font-size: 13px; padding: 30px 10px; }
+
+  @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(3, 1fr); } .dos-col { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, 1fr); } .kpi .v { font-size: 28px; } }
+  @media print {
+    .topbar, .barra, .tabs, .no-print { display: none !important; }
+    body { background: #fff; }
+    .qr-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo" id="logo"><span class="fallback">CVI</span></div>
+    <div class="titulo">
+      <div class="nombre">Panel de Asistencia Docente</div>
+      <div class="sub">César Vallejo Ingenieros · Sede <span id="sede">Monte Azul</span></div>
+    </div>
+    <div class="reloj"><div class="h" id="reloj">--:--</div><div class="f" id="fecha-hoy"></div></div>
+  </header>
+
+  <main class="contenedor">
+    <!-- Login -->
+    <section id="v-login" class="login">
+      <div class="tarjeta pad">
+        <h1>Acceso coordinación</h1>
+        <div class="muted">Ingresa el PIN del panel</div>
+        <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
+        <button class="btn btn-rojo btn-grande" id="btn-login" type="button">Entrar</button>
+        <div id="error-login" class="alerta oculto"></div>
+      </div>
+    </section>
+
+    <section id="v-app" class="oculto">
+      <div class="barra">
+        <div class="tabs" role="tablist">
+          <button class="tab activo" data-tab="hoy" type="button">📍 En vivo</button>
+          <button class="tab" data-tab="reporte" type="button">📊 Reporte mensual</button>
+          <button class="tab" data-tab="qr" type="button">🪪 Fotochecks QR</button>
+        </div>
+        <div class="controles">
+          <button class="btn btn-claro" id="btn-marcacion" type="button" style="padding:9px 14px">Abrir marcación ↗</button>
+          <button class="link" id="btn-salir" type="button">Salir</button>
+        </div>
+      </div>
+
+      <!-- EN VIVO -->
+      <div id="t-hoy">
+        <div class="barra" style="margin-bottom:12px">
+          <div class="controles">
+            <input type="date" id="f-fecha">
+            <span class="vivo" id="vivo"><span class="punto"></span><span id="vivo-txt">Conectando…</span></span>
+          </div>
+          <div id="aviso-dni"></div>
+        </div>
+        <div class="kpis" id="kpis"></div>
+
+        <div class="seccion-t">
+          <h2>Salones del día</h2>
+          <div class="leyenda">
+            <span><i class="e-EN-CLASE"></i>En clase</span><span><i class="e-DICTADO"></i>Dictado</span><span><i class="e-REEMPLAZO"></i>Reemplazo</span>
+            <span><i class="e-CONFIRMADO"></i>Confirmado</span><span><i class="e-PROGRAMADO"></i>Programado</span>
+            <span><i class="e-SIN-MARCAR"></i>Sin marcar</span><span><i class="e-NO-DICTADO"></i>No dictado</span>
+          </div>
+        </div>
+        <div class="tarjeta timeline"><div class="tl-inner" id="timeline"></div></div>
+
+        <div class="dos-col" style="margin-top:16px">
+          <div>
+            <div class="seccion-t"><h2>Marcaciones</h2><span class="muted" id="n-marc"></span></div>
+            <div class="tarjeta tabla-scroll"><table id="tabla-marc"></table></div>
+          </div>
+          <div>
+            <div class="seccion-t"><h2>Aún no llegan</h2></div>
+            <div class="tarjeta" id="pendientes"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTE -->
+      <div id="t-reporte" class="oculto">
+        <div class="barra">
+          <div class="controles">
+            <input type="month" id="f-mes">
+            <button class="btn btn-negro" id="btn-exportar" type="button" style="padding:10px 16px">Guardar en hoja “Reporte mensual”</button>
+            <button class="btn btn-claro" id="btn-csv" type="button" style="padding:10px 16px">Descargar CSV</button>
+          </div>
+          <span class="muted" id="rep-msg"></span>
+        </div>
+        <div class="kpis" id="rep-kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+        <div class="seccion-t"><h2>Horas dictadas por docente y salón</h2><span class="muted">Base para la gestión de pagos</span></div>
+        <div class="tarjeta tabla-scroll"><table id="tabla-rep"></table></div>
+      </div>
+
+      <!-- QR -->
+      <div id="t-qr" class="oculto">
+        <div class="barra">
+          <div class="muted" style="max-width:640px">Cada código abre la página de marcación con el DNI del docente. Imprime y entrega uno a cada docente; lo escanean con la cámara del celular o con un lector QR en la computadora.</div>
+          <button class="btn btn-rojo" id="btn-imprimir" type="button" style="padding:10px 16px">🖨 Imprimir fotochecks</button>
+        </div>
+        <div class="qr-grid" id="qr-grid"></div>
+      </div>
+    </section>
+  </main>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var S = { pin: '', fecha: '', mes: '', timer: null, reporte: null, appUrl: '<?= appUrl ?>' };
+  var DIAS = { LUNES: 'Lunes', MARTES: 'Martes', MIERCOLES: 'Miércoles', JUEVES: 'Jueves', VIERNES: 'Viernes', SABADO: 'Sábado', DOMINGO: 'Domingo' };
+  var INICIO = 8 * 60, FIN = 14 * 60;
+
+  function api(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (ok, mal) {
+      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function (e) { mal(e && e.message ? e : new Error(String(e))); });
+      r[fn].apply(r, args);
+    });
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function min(h) { var p = String(h).split(':'); return +p[0] * 60 + +p[1]; }
+  function n2(v) { return Number(v || 0).toFixed(2); }
+  function guardarPin(p) { try { sessionStorage.setItem('cvi_pin', p); } catch (e) { } }
+  function leerPin() { try { return sessionStorage.getItem('cvi_pin') || ''; } catch (e) { return ''; } }
+
+  function tic() {
+    var d = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+    $('reloj').textContent = d.toTimeString().slice(0, 5);
+    $('fecha-hoy').textContent = d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  setInterval(tic, 1000); tic();
+  api('getLogo').then(function (u) { if (u) $('logo').innerHTML = '<img alt="Logo CVI" src="' + u + '">'; }).catch(function () { });
+
+  /* ---------- Login ---------- */
+  function entrar(pin) {
+    $('btn-login').disabled = true;
+    return api('loginPanel', pin).then(function (r) {
+      S.pin = pin; guardarPin(pin); $('sede').textContent = r.sede;
+      S.fecha = r.hoy; S.mes = r.hoy.slice(0, 7); $('f-fecha').value = S.fecha; $('f-mes').value = S.mes;
+      $('v-login').classList.add('oculto'); $('v-app').classList.remove('oculto');
+      cargarHoy(); S.timer = setInterval(cargarHoy, 30000);
+    }).catch(function (e) {
+      $('error-login').textContent = e.message.indexOf('PIN') >= 0 ? 'PIN incorrecto' : e.message; $('error-login').classList.remove('oculto');
+    }).then(function () { $('btn-login').disabled = false; });
+  }
+  $('btn-login').addEventListener('click', function () { entrar($('pin').value.trim()); });
+  $('pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') entrar(this.value.trim()); });
+  $('btn-salir').addEventListener('click', function () { guardarPin(''); location.reload(); });
+  $('btn-marcacion').addEventListener('click', function () { window.open(S.appUrl, '_blank'); });
+  if (leerPin()) entrar(leerPin());
+
+  /* ---------- Tabs ---------- */
+  document.querySelector('.tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab]'); if (!b) return;
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.toggle('activo', t === b); });
+    ['hoy', 'reporte', 'qr'].forEach(function (t) { $('t-' + t).classList.toggle('oculto', t !== b.getAttribute('data-tab')); });
+    if (b.getAttribute('data-tab') === 'reporte') cargarReporte();
+    if (b.getAttribute('data-tab') === 'qr') cargarQR();
+  });
+
+  /* ---------- En vivo ---------- */
+  $('f-fecha').addEventListener('change', function () { S.fecha = this.value; cargarHoy(); });
+
+  function cargarHoy() {
+    if ($('t-hoy').classList.contains('oculto')) return;
+    api('getPanel', S.pin, S.fecha).then(pintarHoy).catch(function (e) {
+      $('vivo').classList.add('pausa'); $('vivo-txt').textContent = 'Sin conexión · reintentando (' + e.message + ')';
+    });
+  }
+
+  function kpi(l, v, extra, cls, pct) {
+    return '<div class="tarjeta kpi ' + (cls || '') + '"><div class="l">' + l + '</div><div class="v">' + v + (extra ? ' <small>' + extra + '</small>' : '') + '</div>' +
+      (pct != null ? '<div class="barra-p"><span style="width:' + Math.min(100, pct) + '%"></span></div>' : '') + '</div>';
+  }
+
+  function pintarHoy(d) {
+    $('vivo').classList.toggle('pausa', !d.esHoy);
+    $('vivo-txt').textContent = d.esHoy ? 'En vivo · actualizado ' + d.hora + ' · cada 30 s' : DIAS[d.dia] + ' ' + d.fecha + ' (histórico)';
+    $('aviso-dni').innerHTML = d.docentesSinDni.length
+      ? '<span class="chip rojo" title="' + esc(d.docentesSinDni.join(', ')) + '">⚠ ' + d.docentesSinDni.length + ' docente(s) sin DNI en la hoja “Docentes”</span>' : '';
+    var k = d.kpi;
+    $('kpis').innerHTML =
+      kpi('Docentes que llegaron', k.llegaron, 'de ' + k.programados, 'destacado', k.programados ? k.llegaron / k.programados * 100 : 0) +
+      kpi('En el colegio ahora', k.presentes) +
+      kpi('Puntuales', k.puntuales) +
+      kpi('Tardanzas', k.tardanzas, '', k.tardanzas ? 'alerta-k' : '') +
+      kpi('Clases dictadas', k.dictados, 'de ' + k.bloques, '', k.bloques ? k.dictados / k.bloques * 100 : 0) +
+      kpi('Sin dictar / sin marcar', k.noDictados + k.sinMarcar, '', (k.noDictados + k.sinMarcar) ? 'alerta-k' : '');
+    pintarTimeline(d);
+    pintarMarcaciones(d);
+    $('pendientes').innerHTML = d.faltan.length ? d.faltan.map(function (f) {
+      return '<div class="pend"><div><div class="n">' + esc(f.docente) + '</div><div class="d">' + esc(f.salon) + ' · desde ' + esc(f.desde) + '</div></div>' +
+        '<div>' + (f.atrasado ? '<span class="chip rojo">Atrasado</span>' : '<span class="chip">Por llegar</span>') + '</div></div>';
+    }).join('') : '<div class="vacio-t">✅ Todos los docentes programados ya marcaron.</div>';
+  }
+
+  function pintarTimeline(d) {
+    if (!d.bloques.length) { $('timeline').innerHTML = '<div class="vacio-t">No hay clases programadas este día.</div>'; return; }
+    var ini = Math.min(INICIO, Math.min.apply(null, d.bloques.map(function (b) { return min(b.inicio); })));
+    var fin = Math.max(FIN, Math.max.apply(null, d.bloques.map(function (b) { return min(b.fin); })));
+    var pct = function (m) { return ((m - ini) / (fin - ini) * 100).toFixed(3) + '%'; };
+    var marcas = '';
+    for (var h = Math.ceil(ini / 60) * 60; h <= fin; h += 60) marcas += '<span style="left:' + pct(h) + '">' + (h / 60) + ':00</span>';
+    var salones = [];
+    d.bloques.forEach(function (b) { if (salones.indexOf(b.salon) < 0) salones.push(b.salon); });
+    var ahora = d.esHoy && min(d.hora) >= ini && min(d.hora) <= fin ? '<div class="tl-ahora" style="left:' + pct(min(d.hora)) + '"></div>' : '';
+    $('timeline').innerHTML = '<div class="tl-escala"><div></div><div class="marcas">' + marcas + '</div></div>' + salones.map(function (s) {
+      return '<div class="tl-fila"><div class="tl-salon">' + esc(s) + '</div><div class="tl-pista">' + ahora + d.bloques.filter(function (b) { return b.salon === s; }).map(function (b) {
+        var quien = b.dicto ? (b.tipo === 'REEMPLAZO' ? '↻ ' + b.dicto : b.dicto) : (b.titular || 'Sin docente');
+        var tip = b.salon + ' · ' + b.curso + '\n' + b.inicio + '–' + b.fin + '\nTitular: ' + (b.titular || '—') + (b.dicto ? '\nDictó: ' + b.dicto : '') + '\nEstado: ' + b.estado;
+        return '<div class="blq e-' + b.estado.replace(/ /g, '-') + '" style="left:' + pct(min(b.inicio)) + ';width:calc(' + pct(min(b.fin)) + ' - ' + pct(min(b.inicio)) + ' - 3px)" title="' + esc(tip) + '">' +
+          '<b>' + esc(b.curso) + '</b><span>' + esc(quien) + '</span></div>';
+      }).join('') + '</div></div>';
+    }).join('');
+  }
+
+  function pintarMarcaciones(d) {
+    var porId = {}; d.bloques.forEach(function (b) { porId[b.id] = b; });
+    $('n-marc').textContent = d.marcaciones.length + ' registro(s)';
+    if (!d.marcaciones.length) { $('tabla-marc').innerHTML = '<tr><td class="vacio-t">Aún no hay marcaciones este día.</td></tr>'; return; }
+    var filas = d.marcaciones.slice().sort(function (a, b) { return min(a.inicio) - min(b.inicio); }).map(function (m) {
+      var salones = m.bloques.map(function (id) { return porId[id] ? porId[id].salon : id; })
+        .concat(m.reemplazos.map(function (id) { return '↻ ' + (porId[id] ? porId[id].salon : id); }));
+      var uniq = salones.filter(function (v, i, a) { return a.indexOf(v) === i; });
+      var est = m.estado === 'TARDANZA' ? '<span class="chip warn">Tarde ' + esc(m.minTarde) + ' min</span>' : m.estado === 'PUNTUAL' ? '<span class="chip ok">Puntual</span>' : '<span class="chip">' + esc(m.estado) + '</span>';
+      return '<tr><td><b>' + esc(m.docente) + '</b><div class="muted" style="font-size:12px">' + esc(m.dispositivo) + '</div></td>' +
+        '<td class="num">' + esc(m.inicio) + '</td><td class="num">' + (m.fin ? esc(m.fin) : '<span class="chip ok"><span class="punto"></span>En el colegio</span>') + '</td>' +
+        '<td>' + est + '</td><td>' + esc(uniq.join(', ')) + '</td><td class="num">' + (m.fin ? n2(m.horasEfectivas) : '—') + '</td>' +
+        '<td>' + esc([m.obs, m.obsDetalle].filter(Boolean).join(': ')) + '</td></tr>';
+    });
+    $('tabla-marc').innerHTML = '<thead><tr><th>Docente</th><th class="num">Ingreso</th><th class="num">Salida</th><th>Estado</th><th>Salones</th><th class="num">Horas</th><th>Observación</th></tr></thead><tbody>' + filas.join('') + '</tbody>';
+  }
+
+  /* ---------- Reporte ---------- */
+  $('f-mes').addEventListener('change', function () { S.mes = this.value; cargarReporte(); });
+  function cargarReporte() {
+    $('rep-msg').textContent = 'Cargando…';
+    api('getReporte', S.pin, S.mes).then(function (r) { S.reporte = r; pintarReporte(r); $('rep-msg').textContent = ''; })
+      .catch(function (e) { $('rep-msg').textContent = 'Error: ' + e.message; });
+  }
+  function pintarReporte(r) {
+    var tot = r.filas.reduce(function (s, f) { return s + f.horas; }, 0);
+    var docs = {}; r.filas.forEach(function (f) { docs[f.docente] = true; });
+    var reemp = r.filas.reduce(function (s, f) { return s + f.reemplazos; }, 0);
+    var clases = r.filas.reduce(function (s, f) { return s + f.clases; }, 0);
+    $('rep-kpis').innerHTML = kpi('Horas dictadas (mes)', n2(tot), '', 'destacado') + kpi('Docentes', Object.keys(docs).length) + kpi('Clases registradas', clases) + kpi('Reemplazos', reemp);
+    if (!r.filas.length) { $('tabla-rep').innerHTML = '<tr><td class="vacio-t">No hay clases dictadas registradas en ' + esc(r.mes) + '.</td></tr>'; return; }
+    var html = '<thead><tr><th>Docente</th><th>Mes</th><th>Salón</th><th class="num">N.º horas dictadas</th><th class="num">Clases</th><th class="num">Días</th><th class="num">Reemplazos</th><th class="num">Tardanzas</th></tr></thead><tbody>';
+    var actual = null, sub = 0;
+    r.filas.forEach(function (f, i) {
+      if (actual !== null && actual !== f.docente) { html += '<tr class="subtotal"><td colspan="3">Total ' + esc(actual) + '</td><td class="num">' + n2(sub) + '</td><td colspan="4"></td></tr>'; sub = 0; }
+      actual = f.docente; sub += f.horas;
+      html += '<tr><td><b>' + esc(f.docente) + '</b></td><td>' + esc(f.mes) + '</td><td>' + esc(f.salon) + '</td><td class="num"><b>' + n2(f.horas) + '</b></td><td class="num">' + f.clases +
+        '</td><td class="num">' + f.dias + '</td><td class="num">' + f.reemplazos + '</td><td class="num">' + (f.tardanzas ? f.tardanzas + ' (' + f.minTarde + ' min)' : '0') + '</td></tr>';
+    });
+    html += '<tr class="subtotal"><td colspan="3">Total ' + esc(actual) + '</td><td class="num">' + n2(sub) + '</td><td colspan="4"></td></tr>';
+    html += '<tr class="total"><td colspan="3">TOTAL GENERAL</td><td class="num">' + n2(tot) + '</td><td colspan="4"></td></tr></tbody>';
+    $('tabla-rep').innerHTML = html;
+  }
+  $('btn-exportar').addEventListener('click', function () {
+    var b = this; b.disabled = true; $('rep-msg').textContent = 'Guardando…';
+    api('exportarReporte', S.pin, S.mes).then(function (r) { $('rep-msg').innerHTML = '✅ ' + r.filas + ' fila(s) guardadas. <a href="' + r.url + '" target="_blank">Abrir hoja</a>'; })
+      .catch(function (e) { $('rep-msg').textContent = 'Error: ' + e.message; }).then(function () { b.disabled = false; });
+  });
+  $('btn-csv').addEventListener('click', function () {
+    if (!S.reporte) return;
+    var q = function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; };
+    var lineas = [['Docente', 'Mes', 'Salón', 'N.º horas dictadas', 'Clases', 'Días', 'Reemplazos', 'Tardanzas', 'Min. tardanza'].map(q).join(',')].concat(
+      S.reporte.filas.map(function (f) { return [f.docente, f.mes, f.salon, n2(f.horas), f.clases, f.dias, f.reemplazos, f.tardanzas, f.minTarde].map(q).join(','); }));
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + lineas.join('\n')], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'horas_docentes_' + S.mes + '.csv'; a.click();
+  });
+
+  /* ---------- QR ---------- */
+  function cargarQR() {
+    $('qr-grid').innerHTML = '<div class="muted">Cargando…</div>';
+    api('getDocentesQR', S.pin).then(function (r) {
+      $('qr-grid').innerHTML = r.docentes.map(function (d, i) {
+        return '<div class="fotocheck"><div class="cab">CVI · Monte Azul</div>' +
+          (d.dni ? '<div class="qr" id="qr-' + i + '"></div>' : '<div class="qr"><div class="sin">Falta registrar el DNI<br>en la hoja “Docentes”</div></div>') +
+          '<div class="nom">' + esc(d.docente) + '</div><div class="dni">' + (d.dni ? 'DNI ' + esc(d.dni) : '&nbsp;') + '</div></div>';
+      }).join('');
+      r.docentes.forEach(function (d, i) {
+        if (!d.dni || typeof QRCode === 'undefined') return;
+        new QRCode($('qr-' + i), { text: (r.appUrl || S.appUrl) + '?dni=' + d.dni, width: 340, height: 340, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      });
+    }).catch(function (e) { $('qr-grid').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
+  }
+  $('btn-imprimir').addEventListener('click', function () { window.print(); });
+})();
+</script>
+</body>
+</html>
