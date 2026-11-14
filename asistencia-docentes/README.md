@@ -20,9 +20,11 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 
 1. Abre la hoja **"CVI Asistencia Docente - Monte Azul (piloto)"**, que está en tu Drive dentro de *CVI MONTE AZUL 2026*. Ya tiene a los docentes con su celular y el horario.
 2. Ve a **Extensiones → Apps Script**. Se abre el editor con un archivo llamado `Código.gs`.
-3. Abre el archivo **`CVI_Asistencia_TodoEnUno.gs`**. Está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE* de tu Drive y también en [`dist/`](dist/CVI_Asistencia_TodoEnUno.gs).
-   1. Selecciona todo su contenido (Ctrl+A) y cópialo (Ctrl+C).
-   2. En `Código.gs`, borra lo que haya, pega (Ctrl+V) y guarda (Ctrl+S).
+3. Abre el Google Doc **"CÓDIGO PARA PEGAR - CVI Asistencia"**, que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
+   1. Haz clic dentro del texto, pulsa **Ctrl+A** y luego **Ctrl+C**.
+   2. En el editor de Apps Script, haz clic dentro de `Código.gs`, pulsa **Ctrl+A** y **Supr** para borrar lo que haya, y luego **Ctrl+V** y **Ctrl+S**.
+   3. Revisa que la **primera línea** sea `/**` y que la **última** diga `FIN DEL ARCHIVO`.
+   - No copies desde la vista previa del archivo `.gs` de Drive: copia mal las líneas largas y agrega el nombre del archivo.
 4. Arriba, en la lista de funciones, elige **`setup`** y pulsa **▶ Ejecutar**.
    1. Google te pide permisos: elige tu cuenta.
    2. Si aparece la advertencia, entra en *Configuración avanzada* y luego en *Ir a… (no seguro)*. Es normal porque la app es tuya.
