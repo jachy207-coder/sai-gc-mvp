@@ -10,7 +10,7 @@ const assert = (c, m) => { if (!c) throw new Error('FALLÓ: ' + m); console.log(
 
 async function entrarPanel(page) {
   await page.goto(BASE + '/?page=panel');
-  await page.fill('#pin', '2026'); await page.click('#btn-login');
+  await page.fill('#pin', '91515'); await page.click('#btn-login');
   await page.waitForSelector('#kpis .kpi');
 }
 
@@ -117,11 +117,49 @@ async function entrarPanel(page) {
   const carp = drv.find((c) => c.nombre.startsWith('Fotochecks QR'));
   assert(carp && carp.archivos.filter((n) => n.endsWith('.png')).length >= 20 && carp.archivos.includes('Fotochecks_QR_CVI.zip'), 'ZIP en Drive con ' + carp.archivos.length + ' archivos');
 
+  console.log('4b) Módulo Docentes: agregar, editar, activar/desactivar');
+  await page.click('[data-tab="docentes"]');
+  await page.waitForSelector('.dc');
+  assert((await page.locator('.dc').count()) === 20, 'lista 20 docentes activos');
+  await page.click('#d-nuevo'); await page.waitForSelector('#g-docente');
+  await page.fill('#g-docente', 'Rosa Díaz'); await page.fill('#g-nombre', 'Rosa María Díaz Torres');
+  await page.fill('#g-cel', '912 000 111'); await page.fill('#g-esp', 'Inglés'); await page.fill('#g-notas', 'Ingresa en diciembre');
+  await page.screenshot({ path: OUT + '/v2_6_docente_nuevo.png' });
+  await page.click('#g-guardar'); await page.waitForSelector('#toast:not(.oculto) >> text=Docente agregado');
+  await page.waitForSelector('.dc[data-doc="Rosa Díaz"]');
+  assert(true, 'agregar docente nuevo (Rosa Díaz, celular 912000111)');
+  await page.click('#d-nuevo'); await page.waitForSelector('#g-docente');
+  await page.fill('#g-docente', 'Otra'); await page.fill('#g-cel', '912000111'); await page.click('#g-guardar');
+  await page.waitForSelector('#g-err:not(.oculto)');
+  assert((await page.textContent('#g-err')).includes('ya está registrado para Rosa Díaz'), 'no permite celular duplicado');
+  await page.click('#modal-cerrar');
+  await page.click('.dc[data-doc="Yuli Cucho"] .n'); await page.waitForSelector('#g-docente');
+  await page.fill('#g-docente', 'Yuli Cucho Ramos'); await page.fill('#g-dni', '45678912');
+  await page.click('#g-guardar'); await page.waitForSelector('#toast:not(.oculto) >> text=Datos guardados');
+  assert((await page.textContent('#toast')).includes('2 bloque(s) del horario actualizados'), 'renombrar actualiza sus 2 bloques del horario');
+  const hy = await js(`JSON.stringify(SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Horario')._datos.filter(function(r){return r[6]==='Yuli Cucho Ramos'}).length)`);
+  assert(hy === '2', 'Horario en la hoja con el nombre nuevo');
+  await page.click('.dc[data-doc="Rosa Díaz"] [data-sw]');
+  await page.waitForSelector('#toast:not(.oculto) >> text=desactivado');
+  const rosa = await js(`JSON.stringify(SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Docentes')._datos.filter(function(r){return r[1]==='Rosa Díaz'})[0])`).then(JSON.parse);
+  assert(rosa[6] === 'NO' && rosa[7] === 'Ingresa en diciembre', 'desactivar guarda Activo=NO (y conserva notas)');
+  await page.click('#d-filtros [data-f="todos"]');
+  await page.screenshot({ path: OUT + '/v2_7_docentes.png', fullPage: true });
+  const pm = await browser.newPage();
+  await pm.goto(BASE + '/?dni=912000111'); await pm.waitForSelector('#error-dni:not(.oculto)');
+  assert((await pm.textContent('#error-dni')).includes('inactivo'), 'docente inactivo no puede marcar');
+  await pm.goto(BASE + '/?dni=45678912'); await pm.waitForSelector('#paso-docente:not(.oculto)');
+  assert((await pm.textContent('#nombre-docente')).includes('Yuli Cucho Ramos'), 'marca con el DNI recién registrado');
+  await pm.close();
+  const msg2 = await js('setup()');
+  const nombres = await js(`JSON.stringify(SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Docentes')._datos.map(function(r){return r[1]}))`).then(JSON.parse);
+  assert(!nombres.includes('Yuli Cucho') && nombres.includes('Yuli Cucho Ramos'), 'setup() no vuelve a crear al docente renombrado (' + msg2 + ')');
+
   console.log('5) Celular: sin desborde horizontal en ninguna pestaña');
   const m = await browser.newPage({ ...devices['iPhone 13'] });
   m.on('pageerror', (e) => { throw e; });
   await entrarPanel(m);
-  for (const t of ['hoy', 'marcar', 'horario', 'reporte', 'qr']) {
+  for (const t of ['hoy', 'marcar', 'horario', 'docentes', 'reporte', 'qr']) {
     await m.click(`[data-tab="${t}"]`);
     await m.waitForTimeout(700);
     const r = await m.evaluate(() => ({ sw: document.documentElement.scrollWidth, w: document.documentElement.clientWidth, bw: document.body.scrollWidth }));

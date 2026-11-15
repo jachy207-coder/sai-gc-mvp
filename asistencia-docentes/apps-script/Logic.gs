@@ -264,6 +264,33 @@ function nuevoIdBloque(salon, dia, horario) {
   return base + n;
 }
 
+/* ---------------- Docentes: validación ---------------- */
+
+/**
+ * Valida los datos de un docente antes de guardarlo.
+ * @param d           {dni, docente, nombreCompleto, especialidad, celular, correo, activo}
+ * @param docentes    lista actual
+ * @param nombreAnterior  nombre corto antes de editar ('' si es nuevo)
+ */
+function validarDocente(d, docentes, nombreAnterior) {
+  var errores = [];
+  var nombre = String(d.docente || '').trim();
+  var dni = String(d.dni || '').replace(/\D/g, '');
+  var cel = String(d.celular || '').replace(/\D/g, '').replace(/^51(\d{9})$/, '$1');
+  if (!nombre) errores.push('Escribe el nombre corto del docente (como aparecerá en el horario).');
+  if (d.dni && dni.length !== 8) errores.push('El DNI debe tener 8 dígitos.');
+  if (d.celular && (cel.length !== 9 || cel[0] !== '9')) errores.push('El celular debe tener 9 dígitos y empezar con 9.');
+  if (d.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(d.correo).trim())) errores.push('El correo no es válido.');
+  if (!dni && !cel) errores.push('Registra al menos el DNI o el celular (con eso marca su asistencia).');
+  var otros = (docentes || []).filter(function (x) { return norm(x.docente) !== norm(nombreAnterior || ''); });
+  otros.forEach(function (x) {
+    if (nombre && norm(x.docente) === norm(nombre)) errores.push('Ya existe un docente llamado "' + x.docente + '".');
+    if (dni && String(x.dni || '').replace(/\D/g, '') === dni) errores.push('El DNI ' + dni + ' ya está registrado para ' + x.docente + '.');
+    if (cel && String(x.celular || '').replace(/\D/g, '') === cel) errores.push('El celular ' + cel + ' ya está registrado para ' + x.docente + '.');
+  });
+  return { errores: errores, dni: dni, celular: cel, docente: nombre };
+}
+
 // Exportar para pruebas en Node (ignorado en Apps Script).
 if (typeof module !== 'undefined') {
   module.exports = {
@@ -271,6 +298,6 @@ if (typeof module !== 'undefined') {
     extraerDni: extraerDni, bloquesDelDia: bloquesDelDia, evaluarIngreso: evaluarIngreso,
     horasSuperpuestas: horasSuperpuestas, calcularHoras: calcularHoras,
     estadoBloques: estadoBloques, resumenMensual: resumenMensual,
-    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque
+    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque, validarDocente: validarDocente
   };
 }

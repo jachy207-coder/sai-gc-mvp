@@ -272,6 +272,33 @@ function nuevoIdBloque(salon, dia, horario) {
   return base + n;
 }
 
+/* ---------------- Docentes: validación ---------------- */
+
+/**
+ * Valida los datos de un docente antes de guardarlo.
+ * @param d           {dni, docente, nombreCompleto, especialidad, celular, correo, activo}
+ * @param docentes    lista actual
+ * @param nombreAnterior  nombre corto antes de editar ('' si es nuevo)
+ */
+function validarDocente(d, docentes, nombreAnterior) {
+  var errores = [];
+  var nombre = String(d.docente || '').trim();
+  var dni = String(d.dni || '').replace(/\D/g, '');
+  var cel = String(d.celular || '').replace(/\D/g, '').replace(/^51(\d{9})$/, '$1');
+  if (!nombre) errores.push('Escribe el nombre corto del docente (como aparecerá en el horario).');
+  if (d.dni && dni.length !== 8) errores.push('El DNI debe tener 8 dígitos.');
+  if (d.celular && (cel.length !== 9 || cel[0] !== '9')) errores.push('El celular debe tener 9 dígitos y empezar con 9.');
+  if (d.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(d.correo).trim())) errores.push('El correo no es válido.');
+  if (!dni && !cel) errores.push('Registra al menos el DNI o el celular (con eso marca su asistencia).');
+  var otros = (docentes || []).filter(function (x) { return norm(x.docente) !== norm(nombreAnterior || ''); });
+  otros.forEach(function (x) {
+    if (nombre && norm(x.docente) === norm(nombre)) errores.push('Ya existe un docente llamado "' + x.docente + '".');
+    if (dni && String(x.dni || '').replace(/\D/g, '') === dni) errores.push('El DNI ' + dni + ' ya está registrado para ' + x.docente + '.');
+    if (cel && String(x.celular || '').replace(/\D/g, '') === cel) errores.push('El celular ' + cel + ' ya está registrado para ' + x.docente + '.');
+  });
+  return { errores: errores, dni: dni, celular: cel, docente: nombre };
+}
+
 // Exportar para pruebas en Node (ignorado en Apps Script).
 if (typeof module !== 'undefined') {
   module.exports = {
@@ -279,7 +306,7 @@ if (typeof module !== 'undefined') {
     extraerDni: extraerDni, bloquesDelDia: bloquesDelDia, evaluarIngreso: evaluarIngreso,
     horasSuperpuestas: horasSuperpuestas, calcularHoras: calcularHoras,
     estadoBloques: estadoBloques, resumenMensual: resumenMensual,
-    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque
+    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque, validarDocente: validarDocente
   };
 }
 
@@ -442,7 +469,8 @@ var HOJAS = {
 var ESQUEMAS = {
   Config: [['clave', 'Clave', true], ['valor', 'Valor', true], ['descripcion', 'Descripción', true]],
   Docentes: [['dni', 'DNI', true], ['docente', 'Docente (igual que en Horario)', true], ['nombreCompleto', 'Nombre completo', true],
-    ['especialidad', 'Especialidad', true], ['celular', 'Celular', true], ['correo', 'Correo', true], ['activo', 'Activo (SI/NO)', true]],
+    ['especialidad', 'Especialidad', true], ['celular', 'Celular', true], ['correo', 'Correo', true], ['activo', 'Activo (SI/NO)', true],
+    ['notas', 'Notas', true]],
   Horario: [['id', 'ID', true], ['salon', 'Salón', true], ['dia', 'Día', true], ['inicio', 'Inicio', true], ['fin', 'Fin', true],
     ['curso', 'Curso', true], ['docente', 'Docente', true], ['nota', 'Nota', true]],
   Marcaciones: [['id', 'ID', true], ['fecha', 'Fecha', true], ['dni', 'DNI', true], ['docente', 'Docente', true],
@@ -459,7 +487,7 @@ var ESQUEMAS = {
 var CONFIG_DEFAULT = [
   ['SEDE', 'Monte Azul', 'Nombre de la sede'],
   ['TOLERANCIA_MIN', '5', 'Minutos de tolerancia para considerar puntual'],
-  ['PIN_PANEL', '2026', 'PIN para entrar al panel (cámbialo)'],
+  ['PIN_PANEL', '91515', 'PIN para entrar al panel de coordinación'],
   ['LOGO_FILE_ID', '1lq4fr6oIeE7kkoQ33l6qUpzjJWS8mx3u', 'ID en Drive del logo CVI 2025 actualizado'],
   ['FECHA_INICIO', '2026-11-16', 'Inicio del piloto'],
   ['PERMITIR_CELULAR', 'SI', 'SI = se puede marcar desde el celular']
@@ -916,6 +944,69 @@ function eliminarBloque(pin, id) {
   });
 }
 
+/* ============================ API: Docentes (agregar / editar / activar) ============================ */
+
+function getDocentesAdmin(pin) {
+  validarPin_(pin);
+  var horario = horario_();
+  var lista = docentes_().map(function (d) {
+    var bl = horario.filter(function (b) { return norm(b.docente) === norm(d.docente); });
+    var horas = bl.reduce(function (s, b) { return s + (toMin(b.fin) - toMin(b.inicio)) / 60; }, 0);
+    var salones = bl.map(function (b) { return b.salon; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    return {
+      dni: d.dni, docente: d.docente, nombreCompleto: d.nombreCompleto, especialidad: d.especialidad, celular: d.celular,
+      correo: d.correo, activo: d.activo, notas: d.notas, bloques: bl.length, horasSemana: Math.round(horas * 100) / 100, salones: salones
+    };
+  });
+  lista.sort(function (a, b) { return (b.activo - a.activo) || a.docente.localeCompare(b.docente); });
+  return { docentes: lista };
+}
+
+/**
+ * Agrega o edita un docente. Si cambia el nombre corto, también se actualiza en el Horario
+ * (las marcaciones pasadas conservan el nombre con que se registraron).
+ */
+function guardarDocente(pin, d, nombreAnterior) {
+  validarPin_(pin);
+  return conLock_(function () {
+    var lista = docentes_();
+    var v = validarDocente(d, lista, nombreAnterior || '');
+    if (v.errores.length) return { ok: false, error: v.errores.join(' ') };
+    var fila = {
+      dni: v.dni, docente: v.docente, nombreCompleto: String(d.nombreCompleto || '').trim(), especialidad: String(d.especialidad || '').trim(),
+      celular: v.celular, correo: String(d.correo || '').trim(), activo: d.activo === false || d.activo === 'NO' ? 'NO' : 'SI', notas: String(d.notas || '').trim()
+    };
+    var sh = hoja_(HOJAS.DOCENTES), renombrados = 0;
+    var actual = nombreAnterior ? lista.filter(function (x) { return norm(x.docente) === norm(nombreAnterior); })[0] : null;
+    if (nombreAnterior && !actual) return { ok: false, error: 'No se encontró al docente "' + nombreAnterior + '".' };
+    if (actual) {
+      sh.getRange(actual._fila, 1, 1, ESQUEMAS.Docentes.length).setValues([filaDe_(HOJAS.DOCENTES, fila)]);
+      if (norm(nombreAnterior) !== norm(fila.docente)) {
+        var shH = hoja_(HOJAS.HORARIO), n = shH.getLastRow() - 1;
+        if (n > 0) {
+          var rango = shH.getRange(2, 7, n, 1), vals = rango.getDisplayValues();
+          vals.forEach(function (r) { if (norm(r[0]) === norm(nombreAnterior)) { r[0] = fila.docente; renombrados++; } });
+          if (renombrados) rango.setValues(vals);
+        }
+      }
+    } else {
+      agregar_(HOJAS.DOCENTES, fila);
+    }
+    return { ok: true, docente: fila, nuevo: !actual, renombrados: renombrados };
+  });
+}
+
+function cambiarActivoDocente(pin, nombre, activo) {
+  validarPin_(pin);
+  return conLock_(function () {
+    var d = docentes_().filter(function (x) { return norm(x.docente) === norm(nombre); })[0];
+    if (!d) return { ok: false, error: 'No se encontró al docente.' };
+    var col = ESQUEMAS.Docentes.map(function (c) { return c[0]; }).indexOf('activo') + 1;
+    hoja_(HOJAS.DOCENTES).getRange(d._fila, col).setValue(activo ? 'SI' : 'NO');
+    return { ok: true, activo: !!activo };
+  });
+}
+
 /* ============================ API: Fotochecks en Drive ============================ */
 
 /**
@@ -958,9 +1049,8 @@ function setup() {
   Object.keys(ESQUEMAS).forEach(function (nombre) {
     var sh = ss.getSheetByName(nombre) || ss.insertSheet(nombre);
     var esq = ESQUEMAS[nombre];
-    if (sh.getLastRow() === 0) {
-      sh.getRange(1, 1, 1, esq.length).setValues([esq.map(function (c) { return c[1]; })]);
-    }
+    // Los encabezados se reescriben siempre: así se agregan columnas nuevas (ej. "Notas") sin tocar los datos.
+    sh.getRange(1, 1, 1, esq.length).setValues([esq.map(function (c) { return c[1]; })]);
     sh.getRange(1, 1, 1, esq.length).setFontWeight('bold').setBackground('#000000').setFontColor('#eebe4f');
     sh.setFrozenRows(1);
     esq.forEach(function (c, j) { if (c[2]) sh.getRange(1, j + 1, sh.getMaxRows(), 1).setNumberFormat('@'); });
@@ -1007,14 +1097,27 @@ function actualizarDatos_() {
   var filas = Math.max(shD.getLastRow() - 1, 0);
   var datos = filas ? shD.getRange(2, 1, filas, esqD.length).getDisplayValues() : [];
   var completadas = 0, agregados = [];
+  var colActivo = esqD.map(function (c) { return c[0]; }).indexOf('activo');
   SEED_DOCENTES.forEach(function (seed) {
     var fila = datos.filter(function (r) { return norm(r[colDoc]) === norm(seed[colDoc]); })[0];
-    if (!fila) { datos.push(seed.slice()); agregados.push(seed[colDoc]); return; }
-    seed.forEach(function (v, j) { if (v && !String(fila[j]).trim() && j !== esqD.length - 1) { fila[j] = v; completadas++; } });
+    var colCel = 4, cel = String(seed[colCel] || '').replace(/\D/g, '');
+    // Si coordinación lo renombró, se reconoce por su celular y no se vuelve a crear.
+    if (!fila && cel && datos.some(function (r) { return String(r[colCel]).replace(/\D/g, '') === cel; })) return;
+    if (!fila) {
+      // Solo se agregan docentes nuevos si no fueron renombrados/eliminados a propósito en la hoja.
+      var completo = seed.slice(); while (completo.length < esqD.length) completo.push('');
+      datos.push(completo); agregados.push(seed[colDoc]); return;
+    }
+    seed.forEach(function (v, j) { if (v && !String(fila[j]).trim() && j !== colActivo) { fila[j] = v; completadas++; } });
   });
   if (datos.length) shD.getRange(2, 1, datos.length, esqD.length).setValues(datos);
   if (completadas) cambios.push(completadas + ' dato(s) de docentes completados');
   if (agregados.length) cambios.push('docentes agregados: ' + agregados.join(', '));
+  // PIN del panel solicitado por coordinación (solo reemplaza el PIN inicial 2026).
+  var shC = hoja_(HOJAS.CONFIG), cfg = shC.getRange(2, 1, Math.max(shC.getLastRow() - 1, 1), 2).getDisplayValues();
+  cfg.forEach(function (r, i) {
+    if (r[0] === 'PIN_PANEL' && r[1] === '2026') { shC.getRange(i + 2, 2).setValue('91515'); cambios.push('PIN del panel actualizado'); }
+  });
   return cambios;
 }
 
@@ -1528,6 +1631,27 @@ var __HTML = {
     "  .agregar:hover { border-color: var(--rojo); color: var(--rojo); }",
     "  .vacio-d { font-size: 12px; color: var(--gris); text-align: center; padding: 6px 0; }",
     "",
+    "  /* ---------- Docentes ---------- */",
+    "  .dc { padding: 14px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; cursor: pointer; }",
+    "  .dc:hover { border-color: var(--amarillo); }",
+    "  .dc.inactivo { opacity: .6; }",
+    "  .dc.inactivo .avatar-s { background: var(--gris); }",
+    "  .dc .n { font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }",
+    "  .dc .nc { font-size: 12.5px; color: var(--texto-2); overflow-wrap: anywhere; }",
+    "  .dc .datos { font-size: 12.5px; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; color: var(--texto); }",
+    "  .dc .datos span { white-space: nowrap; }",
+    "  .dc .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }",
+    "  .switch { position: relative; width: 50px; height: 28px; flex: none; }",
+    "  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }",
+    "  .switch .pista { position: absolute; inset: 0; background: #cfc8bd; border-radius: 999px; cursor: pointer; transition: background .2s; }",
+    "  .switch .pista::after { content: ''; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }",
+    "  .switch input:checked + .pista { background: var(--ok); }",
+    "  .switch input:checked + .pista::after { transform: translateX(22px); }",
+    "  .switch-l { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--texto-2); }",
+    "  .form-grid textarea { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--blanco); font-size: 15px; width: 100%; min-height: 80px; margin: 0; }",
+    "  .form-grid .ayuda { font-weight: 500; font-size: 12px; color: var(--gris); }",
+    "  .req { color: var(--rojo); }",
+    "",
     "  /* ---------- Fotochecks ---------- */",
     "  .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }",
     "  .fotocheck { background: var(--blanco); border-radius: 14px; overflow: hidden; border: 1px solid var(--borde); text-align: center; break-inside: avoid; }",
@@ -1563,8 +1687,8 @@ var __HTML = {
     "    body { padding-bottom: 76px; }",
     "    .contenedor { padding: 16px 12px 28px; }",
     "    /* Navegación inferior fija estilo app */",
-    "    .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; border: 0; border-top: 3px solid var(--amarillo); background: var(--negro); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }",
-    "    .tab { flex-direction: column; gap: 2px; padding: 6px 2px; font-size: 11px; color: #cfc8bd; border-radius: 10px; }",
+    "    .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; border: 0; border-top: 3px solid var(--amarillo); background: var(--negro); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }",
+    "    .tab { flex-direction: column; gap: 2px; padding: 6px 1px; font-size: 10.5px; color: #cfc8bd; border-radius: 10px; }",
     "    .tab .ico { font-size: 20px; }",
     "    .tab.activo { background: #262626; color: var(--amarillo); }",
     "    .tab .txt-largo { display: none; }",
@@ -1628,6 +1752,7 @@ var __HTML = {
     "          <button class=\"tab activo\" data-tab=\"hoy\" type=\"button\"><span class=\"ico\">📍</span><span>En vivo</span></button>",
     "          <button class=\"tab\" data-tab=\"marcar\" type=\"button\"><span class=\"ico\">✍️</span><span>Marcar<span class=\"txt-largo\"> asistencia</span></span></button>",
     "          <button class=\"tab\" data-tab=\"horario\" type=\"button\"><span class=\"ico\">🗓️</span><span>Horario</span></button>",
+    "          <button class=\"tab\" data-tab=\"docentes\" type=\"button\"><span class=\"ico\">👥</span><span>Docentes</span></button>",
     "          <button class=\"tab\" data-tab=\"reporte\" type=\"button\"><span class=\"ico\">📊</span><span>Reporte</span></button>",
     "          <button class=\"tab\" data-tab=\"qr\" type=\"button\"><span class=\"ico\">🪪</span><span>QR<span class=\"txt-largo\"> fotochecks</span></span></button>",
     "        </nav>",
@@ -1703,6 +1828,24 @@ var __HTML = {
     "        </div>",
     "        <div class=\"semana\" id=\"semana\"></div>",
     "        <p class=\"muted\" style=\"font-size:13px;margin-top:14px\">Toca un bloque para editarlo o eliminarlo. Los cambios se guardan en la hoja “Horario” y se aplican de inmediato en la marcación.</p>",
+    "      </div>",
+    "",
+    "      <!-- ===================== DOCENTES ===================== -->",
+    "      <div id=\"t-docentes\" class=\"oculto\">",
+    "        <div class=\"seccion-t\" style=\"margin-top:0\"><h2>Docentes</h2><span class=\"muted\" id=\"d-resumen\"></span></div>",
+    "        <div class=\"barra\">",
+    "          <input type=\"search\" id=\"d-buscar\" class=\"campo\" placeholder=\"🔎 Buscar por nombre, DNI, celular o especialidad…\" style=\"flex:1;min-width:200px;max-width:460px\">",
+    "          <div class=\"controles\">",
+    "            <div class=\"filtros\" id=\"d-filtros\">",
+    "              <button class=\"filtro sel\" data-f=\"activos\" type=\"button\">Activos</button>",
+    "              <button class=\"filtro\" data-f=\"inactivos\" type=\"button\">Inactivos</button>",
+    "              <button class=\"filtro\" data-f=\"todos\" type=\"button\">Todos</button>",
+    "            </div>",
+    "            <button class=\"btn btn-rojo btn-s\" id=\"d-nuevo\" type=\"button\">＋ Nuevo docente</button>",
+    "          </div>",
+    "        </div>",
+    "        <div class=\"doc-grid\" id=\"d-grid\"></div>",
+    "        <p class=\"muted\" style=\"font-size:13px;margin-top:14px\">Los docentes <b>inactivos</b> no pueden marcar asistencia ni aparecen para asignar en el horario. Sus registros pasados se conservan.</p>",
     "      </div>",
     "",
     "      <!-- ===================== REPORTE ===================== -->",
@@ -1802,11 +1945,12 @@ var __HTML = {
     "    var b = e.target.closest('[data-tab]'); if (!b) return;",
     "    var t = b.getAttribute('data-tab');",
     "    document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('activo', x === b); });",
-    "    ['hoy', 'marcar', 'horario', 'reporte', 'qr'].forEach(function (x) { $('t-' + x).classList.toggle('oculto', x !== t); });",
+    "    ['hoy', 'marcar', 'horario', 'docentes', 'reporte', 'qr'].forEach(function (x) { $('t-' + x).classList.toggle('oculto', x !== t); });",
     "    window.scrollTo(0, 0);",
     "    if (t === 'hoy') cargarHoy();",
     "    if (t === 'marcar') cargarCoord();",
     "    if (t === 'horario') cargarHorario();",
+    "    if (t === 'docentes') cargarDocentes();",
     "    if (t === 'reporte') cargarReporte();",
     "    if (t === 'qr') cargarQR();",
     "  });",
@@ -2055,6 +2199,98 @@ var __HTML = {
     "        if (!r.ok) { $('f-err').textContent = r.error; $('f-err').classList.remove('oculto'); return; }",
     "        cerrarModal(); toast('🗑 Bloque eliminado'); cargarHorario(true);",
     "      }).catch(function (e) { $('f-err').textContent = e.message; $('f-err').classList.remove('oculto'); });",
+    "    });",
+    "  }",
+    "",
+    "  /* ===================== DOCENTES ===================== */",
+    "  S.dFiltro = 'activos'; S.docs = null;",
+    "  function cargarDocentes() {",
+    "    if (!S.docs) $('d-grid').innerHTML = '<div class=\"muted\">Cargando…</div>';",
+    "    return api('getDocentesAdmin', S.pin).then(function (r) { S.docs = r.docentes; pintarDocentes(); })",
+    "      .catch(function (e) { $('d-grid').innerHTML = '<div class=\"alerta\">' + esc(e.message) + '</div>'; });",
+    "  }",
+    "  $('d-buscar').addEventListener('input', pintarDocentes);",
+    "  $('d-filtros').addEventListener('click', function (e) {",
+    "    var b = e.target.closest('[data-f]'); if (!b) return;",
+    "    S.dFiltro = b.getAttribute('data-f');",
+    "    this.querySelectorAll('.filtro').forEach(function (x) { x.classList.toggle('sel', x === b); });",
+    "    pintarDocentes();",
+    "  });",
+    "  function sinTildes(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }",
+    "  function pintarDocentes() {",
+    "    if (!S.docs) return;",
+    "    var q = sinTildes($('d-buscar').value);",
+    "    var act = S.docs.filter(function (d) { return d.activo; }).length;",
+    "    $('d-resumen').textContent = act + ' activo(s) · ' + (S.docs.length - act) + ' inactivo(s)';",
+    "    var lista = S.docs.filter(function (d) {",
+    "      if (q) return sinTildes([d.docente, d.nombreCompleto, d.dni, d.celular, d.especialidad, d.correo].join(' ')).indexOf(q) >= 0;",
+    "      return S.dFiltro === 'todos' || (S.dFiltro === 'activos' ? d.activo : !d.activo);",
+    "    });",
+    "    $('d-grid').innerHTML = lista.length ? lista.map(function (d) {",
+    "      var chips = [];",
+    "      if (!d.dni) chips.push('<span class=\"chip warn\">Sin DNI · marca con celular</span>');",
+    "      if (!d.dni && !d.celular) chips.push('<span class=\"chip rojo\">No puede marcar</span>');",
+    "      if (d.activo && !d.bloques) chips.push('<span class=\"chip\">Sin clases en el horario</span>');",
+    "      if (d.bloques) chips.push('<span class=\"chip oscuro\">' + d.bloques + ' bloque(s) · ' + String(d.horasSemana).replace('.', ',') + ' h/sem</span>');",
+    "      return '<div class=\"tarjeta dc' + (d.activo ? '' : ' inactivo') + '\" data-doc=\"' + esc(d.docente) + '\"><div class=\"avatar-s\">' + iniciales(d.docente) + '</div>' +",
+    "        '<div><div class=\"n\">' + esc(d.docente) + '</div>' + (d.nombreCompleto && d.nombreCompleto !== d.docente ? '<div class=\"nc\">' + esc(d.nombreCompleto) + '</div>' : '') +",
+    "        '<div class=\"datos\">' + (d.especialidad ? '<span>📚 ' + esc(d.especialidad) + '</span>' : '') + (d.dni ? '<span>🪪 ' + esc(d.dni) + '</span>' : '') +",
+    "        (d.celular ? '<span>📱 ' + esc(d.celular) + '</span>' : '') + '</div>' +",
+    "        (d.salones.length ? '<div class=\"nc\" style=\"margin-top:4px\">' + esc(d.salones.join(' · ')) + '</div>' : '') +",
+    "        (d.notas ? '<div class=\"nc\" style=\"margin-top:4px\">📝 ' + esc(d.notas) + '</div>' : '') +",
+    "        '<div class=\"chips\">' + chips.join('') + '</div></div>' +",
+    "        '<label class=\"switch-l\" data-sw=\"1\"><span class=\"switch\"><input type=\"checkbox\"' + (d.activo ? ' checked' : '') + '><span class=\"pista\"></span></span>' + (d.activo ? 'Activo' : 'Inactivo') + '</label></div>';",
+    "    }).join('') : '<div class=\"vacio-t\">No hay docentes con este filtro.</div>';",
+    "  }",
+    "  $('d-grid').addEventListener('click', function (e) {",
+    "    var card = e.target.closest('[data-doc]'); if (!card) return;",
+    "    var d = S.docs.filter(function (x) { return x.docente === card.getAttribute('data-doc'); })[0];",
+    "    var sw = e.target.closest('[data-sw]');",
+    "    if (sw) {",
+    "      e.preventDefault();",
+    "      var nuevo = !d.activo;",
+    "      if (!nuevo && d.bloques && !confirm(d.docente + ' tiene ' + d.bloques + ' bloque(s) en el horario. Si lo desactivas no podrá marcar asistencia. ¿Continuar?')) return;",
+    "      api('cambiarActivoDocente', S.pin, d.docente, nuevo).then(function (r) {",
+    "        if (!r.ok) return toast('Error: ' + esc(r.error));",
+    "        d.activo = nuevo; pintarDocentes(); S.horario = null; S.coord = null;",
+    "        toast((nuevo ? '✅ ' : '⏸ ') + esc(d.docente) + (nuevo ? ' activado' : ' desactivado'));",
+    "      }).catch(function (er) { toast('Error: ' + esc(er.message)); });",
+    "      return;",
+    "    }",
+    "    editarDocente(d);",
+    "  });",
+    "  $('d-nuevo').addEventListener('click', function () { editarDocente(null); });",
+    "",
+    "  function editarDocente(d) {",
+    "    var nuevo = !d;",
+    "    d = d || { docente: '', nombreCompleto: '', dni: '', celular: '', especialidad: '', correo: '', activo: true, notas: '', bloques: 0 };",
+    "    var html = '<div class=\"form-grid\">' +",
+    "      '<label><span>Nombre corto <span class=\"req\">*</span></span><input id=\"g-docente\" value=\"' + esc(d.docente) + '\" placeholder=\"Ej. Ana Pérez\"><span class=\"ayuda\">Así aparece en el horario y en los reportes.</span></label>' +",
+    "      '<label>Nombre completo<input id=\"g-nombre\" value=\"' + esc(d.nombreCompleto) + '\" placeholder=\"Nombres y apellidos\"></label>' +",
+    "      '<label>DNI<input id=\"g-dni\" inputmode=\"numeric\" maxlength=\"8\" value=\"' + esc(d.dni) + '\" placeholder=\"8 dígitos\"></label>' +",
+    "      '<label>Celular<input id=\"g-cel\" inputmode=\"tel\" value=\"' + esc(d.celular) + '\" placeholder=\"9 dígitos\"></label>' +",
+    "      '<label class=\"full\"><span class=\"ayuda\" style=\"margin-top:-6px\">Con el DNI <b>o</b> el celular el docente marca su asistencia (al menos uno es obligatorio).</span></label>' +",
+    "      '<label>Especialidad / cursos<input id=\"g-esp\" value=\"' + esc(d.especialidad) + '\" placeholder=\"Ej. Matemática\"></label>' +",
+    "      '<label>Correo<input id=\"g-correo\" type=\"email\" value=\"' + esc(d.correo) + '\" placeholder=\"correo@gmail.com\"></label>' +",
+    "      '<label class=\"full\">Notas<textarea id=\"g-notas\" placeholder=\"Ej. fecha de ingreso, disponibilidad, contacto de emergencia…\">' + esc(d.notas) + '</textarea></label>' +",
+    "      '<label class=\"full\" style=\"flex-direction:row;display:flex;align-items:center;gap:12px\"><span class=\"switch\"><input type=\"checkbox\" id=\"g-activo\"' + (d.activo ? ' checked' : '') + '><span class=\"pista\"></span></span><span>Docente activo (puede marcar asistencia)</span></label>' +",
+    "      '</div>' +",
+    "      (nuevo ? '' : '<div class=\"aviso oculto\" id=\"g-aviso-nombre\">Al cambiar el nombre corto también se actualizará en sus ' + d.bloques + ' bloque(s) del horario.</div>') +",
+    "      '<div class=\"alerta oculto\" id=\"g-err\"></div>' +",
+    "      '<div style=\"margin-top:18px\"><button class=\"btn btn-rojo btn-grande\" id=\"g-guardar\" type=\"button\">' + (nuevo ? 'Agregar docente' : 'Guardar cambios') + '</button></div>';",
+    "    abrirModal(nuevo ? 'Nuevo docente' : d.docente, html);",
+    "    if (!nuevo) $('g-docente').addEventListener('input', function () { $('g-aviso-nombre').classList.toggle('oculto', this.value.trim() === d.docente || !d.bloques); });",
+    "    $('g-guardar').addEventListener('click', function () {",
+    "      var dato = { docente: $('g-docente').value, nombreCompleto: $('g-nombre').value, dni: $('g-dni').value, celular: $('g-cel').value,",
+    "        especialidad: $('g-esp').value, correo: $('g-correo').value, notas: $('g-notas').value, activo: $('g-activo').checked };",
+    "      var btn = this; btn.disabled = true;",
+    "      api('guardarDocente', S.pin, dato, nuevo ? '' : d.docente).then(function (r) {",
+    "        btn.disabled = false;",
+    "        if (!r.ok) { $('g-err').textContent = r.error; $('g-err').classList.remove('oculto'); return; }",
+    "        cerrarModal(); S.horario = null; S.coord = null;",
+    "        toast('✅ ' + (r.nuevo ? 'Docente agregado: ' : 'Datos guardados: ') + esc(r.docente.docente) + (r.renombrados ? ' · ' + r.renombrados + ' bloque(s) del horario actualizados' : ''));",
+    "        cargarDocentes();",
+    "      }).catch(function (e) { btn.disabled = false; $('g-err').textContent = e.message; $('g-err').classList.remove('oculto'); });",
     "    });",
     "  }",
     "",

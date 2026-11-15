@@ -142,3 +142,17 @@ test('horario editable: validación de bloques e IDs nuevos', () => {
   assert.equal(L.nuevoIdBloque('ANUAL INTEGRAL', 'LUNES', h), 'AI-LU-2');
   assert.equal(L.nuevoIdBloque('ANUAL INTEGRAL', 'MIERCOLES', h), 'AI-MI-1');
 });
+
+test('docentes: validación al agregar y editar', () => {
+  const ds = [{ docente: 'Ana Pérez', dni: '12345678', celular: '987654321' }, { docente: 'Beto', dni: '', celular: '912345678' }];
+  assert.deepEqual(L.validarDocente({ docente: 'Carla', dni: '87654321' }, ds, '').errores, []);
+  assert.match(L.validarDocente({ docente: 'Carla' }, ds, '').errores[0], /DNI o el celular/);
+  assert.match(L.validarDocente({ docente: 'ana pérez', celular: '900000000' }, ds, '').errores[0], /Ya existe/);
+  assert.match(L.validarDocente({ docente: 'Carla', dni: '12345678' }, ds, '').errores[0], /ya está registrado para Ana/);
+  assert.match(L.validarDocente({ docente: 'Carla', celular: '812345678' }, ds, '').errores[0], /empezar con 9/);
+  assert.match(L.validarDocente({ docente: 'Carla', dni: '123' }, ds, '').errores[0], /8 dígitos/);
+  assert.match(L.validarDocente({ docente: 'Carla', dni: '87654321', correo: 'x@' }, ds, '').errores[0], /correo/);
+  // Editar a Ana sin cambiar sus datos no choca consigo misma
+  assert.deepEqual(L.validarDocente({ docente: 'Ana Pérez', dni: '12345678', celular: '+51 987 654 321' }, ds, 'Ana Pérez').errores, []);
+  assert.equal(L.validarDocente({ docente: 'X', celular: '+51 987 000 111' }, ds, '').celular, '987000111');
+});

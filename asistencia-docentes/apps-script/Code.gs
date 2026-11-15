@@ -24,7 +24,8 @@ var HOJAS = {
 var ESQUEMAS = {
   Config: [['clave', 'Clave', true], ['valor', 'Valor', true], ['descripcion', 'Descripción', true]],
   Docentes: [['dni', 'DNI', true], ['docente', 'Docente (igual que en Horario)', true], ['nombreCompleto', 'Nombre completo', true],
-    ['especialidad', 'Especialidad', true], ['celular', 'Celular', true], ['correo', 'Correo', true], ['activo', 'Activo (SI/NO)', true]],
+    ['especialidad', 'Especialidad', true], ['celular', 'Celular', true], ['correo', 'Correo', true], ['activo', 'Activo (SI/NO)', true],
+    ['notas', 'Notas', true]],
   Horario: [['id', 'ID', true], ['salon', 'Salón', true], ['dia', 'Día', true], ['inicio', 'Inicio', true], ['fin', 'Fin', true],
     ['curso', 'Curso', true], ['docente', 'Docente', true], ['nota', 'Nota', true]],
   Marcaciones: [['id', 'ID', true], ['fecha', 'Fecha', true], ['dni', 'DNI', true], ['docente', 'Docente', true],
@@ -41,7 +42,7 @@ var ESQUEMAS = {
 var CONFIG_DEFAULT = [
   ['SEDE', 'Monte Azul', 'Nombre de la sede'],
   ['TOLERANCIA_MIN', '5', 'Minutos de tolerancia para considerar puntual'],
-  ['PIN_PANEL', '2026', 'PIN para entrar al panel (cámbialo)'],
+  ['PIN_PANEL', '91515', 'PIN para entrar al panel de coordinación'],
   ['LOGO_FILE_ID', '1lq4fr6oIeE7kkoQ33l6qUpzjJWS8mx3u', 'ID en Drive del logo CVI 2025 actualizado'],
   ['FECHA_INICIO', '2026-11-16', 'Inicio del piloto'],
   ['PERMITIR_CELULAR', 'SI', 'SI = se puede marcar desde el celular']
@@ -498,6 +499,69 @@ function eliminarBloque(pin, id) {
   });
 }
 
+/* ============================ API: Docentes (agregar / editar / activar) ============================ */
+
+function getDocentesAdmin(pin) {
+  validarPin_(pin);
+  var horario = horario_();
+  var lista = docentes_().map(function (d) {
+    var bl = horario.filter(function (b) { return norm(b.docente) === norm(d.docente); });
+    var horas = bl.reduce(function (s, b) { return s + (toMin(b.fin) - toMin(b.inicio)) / 60; }, 0);
+    var salones = bl.map(function (b) { return b.salon; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    return {
+      dni: d.dni, docente: d.docente, nombreCompleto: d.nombreCompleto, especialidad: d.especialidad, celular: d.celular,
+      correo: d.correo, activo: d.activo, notas: d.notas, bloques: bl.length, horasSemana: Math.round(horas * 100) / 100, salones: salones
+    };
+  });
+  lista.sort(function (a, b) { return (b.activo - a.activo) || a.docente.localeCompare(b.docente); });
+  return { docentes: lista };
+}
+
+/**
+ * Agrega o edita un docente. Si cambia el nombre corto, también se actualiza en el Horario
+ * (las marcaciones pasadas conservan el nombre con que se registraron).
+ */
+function guardarDocente(pin, d, nombreAnterior) {
+  validarPin_(pin);
+  return conLock_(function () {
+    var lista = docentes_();
+    var v = validarDocente(d, lista, nombreAnterior || '');
+    if (v.errores.length) return { ok: false, error: v.errores.join(' ') };
+    var fila = {
+      dni: v.dni, docente: v.docente, nombreCompleto: String(d.nombreCompleto || '').trim(), especialidad: String(d.especialidad || '').trim(),
+      celular: v.celular, correo: String(d.correo || '').trim(), activo: d.activo === false || d.activo === 'NO' ? 'NO' : 'SI', notas: String(d.notas || '').trim()
+    };
+    var sh = hoja_(HOJAS.DOCENTES), renombrados = 0;
+    var actual = nombreAnterior ? lista.filter(function (x) { return norm(x.docente) === norm(nombreAnterior); })[0] : null;
+    if (nombreAnterior && !actual) return { ok: false, error: 'No se encontró al docente "' + nombreAnterior + '".' };
+    if (actual) {
+      sh.getRange(actual._fila, 1, 1, ESQUEMAS.Docentes.length).setValues([filaDe_(HOJAS.DOCENTES, fila)]);
+      if (norm(nombreAnterior) !== norm(fila.docente)) {
+        var shH = hoja_(HOJAS.HORARIO), n = shH.getLastRow() - 1;
+        if (n > 0) {
+          var rango = shH.getRange(2, 7, n, 1), vals = rango.getDisplayValues();
+          vals.forEach(function (r) { if (norm(r[0]) === norm(nombreAnterior)) { r[0] = fila.docente; renombrados++; } });
+          if (renombrados) rango.setValues(vals);
+        }
+      }
+    } else {
+      agregar_(HOJAS.DOCENTES, fila);
+    }
+    return { ok: true, docente: fila, nuevo: !actual, renombrados: renombrados };
+  });
+}
+
+function cambiarActivoDocente(pin, nombre, activo) {
+  validarPin_(pin);
+  return conLock_(function () {
+    var d = docentes_().filter(function (x) { return norm(x.docente) === norm(nombre); })[0];
+    if (!d) return { ok: false, error: 'No se encontró al docente.' };
+    var col = ESQUEMAS.Docentes.map(function (c) { return c[0]; }).indexOf('activo') + 1;
+    hoja_(HOJAS.DOCENTES).getRange(d._fila, col).setValue(activo ? 'SI' : 'NO');
+    return { ok: true, activo: !!activo };
+  });
+}
+
 /* ============================ API: Fotochecks en Drive ============================ */
 
 /**
@@ -540,9 +604,8 @@ function setup() {
   Object.keys(ESQUEMAS).forEach(function (nombre) {
     var sh = ss.getSheetByName(nombre) || ss.insertSheet(nombre);
     var esq = ESQUEMAS[nombre];
-    if (sh.getLastRow() === 0) {
-      sh.getRange(1, 1, 1, esq.length).setValues([esq.map(function (c) { return c[1]; })]);
-    }
+    // Los encabezados se reescriben siempre: así se agregan columnas nuevas (ej. "Notas") sin tocar los datos.
+    sh.getRange(1, 1, 1, esq.length).setValues([esq.map(function (c) { return c[1]; })]);
     sh.getRange(1, 1, 1, esq.length).setFontWeight('bold').setBackground('#000000').setFontColor('#eebe4f');
     sh.setFrozenRows(1);
     esq.forEach(function (c, j) { if (c[2]) sh.getRange(1, j + 1, sh.getMaxRows(), 1).setNumberFormat('@'); });
@@ -589,13 +652,26 @@ function actualizarDatos_() {
   var filas = Math.max(shD.getLastRow() - 1, 0);
   var datos = filas ? shD.getRange(2, 1, filas, esqD.length).getDisplayValues() : [];
   var completadas = 0, agregados = [];
+  var colActivo = esqD.map(function (c) { return c[0]; }).indexOf('activo');
   SEED_DOCENTES.forEach(function (seed) {
     var fila = datos.filter(function (r) { return norm(r[colDoc]) === norm(seed[colDoc]); })[0];
-    if (!fila) { datos.push(seed.slice()); agregados.push(seed[colDoc]); return; }
-    seed.forEach(function (v, j) { if (v && !String(fila[j]).trim() && j !== esqD.length - 1) { fila[j] = v; completadas++; } });
+    var colCel = 4, cel = String(seed[colCel] || '').replace(/\D/g, '');
+    // Si coordinación lo renombró, se reconoce por su celular y no se vuelve a crear.
+    if (!fila && cel && datos.some(function (r) { return String(r[colCel]).replace(/\D/g, '') === cel; })) return;
+    if (!fila) {
+      // Solo se agregan docentes nuevos si no fueron renombrados/eliminados a propósito en la hoja.
+      var completo = seed.slice(); while (completo.length < esqD.length) completo.push('');
+      datos.push(completo); agregados.push(seed[colDoc]); return;
+    }
+    seed.forEach(function (v, j) { if (v && !String(fila[j]).trim() && j !== colActivo) { fila[j] = v; completadas++; } });
   });
   if (datos.length) shD.getRange(2, 1, datos.length, esqD.length).setValues(datos);
   if (completadas) cambios.push(completadas + ' dato(s) de docentes completados');
   if (agregados.length) cambios.push('docentes agregados: ' + agregados.join(', '));
+  // PIN del panel solicitado por coordinación (solo reemplaza el PIN inicial 2026).
+  var shC = hoja_(HOJAS.CONFIG), cfg = shC.getRange(2, 1, Math.max(shC.getLastRow() - 1, 1), 2).getDisplayValues();
+  cfg.forEach(function (r, i) {
+    if (r[0] === 'PIN_PANEL' && r[1] === '2026') { shC.getRange(i + 2, 2).setValue('91515'); cambios.push('PIN del panel actualizado'); }
+  });
   return cambios;
 }

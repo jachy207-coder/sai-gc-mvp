@@ -39,7 +39,7 @@ seed = (
 NEGRO, ROJO, AMARILLO = "000000", "920000", "EEBE4F"
 ENC = {
     "Config": ["Clave", "Valor", "Descripción"],
-    "Docentes": ["DNI", "Docente (igual que en Horario)", "Nombre completo", "Especialidad", "Celular", "Correo", "Activo (SI/NO)"],
+    "Docentes": ["DNI", "Docente (igual que en Horario)", "Nombre completo", "Especialidad", "Celular", "Correo", "Activo (SI/NO)", "Notas"],
     "Horario": ["ID", "Salón", "Día", "Inicio", "Fin", "Curso", "Docente", "Nota"],
     "Marcaciones": ["ID", "Fecha", "DNI", "Docente", "Hora ingreso", "Hora salida", "Estado ingreso", "Min. tardanza",
                     "Clases propias (IDs)", "Reemplazos (IDs)", "Observación", "Detalle observación", "Dispositivo",
@@ -50,7 +50,7 @@ ENC = {
 CONFIG = [
     ["SEDE", "Monte Azul", "Nombre de la sede"],
     ["TOLERANCIA_MIN", "5", "Minutos de tolerancia para considerar puntual"],
-    ["PIN_PANEL", "2026", "PIN para entrar al panel (cámbialo)"],
+    ["PIN_PANEL", "91515", "PIN para entrar al panel de coordinación"],
     ["LOGO_FILE_ID", "1lq4fr6oIeE7kkoQ33l6qUpzjJWS8mx3u", "ID en Drive del logo CVI 2025 actualizado"],
     ["FECHA_INICIO", "2026-11-16", "Inicio del piloto"],
     ["PERMITIR_CELULAR", "SI", "SI = se puede marcar desde el celular"],

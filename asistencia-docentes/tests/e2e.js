@@ -55,7 +55,7 @@ async function marcar(page, dni, { reemplazo = null, obs = null, detalle = '', d
   console.log('5) 11:20 panel en vivo');
   await hora('11:20');
   await page.goto(BASE + '/?page=panel');
-  await page.fill('#pin', '2026'); await page.click('#btn-login');
+  await page.fill('#pin', '91515'); await page.click('#btn-login');
   await page.waitForSelector('#kpis .kpi');
   await page.waitForTimeout(400);
   const k = await page.textContent('#kpis');

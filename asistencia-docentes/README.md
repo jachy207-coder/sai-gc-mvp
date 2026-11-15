@@ -5,7 +5,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 | Pantalla | Para quién | Qué hace |
 |---|---|---|
 | **Marcación** (URL de la app) | Docentes | DNI o QR → marca los salones del día (casillas) → **Marcar INGRESO**. Al irse: DNI → **Marcar SALIDA**. Puede cubrir la clase de otro docente (reemplazo) y dejar una observación. |
-| **Panel** (`URL?page=panel`, con PIN) | Coordinación / Dirección | 📍 **En vivo**: llegadas, tardanzas, salones del día, quién falta (se actualiza cada 30 s). ✍️ **Marcar asistencia**: coordinación registra ingreso/salida de cualquier docente (puede corregir la hora). 🗓️ **Horario**: ver por salón o por docente y agregar/editar/eliminar bloques. 📊 **Reporte** mensual Docente · Mes · Salón · N.º horas. 🪪 **QR**: fotochecks descargables (PNG o ZIP en Drive) e imprimibles. En celular, navegación inferior tipo app. |
+| **Panel** (`URL?page=panel`, con PIN) | Coordinación / Dirección | 📍 **En vivo**: llegadas, tardanzas, salones del día, quién falta (se actualiza cada 30 s). ✍️ **Marcar asistencia**: coordinación registra ingreso/salida de cualquier docente (puede corregir la hora). 🗓️ **Horario**: ver por salón o por docente y agregar/editar/eliminar bloques. 👥 **Docentes**: agregar, editar datos (DNI, celular, correo, especialidad, notas) y activar/desactivar. 📊 **Reporte** mensual Docente · Mes · Salón · N.º horas. 🪪 **QR**: fotochecks descargables (PNG o ZIP en Drive) e imprimibles. En celular, navegación inferior tipo app. |
 
 ## Reglas del piloto
 
@@ -20,7 +20,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 
 1. Abre la hoja **"CVI Asistencia Docente - Monte Azul (piloto)"**, que está en tu Drive dentro de *CVI MONTE AZUL 2026*. Ya tiene a los docentes con su celular y el horario.
 2. Ve a **Extensiones → Apps Script**. Se abre el editor con un archivo llamado `Código.gs`.
-3. Abre el Google Doc **"CÓDIGO PARA PEGAR v2 - CVI Asistencia"** (o la versión más reciente), que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
+3. Abre el Google Doc **"CÓDIGO PARA PEGAR v3 - CVI Asistencia"** (o la versión más reciente), que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
    1. Haz clic dentro del texto, pulsa **Ctrl+A** y luego **Ctrl+C**.
    2. En el editor de Apps Script, haz clic dentro de `Código.gs`, pulsa **Ctrl+A** y **Supr** para borrar lo que haya, y luego **Ctrl+V** y **Ctrl+S**.
    3. Revisa que la **primera línea** sea `/**` y que la **última** diga `FIN DEL ARCHIVO`.
@@ -39,7 +39,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
    4. Pulsa **Implementar** y copia la **URL de la aplicación web**.
 6. Pruébala:
    - Abre la URL y marca con tu celular.
-   - Para el panel, agrega `?page=panel` al final de la URL. El PIN es **2026**; cámbialo en la pestaña *Config*.
+   - Para el panel, agrega `?page=panel` al final de la URL. El PIN es **91515** (se puede cambiar en la pestaña *Config*).
 7. Deja todo listo para el lunes:
    - En la PC del colegio, abre la URL en Chrome, pon pantalla completa (F11) y guárdala en favoritos.
    - Comparte la URL por WhatsApp con los docentes para que marquen desde su celular.
@@ -97,7 +97,7 @@ asistencia-docentes/
     └── e2e_v2.js        coordinación, horario editable, QR, vista móvil, actualización de datos
 ```
 
-Para probar en local, ejecuta `FAKE_NOW="2026-11-16T07:58:00-05:00" node tools/servidor-local.js` y abre http://localhost:8787. El simulador asigna DNIs de prueba del 70000001 al 70000020; el PIN del panel es 2026.
+Para probar en local, ejecuta `FAKE_NOW="2026-11-16T07:58:00-05:00" node tools/servidor-local.js` y abre http://localhost:8787. El simulador asigna DNIs de prueba del 70000001 al 70000020; el PIN del panel es 91515.
 
 ## Limitaciones del piloto
 
