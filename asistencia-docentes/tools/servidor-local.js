@@ -29,6 +29,7 @@ function crearHoja(nombre, id) {
     setFrozenRows: () => sh,
     autoResizeColumns: () => sh,
     clear: () => { datos.length = 0; return sh; },
+    deleteRow: (r) => { datos.splice(r - 1, 1); return sh; },
     getRange: (r, c, nr = 1, nc = 1) => {
       const rango = {
         getDisplayValues: () => Array.from({ length: nr }, (_, i) => Array.from({ length: nc }, (_, j) => {
@@ -57,6 +58,37 @@ const libro = {
   deleteSheet: (h) => hojas.splice(hojas.indexOf(h), 1),
   setSpreadsheetTimeZone: () => { },
   getUrl: () => 'http://localhost:' + PORT + '/hoja',
+  getId: () => 'HOJA-LOCAL',
+};
+
+/* ---------------- Drive simulado (carpetas en memoria, PNG guardados en disco temporal) ---------------- */
+const carpetas = {};
+const DRIVE_DIR = process.env.DRIVE_DIR || path.join(require('os').tmpdir(), 'cvi-drive-local');
+function crearCarpeta(nombre) {
+  const id = 'C' + Object.keys(carpetas).length;
+  const archivos = [];
+  const f = {
+    nombre, archivos, getId: () => id, getUrl: () => 'http://localhost:' + PORT + '/drive/' + id,
+    createFolder: (n) => crearCarpeta(n),
+    createFile: (blob) => {
+      const fid = id + '-' + archivos.length; archivos.push(blob);
+      fs.mkdirSync(DRIVE_DIR, { recursive: true });
+      if (blob.bytes) fs.writeFileSync(path.join(DRIVE_DIR, blob.nombre), blob.bytes);
+      return { getId: () => fid, getUrl: () => 'http://localhost:' + PORT + '/drive/' + fid };
+    },
+    getFilesByType: () => { let i = 0; const png = archivos.filter((a) => a.tipo === 'image/png'); return { hasNext: () => i < png.length, next: () => ({ getBlob: () => png[i++] }) }; },
+  };
+  carpetas[id] = f;
+  return f;
+}
+const raiz = crearCarpeta('Mi unidad');
+const drive = {
+  getFileById: (id) => {
+    if (id === 'HOJA-LOCAL') return { getParents: () => { let d = false; return { hasNext: () => !d, next: () => { d = true; return raiz; } }; } };
+    throw new Error('sin logo en local');
+  },
+  getFolderById: (id) => carpetas[id],
+  getRootFolder: () => raiz,
 };
 
 /* ---------------- Servicios de Apps Script simulados ---------------- */
@@ -75,15 +107,21 @@ class FakeDate extends RealDate {
 const ctx = {
   console, Date: FakeDate, JSON, Math, String, Number, Array, Object, Error, RegExp, Intl,
   SpreadsheetApp: { getActiveSpreadsheet: () => libro },
-  Utilities: { formatDate, base64Encode: (b) => Buffer.from(b).toString('base64') },
+  Utilities: {
+    formatDate, base64Encode: (b) => Buffer.from(b).toString('base64'), base64Decode: (s) => Buffer.from(s, 'base64'),
+    newBlob: (bytes, tipo, nombre) => ({ bytes, tipo, nombre, getName: () => nombre }),
+    zip: (blobs, nombre) => ({ nombre, blobs, getName: () => nombre }),
+  },
   LockService: { getScriptLock: () => ({ waitLock: () => { }, releaseLock: () => { } }) },
   CacheService: { getScriptCache: () => ({ get: () => null, put: () => { } }) },
-  DriveApp: { getFileById: () => { throw new Error('sin Drive en local'); } },
+  DriveApp: drive,
+  Logger: { log: (m) => console.log('[Logger]', m) },
   ScriptApp: { getService: () => ({ getUrl: () => 'http://localhost:' + PORT + '/' }) },
 };
 vm.createContext(ctx);
 ['Logic.gs', 'Seed.gs', 'Code.gs'].forEach((f) => vm.runInContext(fs.readFileSync(path.join(DIR, f), 'utf8'), ctx, { filename: f }));
 console.log(vm.runInContext('setup()', ctx));
+ctx.__carpetas = carpetas;
 
 // DNIs ficticios SOLO para pruebas locales
 if (process.env.DNI_DEMO !== '0') {
@@ -128,6 +166,10 @@ http.createServer((req, res) => {
     return;
   }
   if (url.pathname === '/__hora') { desfase = new RealDate(url.searchParams.get('t')).getTime() - RealDate.now(); res.end('ok'); return; }
+  if (url.pathname === '/__js' && req.method === 'POST') { // SOLO pruebas locales: ejecuta código en el contexto simulado
+    let body = ''; req.on('data', (c) => (body += c)); req.on('end', () => { try { res.end(JSON.stringify({ result: vm.runInContext(body, ctx) })); } catch (e) { res.end(JSON.stringify({ error: e.message })); } }); return;
+  }
+  if (url.pathname === '/__drive') { res.end(JSON.stringify(Object.values(carpetas).map((c) => ({ nombre: c.nombre, archivos: c.archivos.map((a) => a.nombre) })))); return; }
   if (url.pathname === '/hoja') {
     res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify(Object.fromEntries(hojas.map((h) => [h.getName(), h._datos])), null, 1)); return;

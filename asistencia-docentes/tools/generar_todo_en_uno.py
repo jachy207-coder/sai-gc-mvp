@@ -15,7 +15,7 @@ partes = [
 for n in ["Logic", "Seed", "Code"]:
     partes.append(f"\n/* ========================= {n}.gs ========================= */\n")
     partes.append((SRC / f"{n}.gs").read_text(encoding="utf-8"))
-html = {n: (SRC / f"{n}.html").read_text(encoding="utf-8") for n in ["Index", "Dashboard", "Styles"]}
+html = {n: (SRC / f"{n}.html").read_text(encoding="utf-8") for n in ["Index", "Dashboard", "Styles", "QRLib"]}
 partes.append("\n/* ========================= Pantallas (HTML) ========================= */\n")
 # HTML embebido línea por línea (sin líneas gigantes, para que se copie/pegue sin problemas).
 bloques = []

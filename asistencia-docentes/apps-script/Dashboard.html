@@ -6,27 +6,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Panel de Asistencia · CVI</title>
 <?!= include('Styles'); ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<?!= include('QRLib'); ?>
 <style>
+  html, body { overflow-x: hidden; }
   .contenedor { max-width: 1240px; }
   .login { max-width: 380px; margin: 60px auto; text-align: center; }
   .login h1 { font-family: 'Cantata One', serif; font-size: 26px; margin-bottom: 6px; }
   .login input { width: 100%; text-align: center; font-size: 28px; letter-spacing: .3em; padding: 14px; border-radius: 14px; border: 2px solid var(--borde); margin: 18px 0 12px; outline: none; }
   .login input:focus { border-color: var(--rojo); }
 
-  .tabs { display: flex; gap: 6px; background: var(--blanco); padding: 6px; border-radius: 14px; border: 1px solid var(--borde); width: max-content; max-width: 100%; overflow-x: auto; }
-  .tab { border: 0; background: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; color: var(--texto-2); white-space: nowrap; }
+  /* ---------- Navegación ---------- */
+  .nav { display: flex; gap: 6px; background: var(--blanco); padding: 6px; border-radius: 14px; border: 1px solid var(--borde); }
+  .tab { border: 0; background: none; padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; color: var(--texto-2); white-space: nowrap; display: inline-flex; gap: 8px; align-items: center; }
+  .tab .ico { font-size: 17px; }
   .tab.activo { background: var(--negro); color: var(--amarillo); }
-  .barra { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-  .controles { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .controles input[type=date], .controles input[type=month] { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--blanco); }
+  .cabecera { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .barra { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .controles { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; min-width: 0; }
+  .campo { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--blanco); min-width: 0; max-width: 100%; }
+  .campo:focus { outline: 2px solid rgba(146,0,0,.25); border-color: var(--rojo); }
+  .btn-s { padding: 10px 14px; border-radius: 10px; font-size: 14px; }
   .vivo { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto-2); }
-  .vivo .punto { width: 10px; height: 10px; border-radius: 50%; background: #2bb15a; box-shadow: 0 0 0 0 rgba(43,177,90,.6); animation: pulso 2s infinite; }
+  .vivo .punto { width: 10px; height: 10px; border-radius: 50%; background: #2bb15a; flex: none; animation: pulso 2s infinite; }
   .vivo.pausa .punto { background: var(--gris); animation: none; }
   @keyframes pulso { 0% { box-shadow: 0 0 0 0 rgba(43,177,90,.5); } 70% { box-shadow: 0 0 0 10px rgba(43,177,90,0); } 100% { box-shadow: 0 0 0 0 rgba(43,177,90,0); } }
 
-  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-  .kpi { padding: 16px; }
+  .kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .kpis.k4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kpi { padding: 16px; min-width: 0; }
   .kpi .l { font-size: 13px; color: var(--texto-2); font-weight: 600; }
   .kpi .v { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; margin-top: 4px; }
   .kpi .v small { font-size: 16px; color: var(--texto-2); font-weight: 600; }
@@ -38,10 +45,10 @@
 
   .seccion-t { display: flex; justify-content: space-between; align-items: baseline; margin: 26px 0 12px; gap: 10px; flex-wrap: wrap; }
   .seccion-t h2 { font-family: 'Cantata One', serif; font-size: 20px; }
-  .leyenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--texto-2); }
+  .leyenda { display: flex; flex-wrap: wrap; gap: 10px 12px; font-size: 12px; color: var(--texto-2); }
   .leyenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
 
-  /* Línea de tiempo por salón */
+  /* ---------- Línea de tiempo (escritorio) ---------- */
   .timeline { overflow-x: auto; }
   .tl-inner { min-width: 860px; padding: 14px 16px 10px; }
   .tl-escala, .tl-fila { display: grid; grid-template-columns: 150px 1fr; align-items: center; }
@@ -52,10 +59,7 @@
   .tl-pista { position: relative; height: 44px; }
   .tl-ahora { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--rojo); z-index: 3; }
   .tl-fila:nth-child(2) .tl-ahora::before { content: 'Ahora'; position: absolute; top: -14px; left: -14px; font-size: 10px; font-weight: 800; color: var(--rojo); }
-  .blq {
-    position: absolute; top: 4px; bottom: 4px; border-radius: 8px; padding: 4px 7px; overflow: hidden; font-size: 11px; line-height: 1.2;
-    border: 1px solid transparent; cursor: default;
-  }
+  .blq { position: absolute; top: 4px; bottom: 4px; border-radius: 8px; padding: 4px 7px; overflow: hidden; font-size: 11px; line-height: 1.2; border: 1px solid transparent; }
   .blq b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11.5px; }
   .blq span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85; }
   .e-DICTADO { background: #2e8b4e; color: #fff; }
@@ -67,7 +71,20 @@
   .e-NO-DICTADO { background: var(--rojo); color: #fff; }
   .e-SIN-DOCENTE { background: repeating-linear-gradient(45deg, #f1ede6, #f1ede6 6px, #e6e0d6 6px, #e6e0d6 12px); color: var(--texto-2); }
 
-  .dos-col { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
+  /* ---------- Salones del día (celular) ---------- */
+  .tl-movil { display: none; gap: 12px; }
+  .salon-card { padding: 14px; }
+  .salon-card h3 { font-size: 15px; margin-bottom: 8px; }
+  .fila-b { display: grid; grid-template-columns: 92px 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--gris-suave); font-size: 14px; }
+  .fila-b:first-of-type { border-top: 0; }
+  .fila-b .h { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 13px; }
+  .fila-b .c { min-width: 0; }
+  .fila-b .c b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fila-b .c span { font-size: 12px; color: var(--texto-2); }
+  .est { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+
+  /* ---------- Tablas (en celular se vuelven tarjetas) ---------- */
+  .dos-col { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--texto-2); padding: 10px 12px; border-bottom: 2px solid var(--borde); white-space: nowrap; }
   td { padding: 10px 12px; border-bottom: 1px solid var(--gris-suave); vertical-align: top; }
@@ -81,21 +98,106 @@
   .pend .n { font-weight: 700; }
   .pend .d { font-size: 13px; color: var(--texto-2); }
 
+  /* ---------- Marcar (coordinación) ---------- */
+  .filtros { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filtro { border: 1px solid var(--borde); background: var(--blanco); padding: 8px 12px; border-radius: 999px; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .filtro.sel { background: var(--negro); color: var(--amarillo); border-color: var(--negro); }
+  .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .doc-card { padding: 14px; display: flex; gap: 12px; align-items: center; }
+  .avatar-s { width: 46px; height: 46px; border-radius: 50%; background: var(--rojo); color: #fff; display: grid; place-items: center; font-weight: 800; flex: none; border: 2px solid var(--amarillo); }
+  .doc-card .info { flex: 1; min-width: 0; }
+  .doc-card .n { font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+  .doc-card .d { font-size: 12.5px; color: var(--texto-2); margin: 2px 0 6px; line-height: 1.35; }
+  .doc-card .btn { padding: 10px 12px; font-size: 13px; border-radius: 10px; flex: none; }
+
+  /* ---------- Horario ---------- */
+  .seg { display: inline-flex; background: var(--blanco); border: 1px solid var(--borde); border-radius: 10px; padding: 3px; }
+  .seg button { border: 0; background: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; color: var(--texto-2); }
+  .seg button.sel { background: var(--negro); color: var(--amarillo); }
+  .semana { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+  .dia-col { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .dia-col h3 { font-size: 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 2px 4px 6px; border-bottom: 2px solid var(--amarillo); }
+  .dia-col h3 small { font-weight: 600; color: var(--texto-2); font-size: 12px; }
+  .bq { text-align: left; border: 1px solid var(--borde); border-left: 4px solid var(--rojo); background: #fffdfa; border-radius: 10px; padding: 8px 10px; cursor: pointer; width: 100%; }
+  .bq:hover { background: var(--amarillo-suave); }
+  .bq .h { font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--rojo); }
+  .bq .c { font-weight: 700; font-size: 13px; line-height: 1.25; margin-top: 2px; overflow-wrap: anywhere; }
+  .bq .d { font-size: 12px; color: var(--texto-2); overflow-wrap: anywhere; }
+  .bq .nota { font-size: 11px; color: var(--warn); margin-top: 3px; }
+  .bq.sin-doc { border-left-color: var(--gris); }
+  .agregar { border: 1.5px dashed #cfc6b8; background: none; border-radius: 10px; padding: 8px; font-weight: 700; color: var(--texto-2); cursor: pointer; }
+  .agregar:hover { border-color: var(--rojo); color: var(--rojo); }
+  .vacio-d { font-size: 12px; color: var(--gris); text-align: center; padding: 6px 0; }
+
+  /* ---------- Fotochecks ---------- */
   .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
   .fotocheck { background: var(--blanco); border-radius: 14px; overflow: hidden; border: 1px solid var(--borde); text-align: center; break-inside: avoid; }
   .fotocheck .cab { background: var(--negro); color: var(--amarillo); padding: 10px; font-family: 'Cantata One', serif; font-size: 14px; border-bottom: 3px solid var(--amarillo); }
   .fotocheck .qr { padding: 14px; display: grid; place-items: center; min-height: 190px; }
   .fotocheck .qr img, .fotocheck .qr canvas { width: 170px !important; height: 170px !important; }
   .fotocheck .nom { font-weight: 800; font-size: 16px; padding: 0 10px; }
-  .fotocheck .dni { font-size: 13px; color: var(--texto-2); padding: 2px 10px 14px; }
+  .fotocheck .dni { font-size: 13px; color: var(--texto-2); padding: 2px 10px 10px; }
   .fotocheck .sin { color: var(--rojo); font-weight: 700; font-size: 13px; padding: 30px 10px; }
+  .fotocheck .acc { display: flex; gap: 6px; padding: 0 12px 12px; }
+  .fotocheck .acc .btn { flex: 1; padding: 9px 8px; font-size: 13px; border-radius: 10px; }
 
-  @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(3, 1fr); } .dos-col { grid-template-columns: 1fr; } }
-  @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, 1fr); } .kpi .v { font-size: 28px; } }
+  /* ---------- Modal y aviso ---------- */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .modal-caja { background: var(--fondo); border-radius: 18px; width: 100%; max-width: 640px; max-height: calc(100vh - 32px); overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .modal-cab { background: var(--negro); color: var(--blanco); padding: 16px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 3px solid var(--amarillo); position: sticky; top: 0; z-index: 2; }
+  .modal-cab h3 { font-family: 'Cantata One', serif; color: var(--amarillo); font-size: 18px; flex: 1; min-width: 0; }
+  .modal-cab .cerrar { background: none; border: 0; color: #fff; font-size: 26px; cursor: pointer; line-height: 1; padding: 4px 8px; }
+  .modal-cuerpo { padding: 18px 20px 22px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: var(--texto-2); min-width: 0; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .form-grid input, .form-grid select { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--blanco); font-size: 15px; width: 100%; }
+  .aviso { padding: 10px 14px; border-radius: 10px; background: var(--warn-suave); color: var(--warn); font-weight: 600; font-size: 14px; margin-top: 12px; }
+  .hora-coord { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 12px 14px; }
+  .hora-coord input { font-size: 22px; font-weight: 800; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--borde); font-variant-numeric: tabular-nums; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--negro); color: #fff; padding: 12px 18px; border-radius: 12px; z-index: 60; box-shadow: 0 8px 30px rgba(0,0,0,.3); max-width: calc(100vw - 32px); font-weight: 600; font-size: 14px; }
+  .toast a { color: var(--amarillo); }
+
+  @media (max-width: 1100px) { .semana { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .dos-col { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 760px) {
+    body { padding-bottom: 76px; }
+    .contenedor { padding: 16px 12px 28px; }
+    /* Navegación inferior fija estilo app */
+    .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; border: 0; border-top: 3px solid var(--amarillo); background: var(--negro); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+    .tab { flex-direction: column; gap: 2px; padding: 6px 2px; font-size: 11px; color: #cfc8bd; border-radius: 10px; }
+    .tab .ico { font-size: 20px; }
+    .tab.activo { background: #262626; color: var(--amarillo); }
+    .tab .txt-largo { display: none; }
+    .kpis, .kpis.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .kpi { padding: 12px; }
+    .kpi .v { font-size: 28px; }
+    .timeline { display: none; }
+    .tl-movil { display: grid; }
+    .semana { grid-template-columns: minmax(0, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .modal { padding: 0; align-items: flex-end; }
+    .modal-caja { max-height: 94vh; border-radius: 18px 18px 0 0; }
+    .doc-grid { grid-template-columns: minmax(0, 1fr); }
+    .qr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .fotocheck .qr { min-height: 0; padding: 10px; }
+    .fotocheck .qr img, .fotocheck .qr canvas { width: 100% !important; height: auto !important; max-width: 150px; }
+    .fotocheck .acc { flex-direction: column; }
+    /* Tablas → tarjetas */
+    .tabla-resp thead { display: none; }
+    .tabla-resp, .tabla-resp tbody, .tabla-resp tr, .tabla-resp td { display: block; width: 100%; }
+    .tabla-resp tr { padding: 10px 14px; border-bottom: 1px solid var(--borde); }
+    .tabla-resp td { border: 0; padding: 3px 0; text-align: left !important; display: flex; justify-content: space-between; gap: 12px; }
+    .tabla-resp td[data-l]::before { content: attr(data-l); font-size: 12px; font-weight: 700; color: var(--texto-2); text-transform: uppercase; letter-spacing: .03em; flex: none; }
+    .tabla-resp td.titulo { font-size: 16px; }
+    .tabla-resp tr.subtotal td, .tabla-resp tr.total td { justify-content: space-between; }
+    .seccion-t h2 { font-size: 18px; }
+  }
   @media print {
-    .topbar, .barra, .tabs, .no-print { display: none !important; }
-    body { background: #fff; }
+    .topbar, .nav, .no-print, .cabecera, .barra { display: none !important; }
+    body { background: #fff; padding: 0; }
     .qr-grid { grid-template-columns: repeat(3, 1fr); }
+    .fotocheck .acc { display: none; }
   }
 </style>
 </head>
@@ -103,7 +205,7 @@
   <header class="topbar">
     <div class="logo" id="logo"><span class="fallback">CVI</span></div>
     <div class="titulo">
-      <div class="nombre">Panel de Asistencia Docente</div>
+      <div class="nombre">Panel de Asistencia</div>
       <div class="sub">César Vallejo Ingenieros · Sede <span id="sede">Monte Azul</span></div>
     </div>
     <div class="reloj"><div class="h" id="reloj">--:--</div><div class="f" id="fecha-hoy"></div></div>
@@ -122,23 +224,25 @@
     </section>
 
     <section id="v-app" class="oculto">
-      <div class="barra">
-        <div class="tabs" role="tablist">
-          <button class="tab activo" data-tab="hoy" type="button">📍 En vivo</button>
-          <button class="tab" data-tab="reporte" type="button">📊 Reporte mensual</button>
-          <button class="tab" data-tab="qr" type="button">🪪 Fotochecks QR</button>
-        </div>
-        <div class="controles">
-          <button class="btn btn-claro" id="btn-marcacion" type="button" style="padding:9px 14px">Abrir marcación ↗</button>
+      <div class="cabecera">
+        <nav class="nav" role="tablist">
+          <button class="tab activo" data-tab="hoy" type="button"><span class="ico">📍</span><span>En vivo</span></button>
+          <button class="tab" data-tab="marcar" type="button"><span class="ico">✍️</span><span>Marcar<span class="txt-largo"> asistencia</span></span></button>
+          <button class="tab" data-tab="horario" type="button"><span class="ico">🗓️</span><span>Horario</span></button>
+          <button class="tab" data-tab="reporte" type="button"><span class="ico">📊</span><span>Reporte</span></button>
+          <button class="tab" data-tab="qr" type="button"><span class="ico">🪪</span><span>QR<span class="txt-largo"> fotochecks</span></span></button>
+        </nav>
+        <div class="controles no-print">
+          <button class="btn btn-claro btn-s" id="btn-marcacion" type="button">Página de marcación ↗</button>
           <button class="link" id="btn-salir" type="button">Salir</button>
         </div>
       </div>
 
-      <!-- EN VIVO -->
+      <!-- ===================== EN VIVO ===================== -->
       <div id="t-hoy">
-        <div class="barra" style="margin-bottom:12px">
+        <div class="barra">
           <div class="controles">
-            <input type="date" id="f-fecha">
+            <input type="date" id="f-fecha" class="campo">
             <span class="vivo" id="vivo"><span class="punto"></span><span id="vivo-txt">Conectando…</span></span>
           </div>
           <div id="aviso-dni"></div>
@@ -154,11 +258,12 @@
           </div>
         </div>
         <div class="tarjeta timeline"><div class="tl-inner" id="timeline"></div></div>
+        <div class="tl-movil" id="tl-movil"></div>
 
         <div class="dos-col" style="margin-top:16px">
           <div>
             <div class="seccion-t"><h2>Marcaciones</h2><span class="muted" id="n-marc"></span></div>
-            <div class="tarjeta tabla-scroll"><table id="tabla-marc"></table></div>
+            <div class="tarjeta tabla-scroll"><table id="tabla-marc" class="tabla-resp"></table></div>
           </div>
           <div>
             <div class="seccion-t"><h2>Aún no llegan</h2></div>
@@ -167,37 +272,86 @@
         </div>
       </div>
 
-      <!-- REPORTE -->
+      <!-- ===================== MARCAR (COORDINACIÓN) ===================== -->
+      <div id="t-marcar" class="oculto">
+        <div class="seccion-t" style="margin-top:0">
+          <h2>Marcar asistencia por coordinación</h2>
+          <span class="muted" id="marcar-fecha"></span>
+        </div>
+        <div class="barra">
+          <input type="search" id="buscar-doc" class="campo" placeholder="🔎 Buscar docente…" style="flex:1;min-width:200px;max-width:420px">
+          <div class="filtros" id="filtros">
+            <button class="filtro sel" data-f="hoy" type="button">Con clases hoy</button>
+            <button class="filtro" data-f="sin" type="button">Sin marcar</button>
+            <button class="filtro" data-f="en" type="button">En el colegio</button>
+            <button class="filtro" data-f="todos" type="button">Todos</button>
+          </div>
+        </div>
+        <div class="doc-grid" id="doc-grid"></div>
+      </div>
+
+      <!-- ===================== HORARIO ===================== -->
+      <div id="t-horario" class="oculto">
+        <div class="barra">
+          <div class="controles">
+            <div class="seg" id="h-modo"><button type="button" class="sel" data-m="salon">Por salón</button><button type="button" data-m="docente">Por docente</button></div>
+            <select id="h-sel" class="campo" style="min-width:200px"></select>
+          </div>
+          <div class="controles">
+            <span class="muted" id="h-resumen"></span>
+            <button class="btn btn-rojo btn-s" id="h-nuevo" type="button">＋ Nuevo bloque</button>
+          </div>
+        </div>
+        <div class="semana" id="semana"></div>
+        <p class="muted" style="font-size:13px;margin-top:14px">Toca un bloque para editarlo o eliminarlo. Los cambios se guardan en la hoja “Horario” y se aplican de inmediato en la marcación.</p>
+      </div>
+
+      <!-- ===================== REPORTE ===================== -->
       <div id="t-reporte" class="oculto">
         <div class="barra">
           <div class="controles">
-            <input type="month" id="f-mes">
-            <button class="btn btn-negro" id="btn-exportar" type="button" style="padding:10px 16px">Guardar en hoja “Reporte mensual”</button>
-            <button class="btn btn-claro" id="btn-csv" type="button" style="padding:10px 16px">Descargar CSV</button>
+            <input type="month" id="f-mes" class="campo">
+            <button class="btn btn-negro btn-s" id="btn-exportar" type="button">Guardar en hoja</button>
+            <button class="btn btn-claro btn-s" id="btn-csv" type="button">Descargar CSV</button>
           </div>
           <span class="muted" id="rep-msg"></span>
         </div>
-        <div class="kpis" id="rep-kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+        <div class="kpis k4" id="rep-kpis"></div>
         <div class="seccion-t"><h2>Horas dictadas por docente y salón</h2><span class="muted">Base para la gestión de pagos</span></div>
-        <div class="tarjeta tabla-scroll"><table id="tabla-rep"></table></div>
+        <div class="tarjeta tabla-scroll"><table id="tabla-rep" class="tabla-resp"></table></div>
       </div>
 
-      <!-- QR -->
+      <!-- ===================== QR ===================== -->
       <div id="t-qr" class="oculto">
         <div class="barra">
-          <div class="muted" style="max-width:640px">Cada código abre la página de marcación con el DNI del docente. Imprime y entrega uno a cada docente; lo escanean con la cámara del celular o con un lector QR en la computadora.</div>
-          <button class="btn btn-rojo" id="btn-imprimir" type="button" style="padding:10px 16px">🖨 Imprimir fotochecks</button>
+          <div class="muted" style="max-width:620px;font-size:14px">Cada QR abre la página de marcación con el DNI (o celular) del docente. Descárgalos como imagen para enviarlos por WhatsApp o imprímelos.</div>
+          <div class="controles">
+            <button class="btn btn-negro btn-s" id="btn-zip" type="button">⬇ Descargar todos (ZIP)</button>
+            <button class="btn btn-rojo btn-s" id="btn-imprimir" type="button">🖨 Imprimir</button>
+          </div>
         </div>
+        <div id="qr-msg"></div>
         <div class="qr-grid" id="qr-grid"></div>
       </div>
     </section>
   </main>
 
+  <!-- Modal genérico -->
+  <div class="modal oculto" id="modal">
+    <div class="modal-caja" role="dialog" aria-modal="true">
+      <div class="modal-cab"><h3 id="modal-titulo"></h3><button class="cerrar" id="modal-cerrar" type="button" aria-label="Cerrar">×</button></div>
+      <div class="modal-cuerpo" id="modal-cuerpo"></div>
+    </div>
+  </div>
+  <div class="toast oculto" id="toast"></div>
+
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var S = { pin: '', fecha: '', mes: '', timer: null, reporte: null, appUrl: '<?= appUrl ?>' };
-  var DIAS = { LUNES: 'Lunes', MARTES: 'Martes', MIERCOLES: 'Miércoles', JUEVES: 'Jueves', VIERNES: 'Viernes', SABADO: 'Sábado', DOMINGO: 'Domingo' };
+  var S = { pin: '', fecha: '', mes: '', timer: null, reporte: null, appUrl: '<?= appUrl ?>', logo: '', horario: null, hModo: 'salon', hSel: '', coord: null, filtro: 'hoy', qr: null };
+  var DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+  var DIAS_L = { LUNES: 'Lunes', MARTES: 'Martes', MIERCOLES: 'Miércoles', JUEVES: 'Jueves', VIERNES: 'Viernes', SABADO: 'Sábado', DOMINGO: 'Domingo' };
+  var OBS = ['Tardanza justificada', 'Permiso', 'Salida anticipada', 'Reemplazo de docente', 'Clase de recuperación', 'Salud', 'Problema de transporte', 'Otro'];
   var INICIO = 8 * 60, FIN = 14 * 60;
 
   function api(fn) {
@@ -210,18 +364,23 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
   function min(h) { var p = String(h).split(':'); return +p[0] * 60 + +p[1]; }
   function n2(v) { return Number(v || 0).toFixed(2); }
+  function iniciales(n) { return String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(function (p) { return p[0]; }).join('').toUpperCase(); }
   function guardarPin(p) { try { sessionStorage.setItem('cvi_pin', p); } catch (e) { } }
   function leerPin() { try { return sessionStorage.getItem('cvi_pin') || ''; } catch (e) { return ''; } }
+  function horaLima() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })); }
+  function hhmm(d) { return d.toTimeString().slice(0, 5); }
+  var toastT;
+  function toast(html, ms) { var t = $('toast'); t.innerHTML = html; t.classList.remove('oculto'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.add('oculto'); }, ms || 4500); }
+  function abrirModal(titulo, html) { $('modal-titulo').textContent = titulo; $('modal-cuerpo').innerHTML = html; $('modal').classList.remove('oculto'); document.body.style.overflow = 'hidden'; }
+  function cerrarModal() { $('modal').classList.add('oculto'); document.body.style.overflow = ''; }
+  $('modal-cerrar').addEventListener('click', cerrarModal);
+  $('modal').addEventListener('click', function (e) { if (e.target === this) cerrarModal(); });
 
-  function tic() {
-    var d = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-    $('reloj').textContent = d.toTimeString().slice(0, 5);
-    $('fecha-hoy').textContent = d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
-  }
+  function tic() { var d = horaLima(); $('reloj').textContent = hhmm(d); $('fecha-hoy').textContent = d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }); }
   setInterval(tic, 1000); tic();
-  api('getLogo').then(function (u) { if (u) $('logo').innerHTML = '<img alt="Logo CVI" src="' + u + '">'; }).catch(function () { });
+  api('getLogo').then(function (u) { if (u) { S.logo = u; $('logo').innerHTML = '<img alt="Logo CVI" src="' + u + '">'; } }).catch(function () { });
 
-  /* ---------- Login ---------- */
+  /* ===================== Login ===================== */
   function entrar(pin) {
     $('btn-login').disabled = true;
     return api('loginPanel', pin).then(function (r) {
@@ -239,53 +398,54 @@
   $('btn-marcacion').addEventListener('click', function () { window.open(S.appUrl, '_blank'); });
   if (leerPin()) entrar(leerPin());
 
-  /* ---------- Tabs ---------- */
-  document.querySelector('.tabs').addEventListener('click', function (e) {
+  /* ===================== Tabs ===================== */
+  document.querySelector('.nav').addEventListener('click', function (e) {
     var b = e.target.closest('[data-tab]'); if (!b) return;
-    document.querySelectorAll('.tab').forEach(function (t) { t.classList.toggle('activo', t === b); });
-    ['hoy', 'reporte', 'qr'].forEach(function (t) { $('t-' + t).classList.toggle('oculto', t !== b.getAttribute('data-tab')); });
-    if (b.getAttribute('data-tab') === 'reporte') cargarReporte();
-    if (b.getAttribute('data-tab') === 'qr') cargarQR();
+    var t = b.getAttribute('data-tab');
+    document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('activo', x === b); });
+    ['hoy', 'marcar', 'horario', 'reporte', 'qr'].forEach(function (x) { $('t-' + x).classList.toggle('oculto', x !== t); });
+    window.scrollTo(0, 0);
+    if (t === 'hoy') cargarHoy();
+    if (t === 'marcar') cargarCoord();
+    if (t === 'horario') cargarHorario();
+    if (t === 'reporte') cargarReporte();
+    if (t === 'qr') cargarQR();
   });
-
-  /* ---------- En vivo ---------- */
-  $('f-fecha').addEventListener('change', function () { S.fecha = this.value; cargarHoy(); });
-
-  function cargarHoy() {
-    if ($('t-hoy').classList.contains('oculto')) return;
-    api('getPanel', S.pin, S.fecha).then(pintarHoy).catch(function (e) {
-      $('vivo').classList.add('pausa'); $('vivo-txt').textContent = 'Sin conexión · reintentando (' + e.message + ')';
-    });
-  }
 
   function kpi(l, v, extra, cls, pct) {
     return '<div class="tarjeta kpi ' + (cls || '') + '"><div class="l">' + l + '</div><div class="v">' + v + (extra ? ' <small>' + extra + '</small>' : '') + '</div>' +
       (pct != null ? '<div class="barra-p"><span style="width:' + Math.min(100, pct) + '%"></span></div>' : '') + '</div>';
   }
 
+  /* ===================== EN VIVO ===================== */
+  $('f-fecha').addEventListener('change', function () { S.fecha = this.value; cargarHoy(); });
+  function cargarHoy() {
+    if ($('t-hoy').classList.contains('oculto')) return;
+    api('getPanel', S.pin, S.fecha).then(pintarHoy).catch(function (e) {
+      $('vivo').classList.add('pausa'); $('vivo-txt').textContent = 'Sin conexión · reintentando (' + e.message + ')';
+    });
+  }
   function pintarHoy(d) {
     $('vivo').classList.toggle('pausa', !d.esHoy);
-    $('vivo-txt').textContent = d.esHoy ? 'En vivo · actualizado ' + d.hora + ' · cada 30 s' : DIAS[d.dia] + ' ' + d.fecha + ' (histórico)';
+    $('vivo-txt').textContent = d.esHoy ? 'En vivo · ' + d.hora + ' · cada 30 s' : DIAS_L[d.dia] + ' ' + d.fecha + ' (histórico)';
     $('aviso-dni').innerHTML = d.docentesSinDni.length
-      ? '<span class="chip rojo" title="' + esc(d.docentesSinDni.join(', ')) + '">⚠ ' + d.docentesSinDni.length + ' docente(s) sin DNI (marcan con su celular)</span>' : '';
+      ? '<span class="chip warn" title="' + esc(d.docentesSinDni.join(', ')) + '">ⓘ ' + d.docentesSinDni.length + ' docente(s) marcan con celular (falta DNI)</span>' : '';
     var k = d.kpi;
     $('kpis').innerHTML =
       kpi('Docentes que llegaron', k.llegaron, 'de ' + k.programados, 'destacado', k.programados ? k.llegaron / k.programados * 100 : 0) +
-      kpi('En el colegio ahora', k.presentes) +
-      kpi('Puntuales', k.puntuales) +
+      kpi('En el colegio ahora', k.presentes) + kpi('Puntuales', k.puntuales) +
       kpi('Tardanzas', k.tardanzas, '', k.tardanzas ? 'alerta-k' : '') +
       kpi('Clases dictadas', k.dictados, 'de ' + k.bloques, '', k.bloques ? k.dictados / k.bloques * 100 : 0) +
       kpi('Sin dictar / sin marcar', k.noDictados + k.sinMarcar, '', (k.noDictados + k.sinMarcar) ? 'alerta-k' : '');
-    pintarTimeline(d);
-    pintarMarcaciones(d);
+    pintarTimeline(d); pintarMarcaciones(d);
     $('pendientes').innerHTML = d.faltan.length ? d.faltan.map(function (f) {
       return '<div class="pend"><div><div class="n">' + esc(f.docente) + '</div><div class="d">' + esc(f.salon) + ' · desde ' + esc(f.desde) + '</div></div>' +
         '<div>' + (f.atrasado ? '<span class="chip rojo">Atrasado</span>' : '<span class="chip">Por llegar</span>') + '</div></div>';
     }).join('') : '<div class="vacio-t">✅ Todos los docentes programados ya marcaron.</div>';
   }
-
+  function etiquetaEstado(e) { return { 'EN CLASE': 'En clase', 'DICTADO': 'Dictado', 'REEMPLAZO': 'Reemplazo', 'CONFIRMADO': 'Confirmado', 'PROGRAMADO': 'Programado', 'SIN MARCAR': 'Sin marcar', 'NO DICTADO': 'No dictado', 'SIN DOCENTE': 'Sin docente' }[e] || e; }
   function pintarTimeline(d) {
-    if (!d.bloques.length) { $('timeline').innerHTML = '<div class="vacio-t">No hay clases programadas este día.</div>'; return; }
+    if (!d.bloques.length) { $('timeline').innerHTML = $('tl-movil').innerHTML = '<div class="vacio-t">No hay clases programadas este día.</div>'; return; }
     var ini = Math.min(INICIO, Math.min.apply(null, d.bloques.map(function (b) { return min(b.inicio); })));
     var fin = Math.max(FIN, Math.max.apply(null, d.bloques.map(function (b) { return min(b.fin); })));
     var pct = function (m) { return ((m - ini) / (fin - ini) * 100).toFixed(3) + '%'; };
@@ -294,34 +454,212 @@
     var salones = [];
     d.bloques.forEach(function (b) { if (salones.indexOf(b.salon) < 0) salones.push(b.salon); });
     var ahora = d.esHoy && min(d.hora) >= ini && min(d.hora) <= fin ? '<div class="tl-ahora" style="left:' + pct(min(d.hora)) + '"></div>' : '';
+    var quien = function (b) { return b.dicto ? (b.tipo === 'REEMPLAZO' ? '↻ ' + b.dicto : b.dicto) : (b.titular || 'Sin docente'); };
     $('timeline').innerHTML = '<div class="tl-escala"><div></div><div class="marcas">' + marcas + '</div></div>' + salones.map(function (s) {
       return '<div class="tl-fila"><div class="tl-salon">' + esc(s) + '</div><div class="tl-pista">' + ahora + d.bloques.filter(function (b) { return b.salon === s; }).map(function (b) {
-        var quien = b.dicto ? (b.tipo === 'REEMPLAZO' ? '↻ ' + b.dicto : b.dicto) : (b.titular || 'Sin docente');
-        var tip = b.salon + ' · ' + b.curso + '\n' + b.inicio + '–' + b.fin + '\nTitular: ' + (b.titular || '—') + (b.dicto ? '\nDictó: ' + b.dicto : '') + '\nEstado: ' + b.estado;
+        var tip = b.salon + ' · ' + b.curso + '\n' + b.inicio + '–' + b.fin + '\nTitular: ' + (b.titular || '—') + (b.dicto ? '\nDictó: ' + b.dicto : '') + '\nEstado: ' + etiquetaEstado(b.estado);
         return '<div class="blq e-' + b.estado.replace(/ /g, '-') + '" style="left:' + pct(min(b.inicio)) + ';width:calc(' + pct(min(b.fin)) + ' - ' + pct(min(b.inicio)) + ' - 3px)" title="' + esc(tip) + '">' +
-          '<b>' + esc(b.curso) + '</b><span>' + esc(quien) + '</span></div>';
+          '<b>' + esc(b.curso) + '</b><span>' + esc(quien(b)) + '</span></div>';
       }).join('') + '</div></div>';
     }).join('');
+    $('tl-movil').innerHTML = salones.map(function (s) {
+      return '<div class="tarjeta salon-card"><h3>' + esc(s) + '</h3>' + d.bloques.filter(function (b) { return b.salon === s; }).map(function (b) {
+        return '<div class="fila-b"><span class="h">' + esc(b.inicio) + '–' + esc(b.fin) + '</span><span class="c"><b>' + esc(b.curso) + '</b><span>' + esc(quien(b)) + '</span></span>' +
+          '<span class="est e-' + b.estado.replace(/ /g, '-') + '">' + etiquetaEstado(b.estado) + '</span></div>';
+      }).join('') + '</div>';
+    }).join('');
   }
-
   function pintarMarcaciones(d) {
     var porId = {}; d.bloques.forEach(function (b) { porId[b.id] = b; });
     $('n-marc').textContent = d.marcaciones.length + ' registro(s)';
-    if (!d.marcaciones.length) { $('tabla-marc').innerHTML = '<tr><td class="vacio-t">Aún no hay marcaciones este día.</td></tr>'; return; }
+    if (!d.marcaciones.length) { $('tabla-marc').innerHTML = '<tbody><tr><td class="vacio-t">Aún no hay marcaciones este día.</td></tr></tbody>'; return; }
     var filas = d.marcaciones.slice().sort(function (a, b) { return min(a.inicio) - min(b.inicio); }).map(function (m) {
       var salones = m.bloques.map(function (id) { return porId[id] ? porId[id].salon : id; })
         .concat(m.reemplazos.map(function (id) { return '↻ ' + (porId[id] ? porId[id].salon : id); }));
       var uniq = salones.filter(function (v, i, a) { return a.indexOf(v) === i; });
       var est = m.estado === 'TARDANZA' ? '<span class="chip warn">Tarde ' + esc(m.minTarde) + ' min</span>' : m.estado === 'PUNTUAL' ? '<span class="chip ok">Puntual</span>' : '<span class="chip">' + esc(m.estado) + '</span>';
-      return '<tr><td><b>' + esc(m.docente) + '</b><div class="muted" style="font-size:12px">' + esc(m.dispositivo) + '</div></td>' +
-        '<td class="num">' + esc(m.inicio) + '</td><td class="num">' + (m.fin ? esc(m.fin) : '<span class="chip ok"><span class="punto"></span>En el colegio</span>') + '</td>' +
-        '<td>' + est + '</td><td>' + esc(uniq.join(', ')) + '</td><td class="num">' + (m.fin ? n2(m.horasEfectivas) : '—') + '</td>' +
-        '<td>' + esc([m.obs, m.obsDetalle].filter(Boolean).join(': ')) + '</td></tr>';
+      return '<tr><td class="titulo"><span><b>' + esc(m.docente) + '</b><div class="muted" style="font-size:12px">' + esc(m.dispositivo) + '</div></span></td>' +
+        '<td class="num" data-l="Ingreso">' + esc(m.inicio) + '</td><td class="num" data-l="Salida">' + (m.fin ? esc(m.fin) : '<span class="chip ok"><span class="punto"></span>En el colegio</span>') + '</td>' +
+        '<td data-l="Estado">' + est + '</td><td data-l="Salones">' + esc(uniq.join(', ') || '—') + '</td><td class="num" data-l="Horas">' + (m.fin ? n2(m.horasEfectivas) : '—') + '</td>' +
+        '<td data-l="Obs.">' + esc([m.obs, m.obsDetalle].filter(Boolean).join(': ') || '—') + '</td></tr>';
     });
     $('tabla-marc').innerHTML = '<thead><tr><th>Docente</th><th class="num">Ingreso</th><th class="num">Salida</th><th>Estado</th><th>Salones</th><th class="num">Horas</th><th>Observación</th></tr></thead><tbody>' + filas.join('') + '</tbody>';
   }
 
-  /* ---------- Reporte ---------- */
+  /* ===================== MARCAR (COORDINACIÓN) ===================== */
+  function cargarCoord() {
+    $('doc-grid').innerHTML = '<div class="muted">Cargando…</div>';
+    api('coordListaDocentes', S.pin).then(function (r) {
+      S.coord = r; $('marcar-fecha').textContent = DIAS_L[r.dia] + ' ' + r.fecha + ' · ' + r.hora; pintarCoord();
+    }).catch(function (e) { $('doc-grid').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
+  }
+  $('buscar-doc').addEventListener('input', pintarCoord);
+  $('filtros').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-f]'); if (!b) return;
+    S.filtro = b.getAttribute('data-f');
+    document.querySelectorAll('.filtro').forEach(function (x) { x.classList.toggle('sel', x === b); });
+    pintarCoord();
+  });
+  function pintarCoord() {
+    if (!S.coord) return;
+    var q = $('buscar-doc').value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    var lista = S.coord.docentes.filter(function (d) {
+      var t = (d.docente + ' ' + d.nombreCompleto + ' ' + d.especialidad).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      if (q && t.indexOf(q) < 0) return false;
+      if (q) return true;
+      if (S.filtro === 'hoy') return d.clasesHoy > 0 || d.estado !== 'SIN MARCAR';
+      if (S.filtro === 'sin') return d.estado === 'SIN MARCAR';
+      if (S.filtro === 'en') return d.estado === 'EN EL COLEGIO';
+      return true;
+    });
+    $('doc-grid').innerHTML = lista.length ? lista.map(function (d) {
+      var chip = d.estado === 'EN EL COLEGIO' ? '<span class="chip ok"><span class="punto"></span>En el colegio desde ' + esc(d.inicio) + '</span>'
+        : d.estado === 'SALIÓ' ? '<span class="chip oscuro">Salió ' + esc(d.fin) + '</span>' : '<span class="chip">Sin marcar</span>';
+      var btn = d.estado === 'EN EL COLEGIO' ? '<button class="btn btn-negro" data-d="' + esc(d.docente) + '" type="button">Salida</button>'
+        : '<button class="btn btn-rojo" data-d="' + esc(d.docente) + '" type="button">Ingreso</button>';
+      return '<div class="tarjeta doc-card"><div class="avatar-s">' + iniciales(d.docente) + '</div><div class="info"><div class="n">' + esc(d.docente) + '</div>' +
+        '<div class="d">' + (d.clasesHoy ? d.clasesHoy + ' clase(s) hoy · desde ' + esc(d.desde) + ' · ' + esc(d.salones.join(', ')) : 'Sin clases hoy') + '</div>' + chip + '</div>' + btn + '</div>';
+    }).join('') : '<div class="vacio-t">No hay docentes con este filtro.</div>';
+  }
+  $('doc-grid').addEventListener('click', function (e) { var b = e.target.closest('[data-d]'); if (b) abrirMarcaCoord(b.getAttribute('data-d')); });
+
+  function tarjetaClase(b, sel, tipo, bloqueada) {
+    return '<label class="clase' + (sel ? ' sel' : '') + (bloqueada ? ' bloq' : '') + '" data-id="' + esc(b.id) + '" data-tipo="' + tipo + '">' +
+      '<input type="checkbox"' + (sel ? ' checked' : '') + '><span class="check"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></span>' +
+      '<span class="info"><div class="salon">' + esc(b.salon) + '</div><div class="curso">' + esc(b.curso) + (tipo === 'R' ? ' · titular: ' + esc(b.docente || 'sin docente') : '') +
+      (bloqueada ? ' · ya lo marcó ' + esc(b.tomadoPor) : '') + '</div></span><span class="hora">' + esc(b.inicio) + ' – ' + esc(b.fin) + '</span></label>';
+  }
+  function abrirMarcaCoord(nombre) {
+    abrirModal(nombre, '<div class="muted">Cargando…</div>');
+    api('coordBuscar', S.pin, nombre).then(function (d) {
+      var ab = d.abierta, selP = ab ? ab.bloques : d.propios.map(function (b) { return b.id; }), selR = ab ? ab.reemplazos : [];
+      var grupos = {}; d.otros.forEach(function (b) { (grupos[b.salon] = grupos[b.salon] || []).push(b); });
+      var html =
+        '<div class="hora-coord"><div><div style="font-weight:800">' + (ab ? 'Hora de salida' : 'Hora de ingreso') + '</div><div class="muted" style="font-size:13px">' +
+        (ab ? 'Ingresó a las ' + esc(ab.inicio) + '. ' : '') + 'Puedes corregirla si llegó/salió antes.</div></div><input type="time" id="c-hora" value="' + esc(d.hora) + '"></div>' +
+        '<div class="h-seccion">' + (ab ? 'Salones que dictó' : 'Salones que dictará hoy') + ' · ' + DIAS_L[d.dia] + '</div><div class="clases">' +
+        (d.propios.length ? d.propios.map(function (b) { return tarjetaClase(b, selP.indexOf(b.id) >= 0, 'P'); }).join('') : '<div class="vacio">Sin clases programadas hoy.</div>') + '</div>' +
+        '<div class="h-seccion">Reemplazos (clases de otros docentes)</div>' +
+        (Object.keys(grupos).length ? '<details' + (selR.length || !d.propios.length ? ' open' : '') + '><summary style="cursor:pointer;font-weight:700;margin-bottom:8px">Ver ' + d.otros.length + ' clase(s) de hoy</summary>' +
+          Object.keys(grupos).map(function (s) { return '<div class="grupo-salon">' + esc(s) + '</div><div class="clases">' + grupos[s].map(function (b) { return tarjetaClase(b, selR.indexOf(b.id) >= 0, 'R', !!b.tomadoPor && selR.indexOf(b.id) < 0); }).join('') + '</div>'; }).join('') + '</details>'
+          : '<div class="vacio">No hay otras clases hoy.</div>') +
+        '<div class="h-seccion">Observación</div><div class="obs-chips" id="c-obs">' + ['Ninguna'].concat(OBS).map(function (o, i) { return '<button type="button" class="obs-chip' + (i ? '' : ' sel') + '" data-o="' + esc(o) + '">' + esc(o) + '</button>'; }).join('') + '</div>' +
+        '<textarea id="c-obs-det" class="oculto" placeholder="Escribe el detalle…"></textarea>' +
+        '<div class="alerta oculto" id="c-err"></div>' +
+        '<div style="margin-top:16px"><button class="btn btn-grande ' + (ab ? 'btn-negro' : 'btn-rojo') + '" id="c-marcar" type="button">' + (ab ? '⏹ Registrar SALIDA' : '▶ Registrar INGRESO') + '</button></div>' +
+        '<div class="muted" style="font-size:12px;text-align:center;margin-top:8px">Quedará registrado como “Coordinación”.</div>';
+      $('modal-cuerpo').innerHTML = html;
+      var obs = '';
+      $('c-obs').addEventListener('click', function (e) {
+        var b = e.target.closest('[data-o]'); if (!b) return;
+        obs = b.getAttribute('data-o') === 'Ninguna' ? '' : b.getAttribute('data-o');
+        this.querySelectorAll('.obs-chip').forEach(function (x) { x.classList.toggle('sel', x === b); });
+        $('c-obs-det').classList.toggle('oculto', obs !== 'Otro');
+      });
+      $('modal-cuerpo').querySelectorAll('.clase').forEach(function (c) {
+        c.addEventListener('click', function (e) {
+          e.preventDefault(); if (c.classList.contains('bloq')) return;
+          var i = c.querySelector('input'); i.checked = !i.checked; c.classList.toggle('sel', i.checked);
+        });
+      });
+      $('c-marcar').addEventListener('click', function () {
+        var p = { docente: d.docente, hora: $('c-hora').value, bloques: [], reemplazos: [], obs: obs, obsDetalle: $('c-obs-det').value.trim() };
+        $('modal-cuerpo').querySelectorAll('.clase.sel').forEach(function (c) { (c.getAttribute('data-tipo') === 'R' ? p.reemplazos : p.bloques).push(c.getAttribute('data-id')); });
+        var btn = this; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Registrando…';
+        api('coordMarcar', S.pin, p).then(function (r) {
+          if (!r.ok) { $('c-err').textContent = r.error; $('c-err').classList.remove('oculto'); btn.disabled = false; btn.textContent = ab ? '⏹ Registrar SALIDA' : '▶ Registrar INGRESO'; return; }
+          cerrarModal();
+          toast(r.tipo === 'INGRESO' ? '✅ Ingreso de ' + esc(r.docente) + ' a las ' + r.hora + (r.estado === 'TARDANZA' ? ' · tardanza ' + r.minTarde + ' min' : '')
+            : '✅ Salida de ' + esc(r.docente) + ' a las ' + r.hora + ' · ' + n2(r.horas.efectivas) + ' h dictadas');
+          cargarCoord();
+        }).catch(function (e) { $('c-err').textContent = e.message; $('c-err').classList.remove('oculto'); btn.disabled = false; btn.textContent = 'Reintentar'; });
+      });
+    }).catch(function (e) { $('modal-cuerpo').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
+  }
+
+  /* ===================== HORARIO ===================== */
+  function cargarHorario(mantener) {
+    if (!mantener) $('semana').innerHTML = '<div class="muted">Cargando…</div>';
+    return api('getHorarioAdmin', S.pin).then(function (r) { S.horario = r; pintarSelectorHorario(); pintarSemana(); })
+      .catch(function (e) { $('semana').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
+  }
+  $('h-modo').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-m]'); if (!b) return;
+    S.hModo = b.getAttribute('data-m'); S.hSel = '';
+    this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('sel', x === b); });
+    pintarSelectorHorario(); pintarSemana();
+  });
+  $('h-sel').addEventListener('change', function () { S.hSel = this.value; pintarSemana(); });
+  function pintarSelectorHorario() {
+    var ops = S.hModo === 'salon' ? S.horario.salones : S.horario.docentes;
+    if (ops.indexOf(S.hSel) < 0) S.hSel = ops[0] || '';
+    $('h-sel').innerHTML = ops.map(function (o) { return '<option' + (o === S.hSel ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+  }
+  function pintarSemana() {
+    var bl = S.horario.bloques.filter(function (b) { return S.hModo === 'salon' ? b.salon === S.hSel : b.docente === S.hSel; });
+    var total = 0;
+    $('semana').innerHTML = DIAS.map(function (dia) {
+      var delDia = bl.filter(function (b) { return b.dia === dia; }).sort(function (a, b) { return min(a.inicio) - min(b.inicio); });
+      var horas = delDia.reduce(function (s, b) { return s + (min(b.fin) - min(b.inicio)) / 60; }, 0); total += horas;
+      return '<div class="dia-col"><h3>' + DIAS_L[dia] + '<small>' + (horas ? horas.toFixed(2).replace(/\.?0+$/, '') + ' h' : '') + '</small></h3>' +
+        (delDia.length ? delDia.map(function (b) {
+          return '<button class="bq' + (b.docente ? '' : ' sin-doc') + '" data-id="' + esc(b.id) + '" type="button"><div class="h">' + esc(b.inicio) + ' – ' + esc(b.fin) + '</div>' +
+            '<div class="c">' + esc(b.curso) + '</div><div class="d">' + esc(S.hModo === 'salon' ? (b.docente || 'Sin docente') : b.salon) + '</div>' +
+            (b.nota ? '<div class="nota">⚠ ' + esc(b.nota) + '</div>' : '') + '</button>';
+        }).join('') : '<div class="vacio-d">Sin clases</div>') +
+        '<button class="agregar" data-nuevo="' + dia + '" type="button">＋ Agregar</button></div>';
+    }).join('');
+    $('h-resumen').textContent = bl.length + ' bloque(s) · ' + total.toFixed(2).replace(/\.?0+$/, '') + ' h/semana';
+  }
+  $('semana').addEventListener('click', function (e) {
+    var b = e.target.closest('.bq'), n = e.target.closest('[data-nuevo]');
+    if (b) editarBloque(S.horario.bloques.filter(function (x) { return x.id === b.getAttribute('data-id'); })[0]);
+    if (n) editarBloque(null, n.getAttribute('data-nuevo'));
+  });
+  $('h-nuevo').addEventListener('click', function () { editarBloque(null, 'LUNES'); });
+
+  function editarBloque(b, dia) {
+    var nuevo = !b;
+    b = b || { id: '', salon: S.hModo === 'salon' ? S.hSel : '', dia: dia, inicio: '08:00', fin: '10:00', curso: '', docente: S.hModo === 'docente' ? S.hSel : '', nota: '' };
+    var cursos = {}; S.horario.bloques.forEach(function (x) { cursos[x.curso] = true; });
+    var html = '<div class="form-grid">' +
+      '<label>Salón<input id="f-salon" list="dl-salones" value="' + esc(b.salon) + '" placeholder="Ej. ANUAL INTEGRAL"></label>' +
+      '<label>Día<select id="f-dia">' + DIAS.map(function (d) { return '<option value="' + d + '"' + (d === b.dia ? ' selected' : '') + '>' + DIAS_L[d] + '</option>'; }).join('') + '</select></label>' +
+      '<label>Inicio<input id="f-ini" type="time" step="300" value="' + esc(b.inicio) + '"></label>' +
+      '<label>Fin<input id="f-fin" type="time" step="300" value="' + esc(b.fin) + '"></label>' +
+      '<label class="full">Curso<input id="f-curso" list="dl-cursos" value="' + esc(b.curso) + '" placeholder="Ej. ÁLGEBRA"></label>' +
+      '<label class="full">Docente<select id="f-doc"><option value="">— Sin docente asignado —</option>' + S.horario.docentes.map(function (d) { return '<option' + (d === b.docente ? ' selected' : '') + '>' + esc(d) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="full">Nota (opcional)<input id="f-nota" value="' + esc(b.nota) + '" placeholder="Ej. clase conjunta con Creadores"></label></div>' +
+      '<datalist id="dl-salones">' + S.horario.salones.map(function (s) { return '<option value="' + esc(s) + '">'; }).join('') + '</datalist>' +
+      '<datalist id="dl-cursos">' + Object.keys(cursos).sort().map(function (s) { return '<option value="' + esc(s) + '">'; }).join('') + '</datalist>' +
+      '<div class="alerta oculto" id="f-err"></div>' +
+      '<div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">' +
+      '<button class="btn btn-rojo" id="f-guardar" type="button" style="flex:1;min-width:160px">' + (nuevo ? 'Agregar bloque' : 'Guardar cambios') + '</button>' +
+      (nuevo ? '' : '<button class="btn btn-claro" id="f-eliminar" type="button" style="color:var(--rojo)">Eliminar</button>') + '</div>' +
+      (nuevo ? '' : '<div class="muted" style="font-size:12px;margin-top:10px">ID del bloque: ' + esc(b.id) + ' (se conserva al editar para no afectar las marcaciones pasadas).</div>');
+    abrirModal(nuevo ? 'Nuevo bloque' : 'Editar bloque', html);
+    $('f-guardar').addEventListener('click', function () {
+      var dato = { id: b.id, salon: $('f-salon').value, dia: $('f-dia').value, inicio: $('f-ini').value, fin: $('f-fin').value, curso: $('f-curso').value, docente: $('f-doc').value, nota: $('f-nota').value };
+      var btn = this; btn.disabled = true;
+      api('guardarBloque', S.pin, dato).then(function (r) {
+        btn.disabled = false;
+        if (!r.ok) { $('f-err').textContent = r.error; $('f-err').classList.remove('oculto'); return; }
+        cerrarModal();
+        if (S.hModo === 'salon') S.hSel = r.bloque.salon;
+        toast('✅ ' + (r.nuevo ? 'Bloque agregado' : 'Cambios guardados') + (r.avisos.length ? '<br>ⓘ ' + esc(r.avisos.join(' ')) : ''), r.avisos.length ? 8000 : 3500);
+        cargarHorario(true);
+      }).catch(function (e) { btn.disabled = false; $('f-err').textContent = e.message; $('f-err').classList.remove('oculto'); });
+    });
+    if (!nuevo) $('f-eliminar').addEventListener('click', function () {
+      if (!confirm('¿Eliminar ' + b.curso + ' (' + DIAS_L[b.dia] + ' ' + b.inicio + '–' + b.fin + ') de ' + b.salon + '?')) return;
+      api('eliminarBloque', S.pin, b.id).then(function (r) {
+        if (!r.ok) { $('f-err').textContent = r.error; $('f-err').classList.remove('oculto'); return; }
+        cerrarModal(); toast('🗑 Bloque eliminado'); cargarHorario(true);
+      }).catch(function (e) { $('f-err').textContent = e.message; $('f-err').classList.remove('oculto'); });
+    });
+  }
+
+  /* ===================== REPORTE ===================== */
   $('f-mes').addEventListener('change', function () { S.mes = this.value; cargarReporte(); });
   function cargarReporte() {
     $('rep-msg').textContent = 'Cargando…';
@@ -331,20 +669,21 @@
   function pintarReporte(r) {
     var tot = r.filas.reduce(function (s, f) { return s + f.horas; }, 0);
     var docs = {}; r.filas.forEach(function (f) { docs[f.docente] = true; });
-    var reemp = r.filas.reduce(function (s, f) { return s + f.reemplazos; }, 0);
-    var clases = r.filas.reduce(function (s, f) { return s + f.clases; }, 0);
-    $('rep-kpis').innerHTML = kpi('Horas dictadas (mes)', n2(tot), '', 'destacado') + kpi('Docentes', Object.keys(docs).length) + kpi('Clases registradas', clases) + kpi('Reemplazos', reemp);
-    if (!r.filas.length) { $('tabla-rep').innerHTML = '<tr><td class="vacio-t">No hay clases dictadas registradas en ' + esc(r.mes) + '.</td></tr>'; return; }
+    $('rep-kpis').innerHTML = kpi('Horas dictadas (mes)', n2(tot), '', 'destacado') + kpi('Docentes', Object.keys(docs).length) +
+      kpi('Clases registradas', r.filas.reduce(function (s, f) { return s + f.clases; }, 0)) + kpi('Reemplazos', r.filas.reduce(function (s, f) { return s + f.reemplazos; }, 0));
+    if (!r.filas.length) { $('tabla-rep').innerHTML = '<tbody><tr><td class="vacio-t">No hay clases dictadas registradas en ' + esc(r.mes) + '.</td></tr></tbody>'; return; }
     var html = '<thead><tr><th>Docente</th><th>Mes</th><th>Salón</th><th class="num">N.º horas dictadas</th><th class="num">Clases</th><th class="num">Días</th><th class="num">Reemplazos</th><th class="num">Tardanzas</th></tr></thead><tbody>';
     var actual = null, sub = 0;
-    r.filas.forEach(function (f, i) {
-      if (actual !== null && actual !== f.docente) { html += '<tr class="subtotal"><td colspan="3">Total ' + esc(actual) + '</td><td class="num">' + n2(sub) + '</td><td colspan="4"></td></tr>'; sub = 0; }
+    var subtotal = function () { return '<tr class="subtotal"><td colspan="3" data-l="Total">' + esc(actual) + '</td><td class="num">' + n2(sub) + ' h</td><td colspan="4" class="oculto-m"></td></tr>'; };
+    r.filas.forEach(function (f) {
+      if (actual !== null && actual !== f.docente) { html += subtotal(); sub = 0; }
       actual = f.docente; sub += f.horas;
-      html += '<tr><td><b>' + esc(f.docente) + '</b></td><td>' + esc(f.mes) + '</td><td>' + esc(f.salon) + '</td><td class="num"><b>' + n2(f.horas) + '</b></td><td class="num">' + f.clases +
-        '</td><td class="num">' + f.dias + '</td><td class="num">' + f.reemplazos + '</td><td class="num">' + (f.tardanzas ? f.tardanzas + ' (' + f.minTarde + ' min)' : '0') + '</td></tr>';
+      html += '<tr><td class="titulo"><b>' + esc(f.docente) + '</b></td><td data-l="Mes">' + esc(f.mes) + '</td><td data-l="Salón">' + esc(f.salon) + '</td><td class="num" data-l="Horas"><b>' + n2(f.horas) + '</b></td>' +
+        '<td class="num" data-l="Clases">' + f.clases + '</td><td class="num" data-l="Días">' + f.dias + '</td><td class="num" data-l="Reemplazos">' + f.reemplazos + '</td>' +
+        '<td class="num" data-l="Tardanzas">' + (f.tardanzas ? f.tardanzas + ' (' + f.minTarde + ' min)' : '0') + '</td></tr>';
     });
-    html += '<tr class="subtotal"><td colspan="3">Total ' + esc(actual) + '</td><td class="num">' + n2(sub) + '</td><td colspan="4"></td></tr>';
-    html += '<tr class="total"><td colspan="3">TOTAL GENERAL</td><td class="num">' + n2(tot) + '</td><td colspan="4"></td></tr></tbody>';
+    html += subtotal();
+    html += '<tr class="total"><td colspan="3">TOTAL GENERAL</td><td class="num">' + n2(tot) + ' h</td><td colspan="4"></td></tr></tbody>';
     $('tabla-rep').innerHTML = html;
   }
   $('btn-exportar').addEventListener('click', function () {
@@ -352,31 +691,112 @@
     api('exportarReporte', S.pin, S.mes).then(function (r) { $('rep-msg').innerHTML = '✅ ' + r.filas + ' fila(s) guardadas. <a href="' + r.url + '" target="_blank">Abrir hoja</a>'; })
       .catch(function (e) { $('rep-msg').textContent = 'Error: ' + e.message; }).then(function () { b.disabled = false; });
   });
+  function descargarBlob(blob, nombre) {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
   $('btn-csv').addEventListener('click', function () {
     if (!S.reporte) return;
     var q = function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; };
     var lineas = [['Docente', 'Mes', 'Salón', 'N.º horas dictadas', 'Clases', 'Días', 'Reemplazos', 'Tardanzas', 'Min. tardanza'].map(q).join(',')].concat(
       S.reporte.filas.map(function (f) { return [f.docente, f.mes, f.salon, n2(f.horas), f.clases, f.dias, f.reemplazos, f.tardanzas, f.minTarde].map(q).join(','); }));
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob(['﻿' + lineas.join('\n')], { type: 'text/csv;charset=utf-8' }));
-    a.download = 'horas_docentes_' + S.mes + '.csv'; a.click();
+    descargarBlob(new Blob(['﻿' + lineas.join('\n')], { type: 'text/csv;charset=utf-8' }), 'horas_docentes_' + S.mes + '.csv');
   });
 
-  /* ---------- QR ---------- */
+  /* ===================== QR / FOTOCHECKS ===================== */
+  function codigo(d) { return d.dni || d.celular || ''; }
+  /** Dibuja un QR (nivel M, margen de 4 módulos) en un canvas cuadrado de `tam` px. */
+  function qrCanvas(texto, tam) {
+    var q = qrcode(0, 'M'); q.addData(texto); q.make();
+    var n = q.getModuleCount(), m = 4, c = document.createElement('canvas'); c.width = c.height = tam;
+    var g = c.getContext('2d'), s = tam / (n + 2 * m);
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, tam, tam); g.fillStyle = '#000000';
+    for (var r = 0; r < n; r++) for (var k = 0; k < n; k++) if (q.isDark(r, k)) g.fillRect(Math.floor((k + m) * s), Math.floor((r + m) * s), Math.ceil(s), Math.ceil(s));
+    return c;
+  }
+  function urlQR(d) { return (S.qr.appUrl || S.appUrl) + '?dni=' + codigo(d); }
   function cargarQR() {
     $('qr-grid').innerHTML = '<div class="muted">Cargando…</div>';
     api('getDocentesQR', S.pin).then(function (r) {
+      S.qr = r;
       $('qr-grid').innerHTML = r.docentes.map(function (d, i) {
         return '<div class="fotocheck"><div class="cab">CVI · Monte Azul</div>' +
-          ((d.dni || d.celular) ? '<div class="qr" id="qr-' + i + '"></div>' : '<div class="qr"><div class="sin">Falta registrar el DNI<br>en la hoja “Docentes”</div></div>') +
-          '<div class="nom">' + esc(d.docente) + '</div><div class="dni">' + (d.dni ? 'DNI ' + esc(d.dni) : d.celular ? 'Cel. ' + esc(d.celular) + ' (falta DNI)' : '&nbsp;') + '</div></div>';
+          (codigo(d) ? '<div class="qr" id="qr-' + i + '"></div>' : '<div class="qr"><div class="sin">Falta DNI o celular<br>en la hoja “Docentes”</div></div>') +
+          '<div class="nom">' + esc(d.docente) + '</div><div class="dni">' + (d.dni ? 'DNI ' + esc(d.dni) : d.celular ? 'Cel. ' + esc(d.celular) : '&nbsp;') + '</div>' +
+          (codigo(d) ? '<div class="acc"><button class="btn btn-negro" data-png="' + i + '" type="button">⬇ Descargar</button><button class="btn btn-claro" data-drive="' + i + '" type="button">☁ Drive</button></div>' : '') + '</div>';
       }).join('');
       r.docentes.forEach(function (d, i) {
-        var cod = d.dni || d.celular; if (!cod || typeof QRCode === 'undefined') return;
-        new QRCode($('qr-' + i), { text: (r.appUrl || S.appUrl) + '?dni=' + cod, width: 340, height: 340, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+        if (codigo(d)) $('qr-' + i).appendChild(qrCanvas(urlQR(d), 340));
       });
     }).catch(function (e) { $('qr-grid').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
   }
+  function cargarImg(src) { return new Promise(function (ok) { if (!src) return ok(null); var im = new Image(); im.onload = function () { ok(im); }; im.onerror = function () { ok(null); }; im.src = src; }); }
+  function nombreArchivo(d) { return 'Fotocheck_QR_' + d.docente.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_') + '.png'; }
+  /** Dibuja el fotocheck completo (600×900) en un canvas: cabecera con logo, QR, nombre y código. */
+  function crearFotocheck(d) {
+    var qr = qrCanvas(urlQR(d), 440);
+    return Promise.all([cargarImg(S.logo), document.fonts && document.fonts.load ? document.fonts.load('30px "Cantata One"').catch(function () { }) : null]).then(function (res) {
+      var logo = res[0], W = 600, H = 900, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var g = c.getContext('2d');
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#000000'; g.fillRect(0, 0, W, 170);
+      g.fillStyle = '#eebe4f'; g.fillRect(0, 170, W, 8);
+      var x = 40;
+      if (logo) {
+        g.fillStyle = '#ffffff'; g.beginPath(); if (g.roundRect) g.roundRect(32, 35, 100, 100, 16); else g.rect(32, 35, 100, 100); g.fill();
+        var r = Math.min(88 / logo.width, 88 / logo.height); g.drawImage(logo, 82 - logo.width * r / 2, 85 - logo.height * r / 2, logo.width * r, logo.height * r);
+        x = 152;
+      }
+      g.fillStyle = '#eebe4f'; g.font = '30px "Cantata One", Georgia, serif'; g.textBaseline = 'alphabetic';
+      g.fillText('César Vallejo', x, 82); g.fillText('Ingenieros', x, 120);
+      g.fillStyle = '#d9d4cc'; g.font = '600 18px Inter, Arial, sans-serif'; g.fillText('Sede Monte Azul · Docente', x, 150);
+      g.drawImage(qr, 80, 215, 440, 440);
+      g.fillStyle = '#000000'; g.textAlign = 'center';
+      var nombre = d.nombreCompleto || d.docente, tam = 34;
+      g.font = '800 ' + tam + 'px Inter, Arial, sans-serif';
+      while (g.measureText(nombre).width > 540 && tam > 20) { tam -= 2; g.font = '800 ' + tam + 'px Inter, Arial, sans-serif'; }
+      g.fillText(nombre, W / 2, 712);
+      g.fillStyle = '#5c5752'; g.font = '600 22px Inter, Arial, sans-serif';
+      g.fillText((d.dni ? 'DNI ' + d.dni : 'Cel. ' + d.celular) + (d.especialidad ? ' · ' + d.especialidad : ''), W / 2, 750);
+      g.fillStyle = '#920000'; g.fillRect(0, 800, W, 100);
+      g.fillStyle = '#ffffff'; g.font = '800 26px Inter, Arial, sans-serif'; g.fillText('Escanéame para marcar asistencia', W / 2, 860);
+      return c;
+    });
+  }
+  function aBlob(c) { return new Promise(function (ok) { c.toBlob(ok, 'image/png'); }); }
+  function aBase64(c) { return c.toDataURL('image/png').split(',')[1]; }
+  $('qr-grid').addEventListener('click', function (e) {
+    var bp = e.target.closest('[data-png]'), bd = e.target.closest('[data-drive]');
+    if (bp) {
+      var d = S.qr.docentes[+bp.getAttribute('data-png')];
+      crearFotocheck(d).then(aBlob).then(function (b) { descargarBlob(b, nombreArchivo(d)); toast('⬇ Descargando ' + esc(nombreArchivo(d)) + '<br><span style="font-weight:500">Si no se descarga, usa el botón “☁ Drive”.</span>', 6000); });
+    }
+    if (bd) {
+      var d2 = S.qr.docentes[+bd.getAttribute('data-drive')]; bd.disabled = true; bd.textContent = 'Guardando…';
+      crearFotocheck(d2).then(function (c) { return api('guardarFotochecks', S.pin, [{ nombre: nombreArchivo(d2), base64: aBase64(c) }]); }).then(function (r) {
+        var a = r.archivos[0]; toast('☁ Guardado en Drive: <a href="' + a.descarga + '" target="_blank">Descargar</a> · <a href="' + r.carpetaUrl + '" target="_blank">Abrir carpeta</a>', 12000);
+        window.open(a.descarga, '_blank');
+      }).catch(function (er) { toast('Error: ' + esc(er.message)); }).then(function () { bd.disabled = false; bd.textContent = '☁ Drive'; });
+    }
+  });
+  $('btn-zip').addEventListener('click', function () {
+    var b = this, lista = S.qr ? S.qr.docentes.filter(codigo) : [];
+    if (!lista.length) return;
+    b.disabled = true; var carpeta = null, hechos = 0;
+    var msg = function (t) { $('qr-msg').innerHTML = '<div class="alerta info" style="margin:0 0 14px">' + t + '</div>'; };
+    msg('Generando fotochecks… 0 de ' + lista.length);
+    var lote = function (i) {
+      if (i >= lista.length) return api('comprimirFotochecks', S.pin, carpeta);
+      var grupo = lista.slice(i, i + 5);
+      return Promise.all(grupo.map(function (d) { return crearFotocheck(d).then(function (c) { return { nombre: nombreArchivo(d), base64: aBase64(c) }; }); }))
+        .then(function (arch) { return api('guardarFotochecks', S.pin, arch, carpeta); })
+        .then(function (r) { carpeta = r.carpetaId; hechos += grupo.length; msg('Guardando en Drive… ' + hechos + ' de ' + lista.length); return lote(i + 5); });
+    };
+    lote(0).then(function (r) {
+      msg('✅ ' + r.total + ' fotochecks listos. <a href="' + r.zipUrl + '" target="_blank"><b>⬇ Descargar ZIP</b></a> · <a href="' + r.carpetaUrl + '" target="_blank">Abrir carpeta en Drive</a>');
+      window.open(r.zipUrl, '_blank');
+    }).catch(function (e) { msg('Error: ' + esc(e.message)); }).then(function () { b.disabled = false; });
+  });
   $('btn-imprimir').addEventListener('click', function () { window.print(); });
 })();
 </script>

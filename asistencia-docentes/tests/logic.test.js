@@ -123,3 +123,22 @@ test('horario base: bloques válidos y sin cruces por salón', () => {
     }
   }
 });
+
+test('horario editable: validación de bloques e IDs nuevos', () => {
+  const h = [
+    { id: 'AI-LU-1', salon: 'ANUAL INTEGRAL', dia: 'LUNES', inicio: '08:00', fin: '10:00', curso: 'TRIGO', docente: 'Ana' },
+    { id: 'CR-LU-1', salon: 'CREADORES 3-4', dia: 'LUNES', inicio: '09:00', fin: '10:00', curso: 'ARTE', docente: 'Beto' }
+  ];
+  assert.deepEqual(L.validarBloque({ salon: 'ANUAL INTEGRAL', dia: 'LUNES', inicio: '10:15', fin: '11:00', curso: 'X', docente: 'Ana' }, h), { errores: [], avisos: [] });
+  assert.match(L.validarBloque({ salon: 'ANUAL INTEGRAL', dia: 'LUNES', inicio: '09:30', fin: '10:30', curso: 'X' }, h).errores[0], /mismo salón/);
+  assert.match(L.validarBloque({ salon: 'LÍDERES 5-6', dia: 'LUNES', inicio: '09:30', fin: '10:30', curso: 'X', docente: 'Beto' }, h).avisos[0], /conjunta/);
+  assert.match(L.validarBloque({ salon: 'S', dia: 'LUNES', inicio: '11:00', fin: '10:00', curso: 'X' }, h).errores[0], /mayor/);
+  assert.equal(L.validarBloque({ salon: 'S', dia: 'DOMINGO', inicio: '08:00', fin: '09:00', curso: 'X' }, h).errores.length, 1);
+  // Editar el mismo bloque no se cruza consigo mismo
+  assert.deepEqual(L.validarBloque({ ...h[0], fin: '10:15' }, h).errores, []);
+  assert.equal(L.prefijoSalon('ANUAL INTEGRAL'), 'AI');
+  assert.equal(L.prefijoSalon('LÍDERES 5-6'), 'LI');
+  assert.equal(L.prefijoSalon('PEQUEÑINES 3'), 'PE');
+  assert.equal(L.nuevoIdBloque('ANUAL INTEGRAL', 'LUNES', h), 'AI-LU-2');
+  assert.equal(L.nuevoIdBloque('ANUAL INTEGRAL', 'MIERCOLES', h), 'AI-MI-1');
+});

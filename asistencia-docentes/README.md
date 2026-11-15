@@ -5,7 +5,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 | Pantalla | Para quién | Qué hace |
 |---|---|---|
 | **Marcación** (URL de la app) | Docentes | DNI o QR → marca los salones del día (casillas) → **Marcar INGRESO**. Al irse: DNI → **Marcar SALIDA**. Puede cubrir la clase de otro docente (reemplazo) y dejar una observación. |
-| **Panel** (`URL?page=panel`, con PIN) | Coordinación / Dirección | En vivo (se actualiza cada 30 s): docentes que llegaron, tardanzas, línea de tiempo por salón, quién falta. Reporte mensual **Docente · Mes · Salón · N.º horas dictadas**. Fotochecks QR para imprimir. |
+| **Panel** (`URL?page=panel`, con PIN) | Coordinación / Dirección | 📍 **En vivo**: llegadas, tardanzas, salones del día, quién falta (se actualiza cada 30 s). ✍️ **Marcar asistencia**: coordinación registra ingreso/salida de cualquier docente (puede corregir la hora). 🗓️ **Horario**: ver por salón o por docente y agregar/editar/eliminar bloques. 📊 **Reporte** mensual Docente · Mes · Salón · N.º horas. 🪪 **QR**: fotochecks descargables (PNG o ZIP en Drive) e imprimibles. En celular, navegación inferior tipo app. |
 
 ## Reglas del piloto
 
@@ -20,7 +20,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 
 1. Abre la hoja **"CVI Asistencia Docente - Monte Azul (piloto)"**, que está en tu Drive dentro de *CVI MONTE AZUL 2026*. Ya tiene a los docentes con su celular y el horario.
 2. Ve a **Extensiones → Apps Script**. Se abre el editor con un archivo llamado `Código.gs`.
-3. Abre el Google Doc **"CÓDIGO PARA PEGAR - CVI Asistencia"**, que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
+3. Abre el Google Doc **"CÓDIGO PARA PEGAR v2 - CVI Asistencia"** (o la versión más reciente), que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
    1. Haz clic dentro del texto, pulsa **Ctrl+A** y luego **Ctrl+C**.
    2. En el editor de Apps Script, haz clic dentro de `Código.gs`, pulsa **Ctrl+A** y **Supr** para borrar lo que haya, y luego **Ctrl+V** y **Ctrl+S**.
    3. Revisa que la **primera línea** sea `/**` y que la **última** diga `FIN DEL ARCHIVO`.
@@ -45,7 +45,12 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
    - Comparte la URL por WhatsApp con los docentes para que marquen desde su celular.
    - Imprime los fotochecks desde la pestaña **Fotochecks QR** del panel.
 
-**Si actualizas el código más adelante:**
+**Si actualizas el código más adelante** (por ejemplo, al pasar a una nueva versión):
+1. Copia el Google Doc de la versión nueva y reemplaza **todo** el contenido de `Código.gs`. Guarda.
+2. Ejecuta **`setup`** otra vez. Completa datos faltantes y aplica renombres **sin borrar** lo que ya escribiste. Si pide permisos nuevos (por ejemplo, Drive para guardar fotochecks), acéptalos.
+3. Ve a **Implementar → Gestionar implementaciones → ✏ Editar → Versión: Nueva versión → Implementar**. La URL no cambia.
+
+**Detalle de la publicación de versiones:**
 1. Pega la nueva versión en `Código.gs` y guarda.
 2. Ve a **Implementar → Gestionar implementaciones → ✏ Editar → Versión: Nueva versión → Implementar**. Así la URL no cambia.
 
@@ -54,7 +59,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 ### ¿Con qué marca cada docente?
 - Con su **DNI** (8 dígitos) cuando esté registrado en la pestaña **Docentes**.
 - Mientras tanto, con su **celular** (9 dígitos), tomado del formulario de registro.
-- Faltan los datos de **Jhon Vásquez, Jorge Adama, Susan Adama y Yuly**, que no llenaron el formulario. Hay que escribir su DNI o celular en la pestaña **Docentes**.
+- **Jhon Vásquez, Jorge Adama, Susan Adama y Yuli Cucho** ya tienen su celular cargado (v2).
 
 ## Por confirmar en el horario (tomado de `HORARIO MONTE AZUL 2026 - 21.03.26.xlsx`)
 
@@ -77,6 +82,7 @@ asistencia-docentes/
 │   ├── Seed.gs          horario y docentes base (generado)
 │   ├── Index.html       pantalla de marcación (PC y celular)
 │   ├── Dashboard.html   panel en vivo + reporte + QR
+│   ├── QRLib.html       generador de QR incluido (MIT), sin depender de internet
 │   ├── Styles.html      branding CVI (negro, rojo #920000, amarillo #eebe4f, Cantata One)
 │   └── appsscript.json
 ├── datos/               horario y docentes en CSV + hoja base .xlsx
@@ -87,7 +93,8 @@ asistencia-docentes/
 ├── dist/CVI_Asistencia_TodoEnUno.gs  ← TODO en un archivo (para pegar en Apps Script)
 └── tests/
     ├── logic.test.js    pruebas de reglas  (node --test tests/logic.test.js)
-    └── e2e.js           flujo completo con navegador (requiere el simulador)
+    ├── e2e.js           flujo completo con navegador (requiere el simulador)
+    └── e2e_v2.js        coordinación, horario editable, QR, vista móvil, actualización de datos
 ```
 
 Para probar en local, ejecuta `FAKE_NOW="2026-11-16T07:58:00-05:00" node tools/servidor-local.js` y abre http://localhost:8787. El simulador asigna DNIs de prueba del 70000001 al 70000020; el PIN del panel es 2026.

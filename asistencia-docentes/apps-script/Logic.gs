@@ -217,12 +217,60 @@ function resumenMensual(clases, mes, marcaciones) {
   return filas;
 }
 
+/* ---------------- Horario: validación y edición ---------------- */
+
+/**
+ * Valida un bloque antes de guardarlo.
+ *  - errores: impiden guardar (datos incompletos, horas inválidas, cruce en el mismo salón).
+ *  - avisos: se puede guardar igual (ej. docente en dos salones a la vez = clases juntas).
+ */
+function validarBloque(b, horario) {
+  var errores = [], avisos = [];
+  var dia = norm(b.dia).toUpperCase();
+  if (!String(b.salon || '').trim()) errores.push('Indica el salón.');
+  if (DIAS.indexOf(dia) < 1) errores.push('Elige un día de lunes a sábado.');
+  if (!String(b.curso || '').trim()) errores.push('Indica el curso.');
+  var ini = toMin(b.inicio), fin = toMin(b.fin);
+  if (ini === null || fin === null) errores.push('Las horas deben tener el formato HH:mm.');
+  else if (fin <= ini) errores.push('La hora de fin debe ser mayor que la de inicio.');
+  if (errores.length) return { errores: errores, avisos: avisos };
+  (horario || []).forEach(function (o) {
+    if (o.id === b.id || norm(o.dia).toUpperCase() !== dia) return;
+    var cruza = toMin(o.inicio) < fin && toMin(o.fin) > ini;
+    if (!cruza) return;
+    if (norm(o.salon) === norm(b.salon)) {
+      errores.push('Se cruza con ' + o.curso + ' (' + o.inicio + '–' + o.fin + ') en el mismo salón.');
+    } else if (b.docente && norm(o.docente) === norm(b.docente)) {
+      avisos.push(b.docente + ' también tiene ' + o.curso + ' en ' + o.salon + ' (' + o.inicio + '–' + o.fin + '). Se contará como clase conjunta.');
+    }
+  });
+  return { errores: errores, avisos: avisos };
+}
+
+/** Prefijo de salón para IDs: "ANUAL INTEGRAL" → AI, "LÍDERES 5-6" → LI. */
+function prefijoSalon(salon) {
+  var palabras = norm(salon).toUpperCase().split(' ').filter(function (w) { return /^[A-Z]+$/.test(w); });
+  if (!palabras.length) return 'SA';
+  return palabras.length >= 2 ? palabras[0][0] + palabras[1][0] : palabras[0].slice(0, 2);
+}
+
+/** Genera un ID nuevo y único: PREFIJO-DIA-N (ej. AI-LU-6). */
+function nuevoIdBloque(salon, dia, horario) {
+  var base = prefijoSalon(salon) + '-' + norm(dia).toUpperCase().slice(0, 2) + '-';
+  var usados = {};
+  (horario || []).forEach(function (h) { usados[h.id] = true; });
+  var n = 1;
+  while (usados[base + n]) n++;
+  return base + n;
+}
+
 // Exportar para pruebas en Node (ignorado en Apps Script).
 if (typeof module !== 'undefined') {
   module.exports = {
     DIAS: DIAS, OBSERVACIONES: OBSERVACIONES, toMin: toMin, fmtMin: fmtMin, diaDeFecha: diaDeFecha, norm: norm,
     extraerDni: extraerDni, bloquesDelDia: bloquesDelDia, evaluarIngreso: evaluarIngreso,
     horasSuperpuestas: horasSuperpuestas, calcularHoras: calcularHoras,
-    estadoBloques: estadoBloques, resumenMensual: resumenMensual
+    estadoBloques: estadoBloques, resumenMensual: resumenMensual,
+    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque
   };
 }

@@ -40,42 +40,6 @@
   .docente-head .esp { color: var(--texto-2); font-size: 14px; }
   .estado-hoy { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
 
-  .clases { display: grid; gap: 10px; }
-  .clase {
-    display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--borde);
-    background: var(--blanco); cursor: pointer; user-select: none; transition: border-color .15s, background .15s;
-  }
-  .clase input { display: none; }
-  .clase .check {
-    width: 28px; height: 28px; border-radius: 8px; border: 2px solid #c9c1b5; flex: none; display: grid; place-items: center;
-    color: transparent; background: var(--blanco);
-  }
-  .clase.sel { border-color: var(--rojo); background: #fffafa; }
-  .clase.sel .check { background: var(--rojo); border-color: var(--rojo); color: var(--blanco); }
-  .clase.bloq { opacity: .45; cursor: not-allowed; }
-  .clase .info { flex: 1; min-width: 0; }
-  .clase .salon { font-weight: 800; font-size: 17px; }
-  .clase .curso { color: var(--texto-2); font-size: 14px; }
-  .clase .hora { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; text-align: right; white-space: nowrap; }
-  .clase .hora small { display: block; font-weight: 500; color: var(--texto-2); font-size: 12px; }
-  .vacio { padding: 16px; border-radius: 14px; background: var(--gris-suave); color: var(--texto-2); font-size: 15px; }
-
-  .reemplazo-toggle {
-    width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center;
-    background: var(--blanco); border: 2px dashed #cfc6b8; border-radius: 14px; padding: 14px 16px; cursor: pointer; font-weight: 700;
-  }
-  .reemplazo-toggle .flecha { transition: transform .2s; }
-  .reemplazo-toggle.abierto .flecha { transform: rotate(180deg); }
-  .grupo-salon { font-size: 13px; font-weight: 700; color: var(--rojo); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .05em; }
-
-  .obs-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .obs-chip {
-    border: 2px solid var(--borde); background: var(--blanco); border-radius: 999px; padding: 9px 14px; font-weight: 600; font-size: 14px; cursor: pointer;
-  }
-  .obs-chip.sel { border-color: var(--negro); background: var(--negro); color: var(--amarillo); }
-  textarea { width: 100%; min-height: 84px; border-radius: 12px; border: 2px solid var(--borde); padding: 12px; margin-top: 10px; resize: vertical; outline: none; }
-  textarea:focus { border-color: var(--rojo); }
-
   .acciones { position: sticky; bottom: 0; padding: 16px 0 4px; background: linear-gradient(to top, var(--fondo) 75%, rgba(245,242,236,0)); margin-top: 18px; }
   .acciones .resumen { text-align: center; font-size: 14px; color: var(--texto-2); margin-bottom: 8px; }
 

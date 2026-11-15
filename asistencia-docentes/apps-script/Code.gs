@@ -187,21 +187,29 @@ function buscarDocente(texto) {
   // Se identifica por DNI (8 dígitos) o, mientras no se registre el DNI, por celular (9 dígitos).
   var doc = docentes_().filter(function (d) { return cod.length === 8 ? d.dni === cod : d.celular === cod; })[0];
   if (!doc) return { ok: false, error: (cod.length === 8 ? 'El DNI ' : 'El celular ') + cod + ' no está registrado. Comunícate con coordinación.' };
-  var dni = doc.dni || doc.celular; // identificador que se guarda en las marcaciones
   if (!doc.activo) return { ok: false, error: 'El docente está inactivo. Comunícate con coordinación.' };
+  return infoDocente_(doc);
+}
 
+/** Identificador que se guarda en las marcaciones: DNI, o celular, o el nombre si no tiene ninguno. */
+function idDocente_(doc) { return doc.dni || doc.celular || ('SIN-ID ' + doc.docente); }
+
+/** Situación del docente hoy: sus bloques, los de otros (para reemplazos) y su marcación abierta. */
+function infoDocente_(doc) {
+  var dni = idDocente_(doc);
   var fecha = hoy_(), dia = diaDeFecha(fecha);
   var todos = bloquesDelDia(horario_(), dia);
   var propios = todos.filter(function (b) { return norm(b.docente) === norm(doc.docente); });
   var otros = todos.filter(function (b) { return norm(b.docente) !== norm(doc.docente); });
   var marc = marcacionesDe_(fecha);
-  var mias = marc.filter(function (m) { return m.dni === dni; });
+  var esMia = function (m) { return m.dni === dni || norm(m.docente) === norm(doc.docente); };
+  var mias = marc.filter(esMia);
   var abierta = mias.filter(function (m) { return !m.fin; })[0] || null;
 
   // Bloques ya tomados por otros docentes hoy (para no duplicar reemplazos)
   var tomados = {};
   marc.forEach(function (m) {
-    if (m.dni === dni) return;
+    if (esMia(m)) return;
     m.bloques.concat(m.reemplazos).forEach(function (id) { tomados[id] = m.docente; });
   });
 
@@ -214,81 +222,83 @@ function buscarDocente(texto) {
 }
 
 function marcarIngreso(p) {
-  var lock = LockService.getScriptLock();
-  lock.waitLock(20000);
-  try {
-    var info = buscarDocente(p.dni);
-    if (!info.ok) return info;
-    if (info.abierta) return { ok: false, error: 'Ya tienes un ingreso abierto desde las ' + info.abierta.inicio + '. Marca tu salida.' };
-    var c = config_();
-    if (norm(c.PERMITIR_CELULAR) === 'no' && p.dispositivo === 'Celular') {
-      return { ok: false, error: 'La marcación desde celular está deshabilitada. Usa la computadora del colegio.' };
-    }
-    var ids = (p.bloques || []).concat(p.reemplazos || []);
-    if (!ids.length && !p.obs) return { ok: false, error: 'Selecciona al menos un salón o indica una observación.' };
-    if (p.obs === 'Otro' && !String(p.obsDetalle || '').trim()) return { ok: false, error: 'Escribe el detalle de la observación.' };
-
-    var hora = ahora_();
-    var todos = info.propios.concat(info.otros);
-    var sel = todos.filter(function (b) { return ids.indexOf(b.id) >= 0; });
-    var ev = evaluarIngreso(hora, sel, Number(c.TOLERANCIA_MIN));
-    var id = 'M' + Utilities.formatDate(new Date(), TZ, 'yyMMddHHmmss') + info.dni.slice(-3);
-    agregar_(HOJAS.MARCACIONES, {
-      id: id, fecha: info.fecha, dni: info.dni, docente: info.docente, inicio: hora, fin: '',
-      estado: ev.estado, minTarde: ev.minTarde, bloques: p.bloques || [], reemplazos: p.reemplazos || [],
-      obs: p.obs || '', obsDetalle: p.obsDetalle || '', dispositivo: p.dispositivo || '', registrado: sello_()
-    });
-    return { ok: true, tipo: 'INGRESO', hora: hora, docente: info.docente, estado: ev.estado, minTarde: ev.minTarde, referencia: ev.referencia, clases: sel };
-  } finally {
-    lock.releaseLock();
-  }
+  var info = buscarDocente(p.dni);
+  if (!info.ok) return info;
+  return conLock_(function () { return registrarIngreso_(buscarDocente(p.dni), p, ahora_(), p.dispositivo || ''); });
 }
 
 function marcarSalida(p) {
+  var info = buscarDocente(p.dni);
+  if (!info.ok) return info;
+  return conLock_(function () { return registrarSalida_(buscarDocente(p.dni), p, ahora_()); });
+}
+
+function conLock_(fn) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
-  try {
-    var info = buscarDocente(p.dni);
-    if (!info.ok) return info;
-    var m = info.abierta;
-    if (!m) return { ok: false, error: 'No tienes un ingreso abierto hoy.' };
-    if (p.obs === 'Otro' && !String(p.obsDetalle || '').trim()) return { ok: false, error: 'Escribe el detalle de la observación.' };
+  try { return fn(); } finally { lock.releaseLock(); }
+}
 
-    var hora = ahora_();
-    var propios = p.bloques || m.bloques;
-    var reemp = p.reemplazos || m.reemplazos;
-    var todos = info.propios.concat(info.otros);
-    var porId = {};
-    todos.forEach(function (b) { porId[b.id] = b; });
-    var sel = propios.concat(reemp).map(function (id) { return porId[id]; }).filter(Boolean);
-    var h = calcularHoras(m.inicio, hora, sel);
-
-    var obs = [m.obs, p.obs].filter(String).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' | ');
-    var det = [m.obsDetalle, p.obsDetalle].filter(String).join(' | ');
-    var sh = hoja_(HOJAS.MARCACIONES);
-    var fila = filaDe_(HOJAS.MARCACIONES, {
-      id: m.id, fecha: m.fecha, dni: m.dni, docente: m.docente, inicio: m.inicio, fin: hora,
-      estado: m.estado, minTarde: m.minTarde, bloques: propios, reemplazos: reemp, obs: obs, obsDetalle: det,
-      dispositivo: m.dispositivo, horasMarcadas: h.marcadas, horasEfectivas: h.efectivas,
-      horasProgramadas: h.programadas, registrado: m.registrado + ' / salida ' + sello_()
-    });
-    sh.getRange(m._fila, 1, 1, fila.length).setValues([fila]);
-
-    var shC = hoja_(HOJAS.CLASES);
-    var filas = sel.map(function (b) {
-      var det = h.detalle.filter(function (d) { return d.id === b.id; })[0];
-      return filaDe_(HOJAS.CLASES, {
-        fecha: m.fecha, mes: m.fecha.slice(0, 7), marcacion: m.id, bloque: b.id, salon: b.salon, curso: b.curso,
-        titular: b.docente, docente: m.docente, dni: m.dni, tipo: reemp.indexOf(b.id) >= 0 ? 'REEMPLAZO' : 'TITULAR',
-        inicio: b.inicio, fin: b.fin, horas: det ? det.horas : 0
-      });
-    });
-    if (filas.length) shC.getRange(shC.getLastRow() + 1, 1, filas.length, filas[0].length).setValues(filas);
-
-    return { ok: true, tipo: 'SALIDA', hora: hora, inicio: m.inicio, docente: m.docente, horas: h, clases: sel };
-  } finally {
-    lock.releaseLock();
+function registrarIngreso_(info, p, hora, dispositivo) {
+  if (info.abierta) return { ok: false, error: info.docente + ' ya tiene un ingreso abierto desde las ' + info.abierta.inicio + '. Corresponde marcar la salida.' };
+  var c = config_();
+  if (norm(c.PERMITIR_CELULAR) === 'no' && dispositivo === 'Celular') {
+    return { ok: false, error: 'La marcación desde celular está deshabilitada. Usa la computadora del colegio.' };
   }
+  var ids = (p.bloques || []).concat(p.reemplazos || []);
+  if (!ids.length && !p.obs) return { ok: false, error: 'Selecciona al menos un salón o indica una observación.' };
+  if (p.obs === 'Otro' && !String(p.obsDetalle || '').trim()) return { ok: false, error: 'Escribe el detalle de la observación.' };
+
+  var todos = info.propios.concat(info.otros);
+  var sel = todos.filter(function (b) { return ids.indexOf(b.id) >= 0; });
+  var ev = evaluarIngreso(hora, sel, Number(c.TOLERANCIA_MIN));
+  var id = 'M' + Utilities.formatDate(new Date(), TZ, 'yyMMddHHmmss') + String(info.dni).replace(/\D/g, '').slice(-3);
+  agregar_(HOJAS.MARCACIONES, {
+    id: id, fecha: info.fecha, dni: info.dni, docente: info.docente, inicio: hora, fin: '',
+    estado: ev.estado, minTarde: ev.minTarde, bloques: p.bloques || [], reemplazos: p.reemplazos || [],
+    obs: p.obs || '', obsDetalle: p.obsDetalle || '', dispositivo: dispositivo, registrado: sello_()
+  });
+  return { ok: true, tipo: 'INGRESO', hora: hora, docente: info.docente, estado: ev.estado, minTarde: ev.minTarde, referencia: ev.referencia, clases: sel };
+}
+
+function registrarSalida_(info, p, hora) {
+  var m = info.abierta;
+  if (!m) return { ok: false, error: info.docente + ' no tiene un ingreso abierto hoy.' };
+  if (toMin(hora) <= toMin(m.inicio)) return { ok: false, error: 'La hora de salida debe ser posterior al ingreso (' + m.inicio + ').' };
+  if (p.obs === 'Otro' && !String(p.obsDetalle || '').trim()) return { ok: false, error: 'Escribe el detalle de la observación.' };
+
+  var propios = p.bloques || m.bloques;
+  var reemp = p.reemplazos || m.reemplazos;
+  var todos = info.propios.concat(info.otros);
+  var porId = {};
+  todos.forEach(function (b) { porId[b.id] = b; });
+  var sel = propios.concat(reemp).map(function (id) { return porId[id]; }).filter(Boolean);
+  var h = calcularHoras(m.inicio, hora, sel);
+
+  var obs = [m.obs, p.obs].filter(String).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' | ');
+  var det = [m.obsDetalle, p.obsDetalle].filter(String).join(' | ');
+  var disp = m.dispositivo + (p.porCoordinacion && m.dispositivo.indexOf('Coordinación') < 0 ? ' / salida: Coordinación' : '');
+  var sh = hoja_(HOJAS.MARCACIONES);
+  var fila = filaDe_(HOJAS.MARCACIONES, {
+    id: m.id, fecha: m.fecha, dni: m.dni, docente: m.docente, inicio: m.inicio, fin: hora,
+    estado: m.estado, minTarde: m.minTarde, bloques: propios, reemplazos: reemp, obs: obs, obsDetalle: det,
+    dispositivo: disp, horasMarcadas: h.marcadas, horasEfectivas: h.efectivas,
+    horasProgramadas: h.programadas, registrado: m.registrado + ' / salida ' + sello_()
+  });
+  sh.getRange(m._fila, 1, 1, fila.length).setValues([fila]);
+
+  var shC = hoja_(HOJAS.CLASES);
+  var filas = sel.map(function (b) {
+    var d = h.detalle.filter(function (x) { return x.id === b.id; })[0];
+    return filaDe_(HOJAS.CLASES, {
+      fecha: m.fecha, mes: m.fecha.slice(0, 7), marcacion: m.id, bloque: b.id, salon: b.salon, curso: b.curso,
+      titular: b.docente, docente: m.docente, dni: m.dni, tipo: reemp.indexOf(b.id) >= 0 ? 'REEMPLAZO' : 'TITULAR',
+      inicio: b.inicio, fin: b.fin, horas: d ? d.horas : 0
+    });
+  });
+  if (filas.length) shC.getRange(shC.getLastRow() + 1, 1, filas.length, filas[0].length).setValues(filas);
+
+  return { ok: true, tipo: 'SALIDA', hora: hora, inicio: m.inicio, docente: m.docente, horas: h, clases: sel };
 }
 
 /* ============================ API: Panel (requiere PIN) ============================ */
@@ -376,6 +386,151 @@ function getDocentesQR(pin) {
   return { appUrl: ScriptApp.getService().getUrl(), docentes: docentes_().filter(function (d) { return d.activo; }) };
 }
 
+/* ============================ API: Marcación por coordinación ============================ */
+
+function docentePorNombre_(nombre) {
+  var d = docentes_().filter(function (x) { return norm(x.docente) === norm(nombre); })[0];
+  if (!d) throw new Error('No se encontró al docente "' + nombre + '".');
+  return d;
+}
+
+/** Lista de docentes activos con su situación de hoy, para marcar desde coordinación. */
+function coordListaDocentes(pin) {
+  validarPin_(pin);
+  var fecha = hoy_(), dia = diaDeFecha(fecha);
+  var bloques = bloquesDelDia(horario_(), dia);
+  var marc = marcacionesDe_(fecha);
+  var lista = docentes_().filter(function (d) { return d.activo; }).map(function (d) {
+    var propios = bloques.filter(function (b) { return norm(b.docente) === norm(d.docente); });
+    var mias = marc.filter(function (m) { return m.dni === idDocente_(d) || norm(m.docente) === norm(d.docente); });
+    var abierta = mias.filter(function (m) { return !m.fin; })[0];
+    var ultima = mias[mias.length - 1];
+    return {
+      docente: d.docente, nombreCompleto: d.nombreCompleto, especialidad: d.especialidad,
+      clasesHoy: propios.length, desde: propios.length ? propios[0].inicio : '', salones: propios.map(function (b) { return b.salon; })
+        .filter(function (v, i, a) { return a.indexOf(v) === i; }),
+      estado: abierta ? 'EN EL COLEGIO' : ultima ? 'SALIÓ' : 'SIN MARCAR',
+      inicio: abierta ? abierta.inicio : ultima ? ultima.inicio : '', fin: !abierta && ultima ? ultima.fin : ''
+    };
+  });
+  lista.sort(function (a, b) {
+    if (!!a.clasesHoy !== !!b.clasesHoy) return a.clasesHoy ? -1 : 1;
+    return (toMin(a.desde) || 0) - (toMin(b.desde) || 0) || a.docente.localeCompare(b.docente);
+  });
+  return { fecha: fecha, dia: dia, hora: ahora_(), docentes: lista };
+}
+
+function coordBuscar(pin, nombre) {
+  validarPin_(pin);
+  return infoDocente_(docentePorNombre_(nombre));
+}
+
+/**
+ * Coordinación marca ingreso o salida de un docente. p = {docente, hora?, bloques, reemplazos, obs, obsDetalle}
+ * La hora puede corregirse (ej. el docente llegó 7:55 y se registra después), pero no puede ser futura.
+ */
+function coordMarcar(pin, p) {
+  validarPin_(pin);
+  var doc = docentePorNombre_(p.docente);
+  var ahora = ahora_();
+  var hora = p.hora ? fmtMin(toMin(p.hora)) : ahora;
+  if (!hora || toMin(hora) === null) return { ok: false, error: 'La hora no es válida (usa HH:mm).' };
+  if (toMin(hora) > toMin(ahora) + 1) return { ok: false, error: 'No se puede registrar una hora futura (ahora son las ' + ahora + ').' };
+  return conLock_(function () {
+    var info = infoDocente_(doc);
+    if (info.abierta) {
+      p.porCoordinacion = true;
+      return registrarSalida_(info, p, hora);
+    }
+    var r = registrarIngreso_(info, p, hora, 'Coordinación');
+    return r;
+  });
+}
+
+/* ============================ API: Horario (ver / editar) ============================ */
+
+function getHorarioAdmin(pin) {
+  validarPin_(pin);
+  var bloques = horario_().map(function (b) { delete b._fila; return b; });
+  var salones = [];
+  bloques.forEach(function (b) { if (salones.indexOf(b.salon) < 0) salones.push(b.salon); });
+  return {
+    bloques: bloques, salones: salones,
+    docentes: docentes_().filter(function (d) { return d.activo; }).map(function (d) { return d.docente; }).sort()
+  };
+}
+
+function guardarBloque(pin, b) {
+  validarPin_(pin);
+  return conLock_(function () {
+    var horario = horario_();
+    var limpio = {
+      id: b.id || '', salon: String(b.salon || '').trim().toUpperCase(), dia: norm(b.dia).toUpperCase(),
+      inicio: fmtMin(toMin(b.inicio)), fin: fmtMin(toMin(b.fin)), curso: String(b.curso || '').trim().toUpperCase(),
+      docente: String(b.docente || '').trim(), nota: String(b.nota || '').trim()
+    };
+    var v = validarBloque(limpio, horario);
+    if (v.errores.length) return { ok: false, error: v.errores.join(' ') };
+    if (limpio.docente) {
+      var existe = docentes_().some(function (d) { return norm(d.docente) === norm(limpio.docente); });
+      if (!existe) return { ok: false, error: 'El docente "' + limpio.docente + '" no está en la hoja Docentes.' };
+    }
+    var sh = hoja_(HOJAS.HORARIO);
+    var actual = limpio.id ? horario.filter(function (h) { return h.id === limpio.id; })[0] : null;
+    if (actual) {
+      // Al editar se conserva el ID (las marcaciones pasadas lo referencian).
+      sh.getRange(actual._fila, 1, 1, ESQUEMAS.Horario.length).setValues([filaDe_(HOJAS.HORARIO, limpio)]);
+    } else {
+      limpio.id = nuevoIdBloque(limpio.salon, limpio.dia, horario);
+      agregar_(HOJAS.HORARIO, limpio);
+    }
+    return { ok: true, bloque: limpio, avisos: v.avisos, nuevo: !actual };
+  });
+}
+
+function eliminarBloque(pin, id) {
+  validarPin_(pin);
+  return conLock_(function () {
+    var b = horario_().filter(function (h) { return h.id === id; })[0];
+    if (!b) return { ok: false, error: 'El bloque ya no existe.' };
+    hoja_(HOJAS.HORARIO).deleteRow(b._fila);
+    return { ok: true };
+  });
+}
+
+/* ============================ API: Fotochecks en Drive ============================ */
+
+/**
+ * Guarda fotochecks (PNG generados en el navegador) en una carpeta de Drive junto a la hoja,
+ * y un ZIP con todos. archivos = [{nombre, base64}]
+ */
+function guardarFotochecks(pin, archivos, carpetaId) {
+  validarPin_(pin);
+  var carpeta;
+  if (carpetaId) carpeta = DriveApp.getFolderById(carpetaId);
+  else {
+    var padres = DriveApp.getFileById(ss_().getId()).getParents();
+    var base = padres.hasNext() ? padres.next() : DriveApp.getRootFolder();
+    carpeta = base.createFolder('Fotochecks QR - ' + Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd HH.mm'));
+  }
+  var urls = (archivos || []).map(function (a) {
+    var blob = Utilities.newBlob(Utilities.base64Decode(a.base64), 'image/png', a.nombre);
+    var f = carpeta.createFile(blob);
+    return { nombre: a.nombre, url: f.getUrl(), descarga: 'https://drive.google.com/uc?export=download&id=' + f.getId() };
+  });
+  return { ok: true, carpetaId: carpeta.getId(), carpetaUrl: carpeta.getUrl(), archivos: urls };
+}
+
+/** Crea un ZIP con todos los PNG de la carpeta y devuelve su enlace de descarga. */
+function comprimirFotochecks(pin, carpetaId) {
+  validarPin_(pin);
+  var carpeta = DriveApp.getFolderById(carpetaId);
+  var it = carpeta.getFilesByType('image/png'), blobs = [];
+  while (it.hasNext()) blobs.push(it.next().getBlob());
+  var zip = carpeta.createFile(Utilities.zip(blobs, 'Fotochecks_QR_CVI.zip'));
+  return { ok: true, carpetaUrl: carpeta.getUrl(), zipUrl: 'https://drive.google.com/uc?export=download&id=' + zip.getId(), total: blobs.length };
+}
+
 /* ============================ Instalación ============================ */
 
 /** Ejecutar UNA vez desde el editor: crea hojas, formatos y carga horario/docentes base. */
@@ -400,5 +555,47 @@ function setup() {
   if (hor.getLastRow() < 2) hor.getRange(2, 1, SEED_HORARIO.length, SEED_HORARIO[0].length).setValues(SEED_HORARIO);
   var def = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1');
   if (def && def.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(def);
-  return 'Listo: hojas creadas. Completa los DNI en la hoja "Docentes".';
+  var cambios = actualizarDatos_();
+  var msg = 'Listo. ' + (cambios.length ? 'Cambios aplicados: ' + cambios.join('; ') : 'Los datos ya estaban al día.');
+  Logger.log(msg);
+  return msg;
+}
+
+/** Renombres de docentes (nombre anterior → nuevo) que se aplican en Docentes y Horario. */
+var RENOMBRES = { 'Yuly': 'Yuli Cucho' };
+
+/**
+ * Actualiza la hoja con los datos base SIN borrar nada de lo que ya escribió coordinación:
+ *  - aplica RENOMBRES en Docentes y Horario,
+ *  - completa celdas vacías de docentes existentes (DNI, celular, correo…) con SEED_DOCENTES,
+ *  - agrega docentes nuevos que no estén en la hoja.
+ */
+function actualizarDatos_() {
+  var cambios = [];
+  var shD = hoja_(HOJAS.DOCENTES), shH = hoja_(HOJAS.HORARIO);
+  var esqD = ESQUEMAS.Docentes, colDoc = 1; // índice de la columna "docente"
+  Object.keys(RENOMBRES).forEach(function (viejo) {
+    var nuevo = RENOMBRES[viejo], n = 0;
+    [[shD, colDoc], [shH, 6]].forEach(function (par) {
+      var sh = par[0], col = par[1], filas = sh.getLastRow() - 1;
+      if (filas < 1) return;
+      var rango = sh.getRange(2, col + 1, filas, 1), vals = rango.getDisplayValues();
+      var cambio = false;
+      vals.forEach(function (r) { if (norm(r[0]) === norm(viejo)) { r[0] = nuevo; n++; cambio = true; } });
+      if (cambio) rango.setValues(vals);
+    });
+    if (n) cambios.push(viejo + ' → ' + nuevo + ' (' + n + ' celdas)');
+  });
+  var filas = Math.max(shD.getLastRow() - 1, 0);
+  var datos = filas ? shD.getRange(2, 1, filas, esqD.length).getDisplayValues() : [];
+  var completadas = 0, agregados = [];
+  SEED_DOCENTES.forEach(function (seed) {
+    var fila = datos.filter(function (r) { return norm(r[colDoc]) === norm(seed[colDoc]); })[0];
+    if (!fila) { datos.push(seed.slice()); agregados.push(seed[colDoc]); return; }
+    seed.forEach(function (v, j) { if (v && !String(fila[j]).trim() && j !== esqD.length - 1) { fila[j] = v; completadas++; } });
+  });
+  if (datos.length) shD.getRange(2, 1, datos.length, esqD.length).setValues(datos);
+  if (completadas) cambios.push(completadas + ' dato(s) de docentes completados');
+  if (agregados.length) cambios.push('docentes agregados: ' + agregados.join(', '));
+  return cambios;
 }
