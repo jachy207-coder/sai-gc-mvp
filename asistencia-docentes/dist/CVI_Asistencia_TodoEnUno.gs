@@ -299,6 +299,76 @@ function validarDocente(d, docentes, nombreAnterior) {
   return { errores: errores, dni: dni, celular: cel, docente: nombre };
 }
 
+/* ---------------- Control académico ---------------- */
+
+var TIPOS_AVANCE = ['COMPLETADO', 'PARCIAL', 'REPASO', 'EVALUACION'];
+
+/** Semana del calendario que contiene la fecha (inicio = lunes, fin = sábado), o null. */
+function semanaDeFecha(calendario, fecha) {
+  return (calendario || []).filter(function (s) { return s.inicio <= fecha && fecha <= s.fin; })[0] || null;
+}
+
+/**
+ * Tema esperado según el calendario (1 tema por semana de clase; exámenes y vacaciones no cuentan).
+ *  - enCurso: N.º de semana de clase en curso (null si la semana es de exámenes/vacaciones)
+ *  - completados: semanas de clase que ya terminaron antes de la fecha → temas que deberían estar completos
+ */
+function temaEsperado(calendario, fecha) {
+  var clases = (calendario || []).filter(function (s) { return s.tipo === 'CLASE'; });
+  var completados = clases.filter(function (s) { return s.fin < fecha; }).length;
+  var semana = semanaDeFecha(calendario, fecha);
+  var enCurso = semana && semana.tipo === 'CLASE' ? Number(semana.nSemana) : null;
+  return { completados: completados, enCurso: enCurso, semana: semana, total: clases.length };
+}
+
+/**
+ * Avance de un curso a partir del leccionario.
+ * @param total          temas del curso (32)
+ * @param avanceInicial  temas completados antes de usar el sistema (línea base)
+ * @param registros      [{n, tipo, fecha}] del leccionario de ese curso
+ */
+function avanceCurso(total, avanceInicial, registros) {
+  var completados = {}, parciales = {};
+  var base = Math.max(0, Math.min(Number(avanceInicial) || 0, total));
+  for (var i = 1; i <= base; i++) completados[i] = true;
+  var orden = (registros || []).slice().sort(function (a, b) { return String(a.fecha).localeCompare(String(b.fecha)); });
+  orden.forEach(function (r) {
+    var n = Number(r.n);
+    if (!n) return;
+    if (r.tipo === 'COMPLETADO') completados[n] = true;
+    else if (r.tipo === 'PARCIAL') parciales[n] = true;
+  });
+  Object.keys(completados).forEach(function (n) { delete parciales[n]; });
+  var siguiente = 1;
+  while (completados[siguiente] && siguiente <= total) siguiente++;
+  var ultimo = orden.length ? orden[orden.length - 1] : null;
+  // Si el último registro fue un avance parcial de un tema aún no completado, se sugiere continuar ese tema.
+  var sugerido = ultimo && ultimo.tipo === 'PARCIAL' && !completados[Number(ultimo.n)] ? Number(ultimo.n) : Math.min(siguiente, total);
+  var n = Object.keys(completados).length;
+  return {
+    completados: Object.keys(completados).map(Number).sort(function (a, b) { return a - b; }),
+    parciales: Object.keys(parciales).map(Number).sort(function (a, b) { return a - b; }),
+    ultimoContinuo: siguiente - 1, siguiente: siguiente > total ? null : siguiente, sugerido: sugerido,
+    cobertura: total ? Math.round(n / total * 1000) / 10 : 0, totalCompletados: n
+  };
+}
+
+/** Semáforo de atraso: 0 → VERDE, 1 → AMBAR, 2 o más → ROJO. */
+function semaforoAtraso(ultimoContinuo, esperadoCompletados) {
+  var atraso = Math.max(0, esperadoCompletados - ultimoContinuo);
+  return { atraso: atraso, semaforo: atraso === 0 ? 'VERDE' : atraso === 1 ? 'AMBAR' : 'ROJO' };
+}
+
+/** Curso del temario que corresponde a un bloque del horario (por salón y nombre/alias del curso). */
+function cursoDeBloque(bloque, cursos) {
+  var c = norm(bloque.curso);
+  return (cursos || []).filter(function (k) {
+    if (norm(k.salon) !== norm(bloque.salon)) return false;
+    var alias = [k.curso].concat(String(k.alias || '').split('|'));
+    return alias.some(function (a) { return a && norm(a) === c; });
+  })[0] || null;
+}
+
 // Exportar para pruebas en Node (ignorado en Apps Script).
 if (typeof module !== 'undefined') {
   module.exports = {
@@ -306,7 +376,9 @@ if (typeof module !== 'undefined') {
     extraerDni: extraerDni, bloquesDelDia: bloquesDelDia, evaluarIngreso: evaluarIngreso,
     horasSuperpuestas: horasSuperpuestas, calcularHoras: calcularHoras,
     estadoBloques: estadoBloques, resumenMensual: resumenMensual,
-    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque, validarDocente: validarDocente
+    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque, validarDocente: validarDocente,
+    TIPOS_AVANCE: TIPOS_AVANCE, semanaDeFecha: semanaDeFecha, temaEsperado: temaEsperado, avanceCurso: avanceCurso,
+    semaforoAtraso: semaforoAtraso, cursoDeBloque: cursoDeBloque
   };
 }
 
@@ -442,6 +514,554 @@ var SEED_DOCENTES = [
   ["", "Kevin Albán", "Kevin Alexis Albán Becerra", "Educ. Física", "923073349", "kevinalban15@gmail.com", "NO"]
 ];
 
+/* Control académico (Anual Integral 2026): generado por tools/construir_temario.py */
+var SEED_CURSOS = [
+  ["AI-ALG", "ANUAL INTEGRAL", "Álgebra", "Matemáticas", "ÁLGEBRA", "32", "28", "SI"],
+  ["AI-ARI", "ANUAL INTEGRAL", "Aritmética", "Matemáticas", "ARITMÉTICA", "32", "28", "SI"],
+  ["AI-GEOM", "ANUAL INTEGRAL", "Geometría", "Matemáticas", "GEOMETRÍA", "32", "28", "SI"],
+  ["AI-TRI", "ANUAL INTEGRAL", "Trigonometría", "Matemáticas", "TRIGONOMETRÍA", "32", "28", "SI"],
+  ["AI-RM", "ANUAL INTEGRAL", "Razonamiento Matemático", "Aptitud Académica", "RAZ. MATEMÁTICO|RAZONAMIENTO MATEMÁTICO|RM", "32", "28", "SI"],
+  ["AI-RV", "ANUAL INTEGRAL", "Razonamiento Verbal", "Aptitud Académica", "RAZ. VERBAL|RAZONAMIENTO VERBAL|RV", "32", "28", "SI"],
+  ["AI-FIS", "ANUAL INTEGRAL", "Física", "Ciencias", "FÍSICA", "32", "28", "SI"],
+  ["AI-QUI", "ANUAL INTEGRAL", "Química", "Ciencias", "QUÍMICA", "32", "28", "SI"],
+  ["AI-BIO", "ANUAL INTEGRAL", "Biología", "Ciencias", "BIOLOGÍA", "32", "28", "SI"],
+  ["AI-LEN", "ANUAL INTEGRAL", "Lenguaje", "Letras", "LENGUAJE", "32", "28", "SI"],
+  ["AI-ING", "ANUAL INTEGRAL", "Inglés", "Letras", "INGLÉS", "32", "28", "SI"],
+  ["AI-HIS", "ANUAL INTEGRAL", "Historia", "Letras", "HISTORIA", "32", "28", "SI"],
+  ["AI-GEOG", "ANUAL INTEGRAL", "Geografía", "Letras", "GEOGRAFÍA", "32", "28", "SI"],
+  ["AI-ECO", "ANUAL INTEGRAL", "Economía", "Letras", "ECONOMÍA", "32", "28", "SI"],
+  ["AI-FIL", "ANUAL INTEGRAL", "Filosofía", "Letras", "FILOSOFÍA", "32", "28", "SI"]
+];
+
+var SEED_TEMARIO = [
+  ["AI-ALG-01", "AI-ALG", "Álgebra", "1", "1", "Ecuaciones lineales", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-02", "AI-ALG", "Álgebra", "2", "1", "Ecuaciones cuadráticas", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-03", "AI-ALG", "Álgebra", "3", "1", "Sistemas de ecuaciones 2×2", "OK", "Boletín 1 impreso"],
+  ["AI-ALG-04", "AI-ALG", "Álgebra", "4", "1", "Potenciación", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-05", "AI-ALG", "Álgebra", "5", "2", "Radicación", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-06", "AI-ALG", "Álgebra", "6", "2", "Productos notables I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-07", "AI-ALG", "Álgebra", "7", "2", "Productos notables II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-08", "AI-ALG", "Álgebra", "8", "2", "Polinomios I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-09", "AI-ALG", "Álgebra", "9", "3", "Polinomios II", "OK", "Boletín 3 impreso"],
+  ["AI-ALG-10", "AI-ALG", "Álgebra", "10", "3", "División algebraica", "OK", "Boletín 3 impreso"],
+  ["AI-ALG-11", "AI-ALG", "Álgebra", "11", "3", "Factorización I", "OK", "Boletín 3 impreso"],
+  ["AI-ALG-12", "AI-ALG", "Álgebra", "12", "3", "Factorización II", "OK", "Boletín 3 impreso"],
+  ["AI-ALG-13", "AI-ALG", "Álgebra", "13", "4", "Ecuación lineal y cuadrática", "OK", "Boletín 4 impreso"],
+  ["AI-ALG-14", "AI-ALG", "Álgebra", "14", "4", "Teoría de ecuaciones cuadráticas II", "OK", "Boletín 4 impreso"],
+  ["AI-ALG-15", "AI-ALG", "Álgebra", "15", "4", "Ecuaciones polinomiales de grado superior", "OK", "Boletín 4 impreso"],
+  ["AI-ALG-16", "AI-ALG", "Álgebra", "16", "4", "Ecuación bicuadrada y fraccionaria", "OK", "Boletín 4 impreso"],
+  ["AI-ALG-17", "AI-ALG", "Álgebra", "17", "5", "Problemas DECO", "OK", "Boletín 5 impreso"],
+  ["AI-ALG-18", "AI-ALG", "Álgebra", "18", "5", "Sistemas de ecuaciones lineales I", "OK", "Boletín 5 impreso"],
+  ["AI-ALG-19", "AI-ALG", "Álgebra", "19", "5", "Teoría de sistemas de ecuaciones lineales II", "OK", "Boletín 5 impreso"],
+  ["AI-ALG-20", "AI-ALG", "Álgebra", "20", "5", "Problemas tipo DECO", "OK", "Boletín 5 impreso"],
+  ["AI-ALG-21", "AI-ALG", "Álgebra", "21", "6", "Introducción a los números reales", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-22", "AI-ALG", "Álgebra", "22", "6", "Desigualdades I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-23", "AI-ALG", "Álgebra", "23", "6", "Desigualdades II e Inecuación lineal", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-24", "AI-ALG", "Álgebra", "24", "6", "Inecuación cuadrática I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-25", "AI-ALG", "Álgebra", "25", "7", "Inecuación cuadrática II y Polinomial de grado superior", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-26", "AI-ALG", "Álgebra", "26", "7", "Inecuación polinomial de grado tres", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-27", "AI-ALG", "Álgebra", "27", "7", "Problemas DECO", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-28", "AI-ALG", "Álgebra", "28", "7", "Valor absoluto I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ALG-29", "AI-ALG", "Álgebra", "29", "8", "Valor absoluto II", "OK", "Boletín 8 impreso"],
+  ["AI-ALG-30", "AI-ALG", "Álgebra", "30", "8", "Logaritmos", "OK", "Boletín 8 impreso"],
+  ["AI-ALG-31", "AI-ALG", "Álgebra", "31", "8", "Ecuaciones logarítmicas", "OK", "Boletín 8 impreso"],
+  ["AI-ALG-32", "AI-ALG", "Álgebra", "32", "8", "Funciones reales", "OK", "Boletín 8 impreso"],
+  ["AI-ARI-01", "AI-ARI", "Aritmética", "1", "1", "Problemas contextualizados en los que intervienen operaciones básicas", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-02", "AI-ARI", "Aritmética", "2", "1", "Razones I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-03", "AI-ARI", "Aritmética", "3", "1", "Razones II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-04", "AI-ARI", "Aritmética", "4", "1", "Razones III", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-05", "AI-ARI", "Aritmética", "5", "2", "Regla del tanto por ciento I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-06", "AI-ARI", "Aritmética", "6", "2", "Regla del tanto por ciento II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-07", "AI-ARI", "Aritmética", "7", "2", "Magnitudes proporcionales I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-08", "AI-ARI", "Aritmética", "8", "2", "Magnitudes proporcionales II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-09", "AI-ARI", "Aritmética", "9", "3", "Magnitudes proporcionales III", "OK", "Boletín 3 impreso"],
+  ["AI-ARI-10", "AI-ARI", "Aritmética", "10", "3", "Magnitudes proporcionales IV", "OK", "Boletín 3 impreso"],
+  ["AI-ARI-11", "AI-ARI", "Aritmética", "11", "3", "Promedios I", "OK", "Boletín 3 impreso"],
+  ["AI-ARI-12", "AI-ARI", "Aritmética", "12", "3", "Promedios II", "OK", "Boletín 3 impreso"],
+  ["AI-ARI-13", "AI-ARI", "Aritmética", "13", "4", "Regla de mezcla I", "OK", "Boletín 4 impreso"],
+  ["AI-ARI-14", "AI-ARI", "Aritmética", "14", "4", "Regla de mezcla II", "OK", "Boletín 4 impreso"],
+  ["AI-ARI-15", "AI-ARI", "Aritmética", "15", "4", "Teoría de conjuntos I", "OK", "Boletín 4 impreso"],
+  ["AI-ARI-16", "AI-ARI", "Aritmética", "16", "4", "Teoría de conjuntos II", "OK", "Boletín 4 impreso"],
+  ["AI-ARI-17", "AI-ARI", "Aritmética", "17", "5", "Teoría de conjuntos III", "OK", "Boletín 5 impreso"],
+  ["AI-ARI-18", "AI-ARI", "Aritmética", "18", "5", "Teoría de conjuntos IV", "OK", "Boletín 5 impreso"],
+  ["AI-ARI-19", "AI-ARI", "Aritmética", "19", "5", "Numeración I", "OK", "Boletín 5 impreso"],
+  ["AI-ARI-20", "AI-ARI", "Aritmética", "20", "5", "Numeración II", "OK", "Boletín 5 impreso"],
+  ["AI-ARI-21", "AI-ARI", "Aritmética", "21", "6", "Numeración III", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-22", "AI-ARI", "Aritmética", "22", "6", "Operaciones fundamentales I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-23", "AI-ARI", "Aritmética", "23", "6", "Operaciones fundamentales II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-24", "AI-ARI", "Aritmética", "24", "6", "Sucesiones I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-25", "AI-ARI", "Aritmética", "25", "7", "Sucesiones II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-26", "AI-ARI", "Aritmética", "26", "7", "Teoría de divisibilidad I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-27", "AI-ARI", "Aritmética", "27", "7", "Teoría de divisibilidad II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-28", "AI-ARI", "Aritmética", "28", "7", "Teoría de divisibilidad III", "OK", "Temario Excel (BOL7)"],
+  ["AI-ARI-29", "AI-ARI", "Aritmética", "29", "8", "Números simples y compuestos I", "OK", "Boletín 8 impreso"],
+  ["AI-ARI-30", "AI-ARI", "Aritmética", "30", "8", "Números simples y compuestos II", "OK", "Boletín 8 impreso"],
+  ["AI-ARI-31", "AI-ARI", "Aritmética", "31", "8", "MCD y MCM I", "OK", "Boletín 8 impreso"],
+  ["AI-ARI-32", "AI-ARI", "Aritmética", "32", "8", "MCD y MCM II", "OK", "Boletín 8 impreso"],
+  ["AI-GEOM-01", "AI-GEOM", "Geometría", "1", "1", "Segmentos y Triángulo rectángulo", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-02", "AI-GEOM", "Geometría", "2", "1", "Ángulos", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-03", "AI-GEOM", "Geometría", "3", "1", "Posiciones relativas entre dos rectas", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-04", "AI-GEOM", "Geometría", "4", "1", "Triángulos I", "OK", "Boletín 1 impreso"],
+  ["AI-GEOM-05", "AI-GEOM", "Geometría", "5", "2", "Triángulos II", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-06", "AI-GEOM", "Geometría", "6", "2", "Triángulos III", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-07", "AI-GEOM", "Geometría", "7", "2", "Congruencia de triángulos", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-08", "AI-GEOM", "Geometría", "8", "2", "Aplicaciones de la congruencia I", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-09", "AI-GEOM", "Geometría", "9", "3", "Aplicaciones de la congruencia II", "OK", "Boletín 3 impreso"],
+  ["AI-GEOM-10", "AI-GEOM", "Geometría", "10", "3", "Cuadriláteros I", "OK", "Boletín 3 impreso"],
+  ["AI-GEOM-11", "AI-GEOM", "Geometría", "11", "3", "Cuadriláteros II", "OK", "Boletín 3 impreso"],
+  ["AI-GEOM-12", "AI-GEOM", "Geometría", "12", "3", "Cuadriláteros III", "OK", "Boletín 3 impreso"],
+  ["AI-GEOM-13", "AI-GEOM", "Geometría", "13", "4", "Circunferencia II", "OK", "Boletín 4 impreso"],
+  ["AI-GEOM-14", "AI-GEOM", "Geometría", "14", "4", "Circunferencia III", "OK", "Boletín 4 impreso"],
+  ["AI-GEOM-15", "AI-GEOM", "Geometría", "15", "4", "Figuras inscritas y circunscritas", "OK", "Boletín 4 impreso"],
+  ["AI-GEOM-16", "AI-GEOM", "Geometría", "16", "4", "Puntos notables I", "OK", "Boletín 4 impreso"],
+  ["AI-GEOM-17", "AI-GEOM", "Geometría", "17", "5", "Puntos notables II", "OK", "Boletín 5 impreso"],
+  ["AI-GEOM-18", "AI-GEOM", "Geometría", "18", "5", "Proporcionalidad de segmentos", "OK", "Boletín 5 impreso"],
+  ["AI-GEOM-19", "AI-GEOM", "Geometría", "19", "5", "Semejanza de triángulos", "OK", "Boletín 5 impreso"],
+  ["AI-GEOM-20", "AI-GEOM", "Geometría", "20", "5", "Relaciones métricas en la circunferencia", "OK", "Boletín 5 impreso"],
+  ["AI-GEOM-21", "AI-GEOM", "Geometría", "21", "6", "Relaciones métricas en el triángulo rectángulo", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-22", "AI-GEOM", "Geometría", "22", "6", "Relaciones métricas en triángulos oblicuángulos", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-23", "AI-GEOM", "Geometría", "23", "6", "Áreas de regiones triangulares", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-24", "AI-GEOM", "Geometría", "24", "6", "Razón de áreas de regiones triangulares", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-25", "AI-GEOM", "Geometría", "25", "7", "Áreas de regiones cuadrangulares", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-26", "AI-GEOM", "Geometría", "26", "7", "Razón de áreas de regiones cuadrangulares", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-27", "AI-GEOM", "Geometría", "27", "7", "Áreas de regiones circulares", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-28", "AI-GEOM", "Geometría", "28", "7", "Geometría del espacio I", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOM-29", "AI-GEOM", "Geometría", "29", "8", "Geometría del espacio II", "OK", "Boletín 8 impreso"],
+  ["AI-GEOM-30", "AI-GEOM", "Geometría", "30", "8", "Prisma", "OK", "Boletín 8 impreso"],
+  ["AI-GEOM-31", "AI-GEOM", "Geometría", "31", "8", "Cilindro", "OK", "Boletín 8 impreso"],
+  ["AI-GEOM-32", "AI-GEOM", "Geometría", "32", "8", "Pirámide", "OK", "Boletín 8 impreso"],
+  ["AI-TRI-01", "AI-TRI", "Trigonometría", "1", "1", "Introducción a la trigonometría", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-02", "AI-TRI", "Trigonometría", "2", "1", "Sistemas de medidas angulares", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-03", "AI-TRI", "Trigonometría", "3", "1", "Conversión entre los sistemas de medidas angulares", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-04", "AI-TRI", "Trigonometría", "4", "1", "Longitud de arco", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-05", "AI-TRI", "Trigonometría", "5", "2", "Área de un sector circular", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-06", "AI-TRI", "Trigonometría", "6", "2", "Razones trigonométricas de un ángulo agudo en el triángulo rectángulo", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-07", "AI-TRI", "Trigonometría", "7", "2", "Razones trigonométricas de ángulos agudos notables", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-08", "AI-TRI", "Trigonometría", "8", "2", "Propiedades de las razones trigonométricas", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-09", "AI-TRI", "Trigonometría", "9", "3", "Resolución de triángulos rectángulos I", "OK", "Boletín 3 impreso"],
+  ["AI-TRI-10", "AI-TRI", "Trigonometría", "10", "3", "Resolución de triángulos rectángulos II", "OK", "Boletín 3 impreso"],
+  ["AI-TRI-11", "AI-TRI", "Trigonometría", "11", "3", "Ángulos verticales", "OK", "Boletín 3 impreso"],
+  ["AI-TRI-12", "AI-TRI", "Trigonometría", "12", "3", "Introducción a la geometría analítica", "OK", "Boletín 3 impreso"],
+  ["AI-TRI-13", "AI-TRI", "Trigonometría", "13", "4", "Ángulos en posición normal I", "OK", "Boletín 4 impreso"],
+  ["AI-TRI-14", "AI-TRI", "Trigonometría", "14", "4", "Ángulos en posición normal II", "OK", "Boletín 4 impreso"],
+  ["AI-TRI-15", "AI-TRI", "Trigonometría", "15", "4", "Ángulos en posición normal III", "OK", "Boletín 4 impreso"],
+  ["AI-TRI-16", "AI-TRI", "Trigonometría", "16", "4", "Identidades trigonométricas fundamentales I", "OK", "Boletín 4 impreso"],
+  ["AI-TRI-17", "AI-TRI", "Trigonometría", "17", "5", "Identidades fundamentales II", "OK", "Boletín 5 impreso"],
+  ["AI-TRI-18", "AI-TRI", "Trigonometría", "18", "5", "Identidades fundamentales III", "OK", "Boletín 5 impreso"],
+  ["AI-TRI-19", "AI-TRI", "Trigonometría", "19", "5", "Identidades de ángulos compuestos I", "OK", "Boletín 5 impreso"],
+  ["AI-TRI-20", "AI-TRI", "Trigonometría", "20", "5", "Identidades de ángulos compuestos II", "OK", "Boletín 5 impreso"],
+  ["AI-TRI-21", "AI-TRI", "Trigonometría", "21", "6", "Identidades de ángulos compuestos III", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-22", "AI-TRI", "Trigonometría", "22", "6", "Identidades de ángulos compuestos IV", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-23", "AI-TRI", "Trigonometría", "23", "6", "Reducción al primer cuadrante I", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-24", "AI-TRI", "Trigonometría", "24", "6", "Reducción al primer cuadrante II", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-25", "AI-TRI", "Trigonometría", "25", "7", "Identidades del ángulo doble I", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-26", "AI-TRI", "Trigonometría", "26", "7", "Identidades del ángulo doble II", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-27", "AI-TRI", "Trigonometría", "27", "7", "Identidades del ángulo doble III", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-28", "AI-TRI", "Trigonometría", "28", "7", "Transformaciones trigonométricas I", "OK", "Temario Excel (BOL7)"],
+  ["AI-TRI-29", "AI-TRI", "Trigonometría", "29", "8", "Transformaciones trigonométricas II", "OK", "Boletín 8 impreso"],
+  ["AI-TRI-30", "AI-TRI", "Trigonometría", "30", "8", "Triángulos oblicuángulos I", "OK", "Boletín 8 impreso"],
+  ["AI-TRI-31", "AI-TRI", "Trigonometría", "31", "8", "Triángulos oblicuángulos II", "OK", "Boletín 8 impreso"],
+  ["AI-TRI-32", "AI-TRI", "Trigonometría", "32", "8", "Circunferencia trigonométrica I", "OK", "Boletín 8 impreso"],
+  ["AI-RM-01", "AI-RM", "Razonamiento Matemático", "1", "1", "Habilidad operativa", "OK", "Boletín 1 impreso"],
+  ["AI-RM-02", "AI-RM", "Razonamiento Matemático", "2", "1", "Elementos recreativos", "OK", "Boletín 1 impreso"],
+  ["AI-RM-03", "AI-RM", "Razonamiento Matemático", "3", "1", "Situaciones lógicas I", "OK", "Boletín 1 impreso"],
+  ["AI-RM-04", "AI-RM", "Razonamiento Matemático", "4", "1", "Situaciones lógicas II", "OK", "Boletín 1 impreso"],
+  ["AI-RM-05", "AI-RM", "Razonamiento Matemático", "5", "2", "Situaciones lógicas III", "OK", "Boletín 2 impreso"],
+  ["AI-RM-06", "AI-RM", "Razonamiento Matemático", "6", "2", "Situaciones lógicas IV", "OK", "Boletín 2 impreso"],
+  ["AI-RM-07", "AI-RM", "Razonamiento Matemático", "7", "2", "Lazos familiares", "OK", "Boletín 2 impreso"],
+  ["AI-RM-08", "AI-RM", "Razonamiento Matemático", "8", "2", "Ordenamiento de información I", "OK", "Boletín 2 impreso"],
+  ["AI-RM-09", "AI-RM", "Razonamiento Matemático", "9", "3", "Ordenamiento de información II", "OK", "Boletín 3 impreso"],
+  ["AI-RM-10", "AI-RM", "Razonamiento Matemático", "10", "3", "Lógica proposicional", "OK", "Boletín 3 impreso"],
+  ["AI-RM-11", "AI-RM", "Razonamiento Matemático", "11", "3", "Deducción simple y deducción compuesta", "OK", "Boletín 3 impreso"],
+  ["AI-RM-12", "AI-RM", "Razonamiento Matemático", "12", "3", "Lógica de clases", "OK", "Boletín 3 impreso"],
+  ["AI-RM-13", "AI-RM", "Razonamiento Matemático", "13", "4", "Verdades y mentiras", "OK", "Boletín 4 impreso"],
+  ["AI-RM-14", "AI-RM", "Razonamiento Matemático", "14", "4", "Problemas sobre certezas", "OK", "Boletín 4 impreso"],
+  ["AI-RM-15", "AI-RM", "Razonamiento Matemático", "15", "4", "Arreglos numéricos I", "OK", "Boletín 4 impreso"],
+  ["AI-RM-16", "AI-RM", "Razonamiento Matemático", "16", "4", "Arreglos numéricos II", "OK", "Boletín 4 impreso"],
+  ["AI-RM-17", "AI-RM", "Razonamiento Matemático", "17", "5", "Arreglos numéricos III", "OK", "Boletín 5 impreso"],
+  ["AI-RM-18", "AI-RM", "Razonamiento Matemático", "18", "5", "Calendarios I", "OK", "Boletín 5 impreso"],
+  ["AI-RM-19", "AI-RM", "Razonamiento Matemático", "19", "5", "Calendarios II", "OK", "Boletín 5 impreso"],
+  ["AI-RM-20", "AI-RM", "Razonamiento Matemático", "20", "5", "Inductivo numérico y geométrico", "OK", "Boletín 5 impreso"],
+  ["AI-RM-21", "AI-RM", "Razonamiento Matemático", "21", "6", "Inductivo verbal", "OK", "Temario Excel (BOL7)"],
+  ["AI-RM-22", "AI-RM", "Razonamiento Matemático", "22", "6", "Rutas y trayectorias", "OK", "Temario Excel (BOL7)"],
+  ["AI-RM-23", "AI-RM", "Razonamiento Matemático", "23", "6", "Trazos de figuras", "OK", "Temario Excel (BOL7)"],
+  ["AI-RM-24", "AI-RM", "Razonamiento Matemático", "24", "6", "Planteo de ecuaciones I", "OK", "Temario Excel (BOL7)"],
+  ["AI-RM-25", "AI-RM", "Razonamiento Matemático", "25", "7", "Planteo de ecuaciones II", "OK", "Boletín 7 impreso"],
+  ["AI-RM-26", "AI-RM", "Razonamiento Matemático", "26", "7", "Planteo de ecuaciones III", "OK", "Boletín 7 impreso"],
+  ["AI-RM-27", "AI-RM", "Razonamiento Matemático", "27", "7", "Cronometría I", "OK", "Boletín 7 impreso"],
+  ["AI-RM-28", "AI-RM", "Razonamiento Matemático", "28", "7", "Cronometría II", "OK", "Boletín 7 impreso"],
+  ["AI-RM-29", "AI-RM", "Razonamiento Matemático", "29", "8", "Cronometría III", "OK", "Boletín 8 impreso"],
+  ["AI-RM-30", "AI-RM", "Razonamiento Matemático", "30", "8", "Frecuencia de sucesos", "OK", "Boletín 8 impreso"],
+  ["AI-RM-31", "AI-RM", "Razonamiento Matemático", "31", "8", "Conteo de figuras y semejanza de figuras", "OK", "Boletín 8 impreso"],
+  ["AI-RM-32", "AI-RM", "Razonamiento Matemático", "32", "8", "Áreas y perímetros de regiones planas", "OK", "Boletín 8 impreso"],
+  ["AI-RV-01", "AI-RV", "Razonamiento Verbal", "1", "1", "Introducción al curso de Habilidad Verbal", "OK", "Boletín 1 impreso"],
+  ["AI-RV-02", "AI-RV", "Razonamiento Verbal", "2", "1", "Naturaleza de la comprensión lectora", "OK", "Boletín 1 impreso"],
+  ["AI-RV-03", "AI-RV", "Razonamiento Verbal", "3", "1", "Coherencia y jerarquía textual", "OK", "Boletín 1 impreso"],
+  ["AI-RV-04", "AI-RV", "Razonamiento Verbal", "4", "1", "Cohesión textual I", "OK", "Boletín 1 impreso"],
+  ["AI-RV-05", "AI-RV", "Razonamiento Verbal", "5", "2", "Cohesión textual II", "OK", "Boletín 2 impreso"],
+  ["AI-RV-06", "AI-RV", "Razonamiento Verbal", "6", "2", "Primer taller de lectura", "OK", "Boletín 2 impreso"],
+  ["AI-RV-07", "AI-RV", "Razonamiento Verbal", "7", "2", "Primera práctica de reforzamiento", "OK", "Boletín 2 impreso"],
+  ["AI-RV-08", "AI-RV", "Razonamiento Verbal", "8", "2", "Método de lectura láser", "OK", "Boletín 2 impreso"],
+  ["AI-RV-09", "AI-RV", "Razonamiento Verbal", "9", "3", "Técnicas de lectura I", "OK", "Boletín 3 impreso"],
+  ["AI-RV-10", "AI-RV", "Razonamiento Verbal", "10", "3", "Técnicas de lectura II", "OK", "Boletín 3 impreso"],
+  ["AI-RV-11", "AI-RV", "Razonamiento Verbal", "11", "3", "Segundo taller de lectura", "OK", "Boletín 3 impreso"],
+  ["AI-RV-12", "AI-RV", "Razonamiento Verbal", "12", "3", "Segunda práctica de reforzamiento", "OK", "Boletín 3 impreso"],
+  ["AI-RV-13", "AI-RV", "Razonamiento Verbal", "13", "4", "Niveles de comprensión lectora", "OK", "Boletín 4 impreso"],
+  ["AI-RV-14", "AI-RV", "Razonamiento Verbal", "14", "4", "Preguntas de sentido contextual", "OK", "Boletín 4 impreso"],
+  ["AI-RV-15", "AI-RV", "Razonamiento Verbal", "15", "4", "Preguntas de jerarquía textual", "OK", "Boletín 4 impreso"],
+  ["AI-RV-16", "AI-RV", "Razonamiento Verbal", "16", "4", "Tercer taller de lectura", "OK", "Boletín 4 impreso"],
+  ["AI-RV-17", "AI-RV", "Razonamiento Verbal", "17", "5", "Tercera práctica de reforzamiento", "OK", "Boletín 5 impreso"],
+  ["AI-RV-18", "AI-RV", "Razonamiento Verbal", "18", "5", "Niveles de comprensión lectora (II)", "OK", "Boletín 5 impreso"],
+  ["AI-RV-19", "AI-RV", "Razonamiento Verbal", "19", "5", "Preguntas de inferencia", "OK", "Boletín 5 impreso"],
+  ["AI-RV-20", "AI-RV", "Razonamiento Verbal", "20", "5", "Preguntas de extrapolación", "OK", "Boletín 5 impreso"],
+  ["AI-RV-21", "AI-RV", "Razonamiento Verbal", "21", "6", "Cuarto taller de lectura", "OK", "Temario Excel (BOL7)"],
+  ["AI-RV-22", "AI-RV", "Razonamiento Verbal", "22", "6", "Textos expositivos", "OK", "Temario Excel (BOL7)"],
+  ["AI-RV-23", "AI-RV", "Razonamiento Verbal", "23", "6", "Textos discontinuos", "OK", "Temario Excel (BOL7)"],
+  ["AI-RV-24", "AI-RV", "Razonamiento Verbal", "24", "6", "Textos con gráfico", "OK", "Temario Excel (BOL7)"],
+  ["AI-RV-25", "AI-RV", "Razonamiento Verbal", "25", "7", "Textos argumentativos", "OK", "Boletín 7 impreso"],
+  ["AI-RV-26", "AI-RV", "Razonamiento Verbal", "26", "7", "Textos dialécticos", "OK", "Boletín 7 impreso"],
+  ["AI-RV-27", "AI-RV", "Razonamiento Verbal", "27", "7", "Quinto taller de lectura", "OK", "Boletín 7 impreso"],
+  ["AI-RV-28", "AI-RV", "Razonamiento Verbal", "28", "7", "Textos según su estructura jerárquica", "OK", "Boletín 7 impreso"],
+  ["AI-RV-29", "AI-RV", "Razonamiento Verbal", "29", "8", "Intención comunicativa y contexto", "OK", "Boletín 8 impreso"],
+  ["AI-RV-30", "AI-RV", "Razonamiento Verbal", "30", "8", "Textos literarios", "OK", "Boletín 8 impreso"],
+  ["AI-RV-31", "AI-RV", "Razonamiento Verbal", "31", "8", "Textos científicos", "OK", "Boletín 8 impreso"],
+  ["AI-RV-32", "AI-RV", "Razonamiento Verbal", "32", "8", "Textos filosóficos", "OK", "Boletín 8 impreso"],
+  ["AI-FIS-01", "AI-FIS", "Física", "1", "1", "Análisis dimensional", "OK", "Boletín 1 impreso"],
+  ["AI-FIS-02", "AI-FIS", "Física", "2", "1", "Análisis Vectorial I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-03", "AI-FIS", "Física", "3", "1", "Análisis Vectorial II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-04", "AI-FIS", "Física", "4", "1", "Cinemática I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-05", "AI-FIS", "Física", "5", "2", "Cinemática II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-06", "AI-FIS", "Física", "6", "2", "Cinemática III", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-07", "AI-FIS", "Física", "7", "2", "Cinemática IV", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-08", "AI-FIS", "Física", "8", "2", "Cinemática V", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-09", "AI-FIS", "Física", "9", "3", "Estática I", "OK", "Boletín 3 impreso"],
+  ["AI-FIS-10", "AI-FIS", "Física", "10", "3", "Estática II", "OK", "Boletín 3 impreso"],
+  ["AI-FIS-11", "AI-FIS", "Física", "11", "3", "Estática III", "OK", "Boletín 3 impreso"],
+  ["AI-FIS-12", "AI-FIS", "Física", "12", "3", "Estática IV", "OK", "Boletín 3 impreso"],
+  ["AI-FIS-13", "AI-FIS", "Física", "13", "4", "Dinámica I", "OK", "Boletín 4 impreso"],
+  ["AI-FIS-14", "AI-FIS", "Física", "14", "4", "Dinámica II", "OK", "Boletín 4 impreso"],
+  ["AI-FIS-15", "AI-FIS", "Física", "15", "4", "Trabajo mecánico", "OK", "Boletín 4 impreso"],
+  ["AI-FIS-16", "AI-FIS", "Física", "16", "4", "Energía mecánica I", "OK", "Boletín 4 impreso"],
+  ["AI-FIS-17", "AI-FIS", "Física", "17", "5", "Energía mecánica II: Potencia mecánica", "OK", "Boletín 5 impreso"],
+  ["AI-FIS-18", "AI-FIS", "Física", "18", "5", "Cantidad de movimiento e impulso I", "OK", "Boletín 5 impreso"],
+  ["AI-FIS-19", "AI-FIS", "Física", "19", "5", "Cantidad de movimiento e impulso II", "OK", "Boletín 5 impreso"],
+  ["AI-FIS-20", "AI-FIS", "Física", "20", "5", "Movimiento Armónico Simple (MAS)", "OK", "Boletín 5 impreso"],
+  ["AI-FIS-21", "AI-FIS", "Física", "21", "6", "Oscilaciones II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-22", "AI-FIS", "Física", "22", "6", "Ondas mecánicas I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-23", "AI-FIS", "Física", "23", "6", "Ondas mecánicas II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-24", "AI-FIS", "Física", "24", "6", "Hidrostática I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-25", "AI-FIS", "Física", "25", "7", "Hidrostática II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-26", "AI-FIS", "Física", "26", "7", "Fenómenos térmicos I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-27", "AI-FIS", "Física", "27", "7", "Fenómenos térmicos II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-28", "AI-FIS", "Física", "28", "7", "Electrostática I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIS-29", "AI-FIS", "Física", "29", "8", "Electrostática II", "OK", "Boletín 8 impreso"],
+  ["AI-FIS-30", "AI-FIS", "Física", "30", "8", "Electrostática III", "OK", "Boletín 8 impreso"],
+  ["AI-FIS-31", "AI-FIS", "Física", "31", "8", "Electrostática IV", "OK", "Boletín 8 impreso"],
+  ["AI-FIS-32", "AI-FIS", "Física", "32", "8", "Electrodinámica I", "OK", "Boletín 8 impreso"],
+  ["AI-QUI-01", "AI-QUI", "Química", "1", "1", "Introducción a la Química", "OK", "Boletín 1 impreso"],
+  ["AI-QUI-02", "AI-QUI", "Química", "2", "1", "Materia", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-03", "AI-QUI", "Química", "3", "1", "Estructura atómica I", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-04", "AI-QUI", "Química", "4", "1", "Estructura atómica II", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-05", "AI-QUI", "Química", "5", "2", "Estructura electrónica del átomo", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-06", "AI-QUI", "Química", "6", "2", "Configuración electrónica", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-07", "AI-QUI", "Química", "7", "2", "Tabla periódica moderna", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-08", "AI-QUI", "Química", "8", "2", "Propiedades periódicas atómicas", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-09", "AI-QUI", "Química", "9", "3", "Enlace químico I", "OK", "Boletín 3 impreso"],
+  ["AI-QUI-10", "AI-QUI", "Química", "10", "3", "Enlace químico II", "OK", "Boletín 3 impreso"],
+  ["AI-QUI-11", "AI-QUI", "Química", "11", "3", "Geometría molecular", "OK", "Boletín 3 impreso"],
+  ["AI-QUI-12", "AI-QUI", "Química", "12", "3", "Fuerzas intermoleculares", "OK", "Boletín 3 impreso"],
+  ["AI-QUI-13", "AI-QUI", "Química", "13", "4", "Nomenclatura inorgánica I", "OK", "Boletín 4 impreso"],
+  ["AI-QUI-14", "AI-QUI", "Química", "14", "4", "Nomenclatura inorgánica II", "OK", "Boletín 4 impreso"],
+  ["AI-QUI-15", "AI-QUI", "Química", "15", "4", "Nomenclatura inorgánica III", "OK", "Boletín 4 impreso"],
+  ["AI-QUI-16", "AI-QUI", "Química", "16", "4", "Cálculos en química I", "OK", "Boletín 4 impreso"],
+  ["AI-QUI-17", "AI-QUI", "Química", "17", "5", "Cálculos en química II", "OK", "Boletín 5 impreso"],
+  ["AI-QUI-18", "AI-QUI", "Química", "18", "5", "Gases I", "OK", "Boletín 5 impreso"],
+  ["AI-QUI-19", "AI-QUI", "Química", "19", "5", "Gases II", "OK", "Boletín 5 impreso"],
+  ["AI-QUI-20", "AI-QUI", "Química", "20", "5", "Estado líquido", "OK", "Boletín 5 impreso"],
+  ["AI-QUI-21", "AI-QUI", "Química", "21", "6", "Reacciones químicas I", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-22", "AI-QUI", "Química", "22", "6", "Reacciones químicas II", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-23", "AI-QUI", "Química", "23", "6", "Estequiometría I", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-24", "AI-QUI", "Química", "24", "6", "Estequiometría II", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-25", "AI-QUI", "Química", "25", "7", "Peso equivalente", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-26", "AI-QUI", "Química", "26", "7", "Soluciones I", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-27", "AI-QUI", "Química", "27", "7", "Soluciones II", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-28", "AI-QUI", "Química", "28", "7", "Soluciones III", "OK", "Temario Excel (BOL7)"],
+  ["AI-QUI-29", "AI-QUI", "Química", "29", "8", "Cinética química", "OK", "Boletín 8 impreso"],
+  ["AI-QUI-30", "AI-QUI", "Química", "30", "8", "Equilibrio químico", "OK", "Boletín 8 impreso"],
+  ["AI-QUI-31", "AI-QUI", "Química", "31", "8", "Ácidos y bases I", "OK", "Boletín 8 impreso"],
+  ["AI-QUI-32", "AI-QUI", "Química", "32", "8", "Ácidos y bases II", "OK", "Boletín 8 impreso"],
+  ["AI-BIO-01", "AI-BIO", "Biología", "1", "1", "Ser Vivo y método científico", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-02", "AI-BIO", "Biología", "2", "1", "Bioquímica I: Glúcidos y lípidos", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-03", "AI-BIO", "Biología", "3", "1", "Bioquímica II: Proteínas", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-04", "AI-BIO", "Biología", "4", "1", "Bioquímica III: Ácidos nucleicos", "OK", "Boletín 1 impreso"],
+  ["AI-BIO-05", "AI-BIO", "Biología", "5", "2", "Citología I: Teoría celular, pared celular y membrana plasmática", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-06", "AI-BIO", "Biología", "6", "2", "Citología II: citoplasma", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-07", "AI-BIO", "Biología", "7", "2", "Metabolismo celular eucariota I: fotosíntesis", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-08", "AI-BIO", "Biología", "8", "2", "Metabolismo celular eucariota II: respiración celular", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-09", "AI-BIO", "Biología", "9", "3", "Replicación del ADN y expresión génica", "OK", "Boletín 3 impreso"],
+  ["AI-BIO-10", "AI-BIO", "Biología", "10", "3", "Ciclo celular eucariota: Mitosis", "OK", "Boletín 3 impreso"],
+  ["AI-BIO-11", "AI-BIO", "Biología", "11", "3", "Ciclo celular eucariota: Meiosis", "OK", "Boletín 3 impreso"],
+  ["AI-BIO-12", "AI-BIO", "Biología", "12", "3", "Genética I: Genética mendeliana", "OK", "Boletín 3 impreso"],
+  ["AI-BIO-13", "AI-BIO", "Biología", "13", "4", "Genética II: Herencia sanguínea y herencia ligada al sexo", "OK", "Boletín 4 impreso"],
+  ["AI-BIO-14", "AI-BIO", "Biología", "14", "4", "Citogenética y Bioética", "OK", "Boletín 4 impreso"],
+  ["AI-BIO-15", "AI-BIO", "Biología", "15", "4", "Evolución I", "OK", "Boletín 4 impreso"],
+  ["AI-BIO-16", "AI-BIO", "Biología", "16", "4", "Evolución II", "OK", "Boletín 4 impreso"],
+  ["AI-BIO-17", "AI-BIO", "Biología", "17", "5", "Virus", "OK", "Boletín 5 impreso"],
+  ["AI-BIO-18", "AI-BIO", "Biología", "18", "5", "Bacterias", "OK", "Boletín 5 impreso"],
+  ["AI-BIO-19", "AI-BIO", "Biología", "19", "5", "Plantas I: Taxonomía", "OK", "Boletín 5 impreso"],
+  ["AI-BIO-20", "AI-BIO", "Biología", "20", "5", "Plantas II: Organografía e histología vegetal", "OK", "Boletín 5 impreso"],
+  ["AI-BIO-21", "AI-BIO", "Biología", "21", "6", "Plantas III: Reproducción vegetal y Coordinación química vegetal", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-22", "AI-BIO", "Biología", "22", "6", "Animales I: Taxonomía", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-23", "AI-BIO", "Biología", "23", "6", "Animales II: Sistema digestivo animal", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-24", "AI-BIO", "Biología", "24", "6", "Animales III: Circulación animal", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-25", "AI-BIO", "Biología", "25", "7", "Animales IV: Respiración y Excreción animal", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-26", "AI-BIO", "Biología", "26", "7", "Histología humana I", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-27", "AI-BIO", "Biología", "27", "7", "Histología humana II", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-28", "AI-BIO", "Biología", "28", "7", "Histología humana III", "OK", "Temario Excel (BOL7)"],
+  ["AI-BIO-29", "AI-BIO", "Biología", "29", "8", "Sistema digestivo humano", "OK", "Boletín 8 impreso"],
+  ["AI-BIO-30", "AI-BIO", "Biología", "30", "8", "Sistema cardiovascular humano", "OK", "Boletín 8 impreso"],
+  ["AI-BIO-31", "AI-BIO", "Biología", "31", "8", "Sistema respiratorio y excretor humano", "OK", "Boletín 8 impreso"],
+  ["AI-BIO-32", "AI-BIO", "Biología", "32", "8", "Sistema nervioso humano", "OK", "Boletín 8 impreso"],
+  ["AI-LEN-01", "AI-LEN", "Lenguaje", "1", "1", "La comunicación", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-02", "AI-LEN", "Lenguaje", "2", "1", "El lenguaje", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-03", "AI-LEN", "Lenguaje", "3", "1", "Los planos del lenguaje", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-04", "AI-LEN", "Lenguaje", "4", "1", "La realidad lingüística del Perú", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-05", "AI-LEN", "Lenguaje", "5", "2", "El signo y el signo lingüístico", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-06", "AI-LEN", "Lenguaje", "6", "2", "La semántica", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-07", "AI-LEN", "Lenguaje", "7", "2", "Las relaciones semánticas", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-08", "AI-LEN", "Lenguaje", "8", "2", "La fonología", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-09", "AI-LEN", "Lenguaje", "9", "3", "La fonética", "OK", "Boletín 3 impreso"],
+  ["AI-LEN-10", "AI-LEN", "Lenguaje", "10", "3", "Tema 10 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-LEN-11", "AI-LEN", "Lenguaje", "11", "3", "Tema 11 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-LEN-12", "AI-LEN", "Lenguaje", "12", "3", "Tema 12 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-LEN-13", "AI-LEN", "Lenguaje", "13", "4", "Uso de las mayúsculas I", "OK", "Boletín 4 impreso"],
+  ["AI-LEN-14", "AI-LEN", "Lenguaje", "14", "4", "Uso de las mayúsculas II", "OK", "Boletín 4 impreso"],
+  ["AI-LEN-15", "AI-LEN", "Lenguaje", "15", "4", "Los signos de puntuación I", "OK", "Boletín 4 impreso"],
+  ["AI-LEN-16", "AI-LEN", "Lenguaje", "16", "4", "Los signos de puntuación II", "OK", "Boletín 4 impreso"],
+  ["AI-LEN-17", "AI-LEN", "Lenguaje", "17", "5", "La morfología", "OK", "Boletín 5 impreso"],
+  ["AI-LEN-18", "AI-LEN", "Lenguaje", "18", "5", "Los procesos formativos de palabras", "OK", "Boletín 5 impreso"],
+  ["AI-LEN-19", "AI-LEN", "Lenguaje", "19", "5", "El sustantivo", "OK", "Boletín 5 impreso"],
+  ["AI-LEN-20", "AI-LEN", "Lenguaje", "20", "5", "Los accidentes del sustantivo", "OK", "Boletín 5 impreso"],
+  ["AI-LEN-21", "AI-LEN", "Lenguaje", "21", "6", "El adjetivo", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-22", "AI-LEN", "Lenguaje", "22", "6", "Los determinantes", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-23", "AI-LEN", "Lenguaje", "23", "6", "El pronombre", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-24", "AI-LEN", "Lenguaje", "24", "6", "El verbo: accidentes gramaticales", "OK", "Temario Excel (BOL7)"],
+  ["AI-LEN-25", "AI-LEN", "Lenguaje", "25", "7", "Tema 25 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-LEN-26", "AI-LEN", "Lenguaje", "26", "7", "Tema 26 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-LEN-27", "AI-LEN", "Lenguaje", "27", "7", "Tema 27 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-LEN-28", "AI-LEN", "Lenguaje", "28", "7", "Tema 28 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-LEN-29", "AI-LEN", "Lenguaje", "29", "8", "La preposición", "OK", "Boletín 8 impreso"],
+  ["AI-LEN-30", "AI-LEN", "Lenguaje", "30", "8", "La conjunción", "OK", "Boletín 8 impreso"],
+  ["AI-LEN-31", "AI-LEN", "Lenguaje", "31", "8", "La sintaxis", "OK", "Boletín 8 impreso"],
+  ["AI-LEN-32", "AI-LEN", "Lenguaje", "32", "8", "El sujeto", "OK", "Boletín 8 impreso"],
+  ["AI-ING-01", "AI-ING", "Inglés", "1", "1", "Greetings and Introductions", "OK", "Boletín 1 impreso"],
+  ["AI-ING-02", "AI-ING", "Inglés", "2", "1", "Pronouns", "OK", "Boletín 1 impreso"],
+  ["AI-ING-03", "AI-ING", "Inglés", "3", "1", "Present simple of be", "OK", "Boletín 1 impreso"],
+  ["AI-ING-04", "AI-ING", "Inglés", "4", "1", "Present simple I", "OK", "Boletín 1 impreso"],
+  ["AI-ING-05", "AI-ING", "Inglés", "5", "2", "Present Simple II", "OK", "Temario Excel (BOL7)"],
+  ["AI-ING-06", "AI-ING", "Inglés", "6", "2", "Present Continuous", "OK", "Temario Excel (BOL7)"],
+  ["AI-ING-07", "AI-ING", "Inglés", "7", "2", "Present Continuos and Present Simple", "OK", "Temario Excel (BOL7)"],
+  ["AI-ING-08", "AI-ING", "Inglés", "8", "2", "Past Simple I", "OK", "Temario Excel (BOL7)"],
+  ["AI-ING-09", "AI-ING", "Inglés", "9", "3", "Tema 9 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-10", "AI-ING", "Inglés", "10", "3", "Tema 10 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-11", "AI-ING", "Inglés", "11", "3", "Tema 11 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-12", "AI-ING", "Inglés", "12", "3", "Tema 12 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-13", "AI-ING", "Inglés", "13", "4", "Past Simple II", "OK", "Boletín 4 impreso"],
+  ["AI-ING-14", "AI-ING", "Inglés", "14", "4", "Past Simple III", "OK", "Boletín 4 impreso"],
+  ["AI-ING-15", "AI-ING", "Inglés", "15", "4", "Past Simple IV", "OK", "Boletín 4 impreso"],
+  ["AI-ING-16", "AI-ING", "Inglés", "16", "4", "Present Perfect I", "OK", "Boletín 4 impreso"],
+  ["AI-ING-17", "AI-ING", "Inglés", "17", "5", "Future Simple I", "OK", "Boletín 5 impreso"],
+  ["AI-ING-18", "AI-ING", "Inglés", "18", "5", "Future II", "OK", "Boletín 5 impreso"],
+  ["AI-ING-19", "AI-ING", "Inglés", "19", "5", "Review: Verb Tenses", "OK", "Boletín 5 impreso"],
+  ["AI-ING-20", "AI-ING", "Inglés", "20", "5", "Prepositions", "OK", "Boletín 5 impreso"],
+  ["AI-ING-21", "AI-ING", "Inglés", "21", "6", "Tema 21 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-22", "AI-ING", "Inglés", "22", "6", "Tema 22 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-23", "AI-ING", "Inglés", "23", "6", "Tema 23 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-24", "AI-ING", "Inglés", "24", "6", "Tema 24 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-25", "AI-ING", "Inglés", "25", "7", "Tema 25 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-26", "AI-ING", "Inglés", "26", "7", "Tema 26 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-27", "AI-ING", "Inglés", "27", "7", "Tema 27 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-28", "AI-ING", "Inglés", "28", "7", "Tema 28 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ING-29", "AI-ING", "Inglés", "29", "8", "Modal Verbs II", "OK", "Boletín 8 impreso"],
+  ["AI-ING-30", "AI-ING", "Inglés", "30", "8", "Past Perfect", "OK", "Boletín 8 impreso"],
+  ["AI-ING-31", "AI-ING", "Inglés", "31", "8", "Relative Clauses I", "OK", "Boletín 8 impreso"],
+  ["AI-ING-32", "AI-ING", "Inglés", "32", "8", "Relative Clauses II", "OK", "Boletín 8 impreso"],
+  ["AI-HIS-01", "AI-HIS", "Historia", "1", "1", "La Historia y su periodización", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-02", "AI-HIS", "Historia", "2", "1", "Comunidad primitiva en el mundo", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-03", "AI-HIS", "Historia", "3", "1", "Comunidad primitiva en el Perú", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-04", "AI-HIS", "Historia", "4", "1", "Mesopotamia", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-05", "AI-HIS", "Historia", "5", "2", "Formativo", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-06", "AI-HIS", "Historia", "6", "2", "Primer Desarrollo Regional", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-07", "AI-HIS", "Historia", "7", "2", "Grecia", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-08", "AI-HIS", "Historia", "8", "2", "Roma", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-09", "AI-HIS", "Historia", "9", "3", "Wari (Horizonte Medio)", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-HIS-10", "AI-HIS", "Historia", "10", "3", "Edad Media", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-HIS-11", "AI-HIS", "Historia", "11", "3", "Tema 11 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-HIS-12", "AI-HIS", "Historia", "12", "3", "Tema 12 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-HIS-13", "AI-HIS", "Historia", "13", "4", "Incas I", "OK", "Boletín 4 impreso"],
+  ["AI-HIS-14", "AI-HIS", "Historia", "14", "4", "Incas II", "OK", "Boletín 4 impreso"],
+  ["AI-HIS-15", "AI-HIS", "Historia", "15", "4", "Invasión a América", "OK", "Boletín 4 impreso"],
+  ["AI-HIS-16", "AI-HIS", "Historia", "16", "4", "Reforma y Contrarreforma", "OK", "Boletín 4 impreso"],
+  ["AI-HIS-17", "AI-HIS", "Historia", "17", "5", "Virreinato I", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-18", "AI-HIS", "Historia", "18", "5", "Virreinato II", "OK", "Boletín 5 impreso"],
+  ["AI-HIS-19", "AI-HIS", "Historia", "19", "5", "Primera Revolución Industrial", "OK", "Boletín 5 impreso"],
+  ["AI-HIS-20", "AI-HIS", "Historia", "20", "5", "Revolución francesa I", "OK", "Boletín 5 impreso"],
+  ["AI-HIS-21", "AI-HIS", "Historia", "21", "6", "Revolución francesa II, Restauración absolutista", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-22", "AI-HIS", "Historia", "22", "6", "Juntas de gobierno y Rebeliones criollas", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-23", "AI-HIS", "Historia", "23", "6", "Corrientes libertadoras", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-24", "AI-HIS", "Historia", "24", "6", "Primer militarismo: República temprana", "OK", "Temario Excel (BOL7)"],
+  ["AI-HIS-25", "AI-HIS", "Historia", "25", "7", "Tema 25 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-HIS-26", "AI-HIS", "Historia", "26", "7", "Tema 26 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-HIS-27", "AI-HIS", "Historia", "27", "7", "Tema 27 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-HIS-28", "AI-HIS", "Historia", "28", "7", "Tema 28 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-HIS-29", "AI-HIS", "Historia", "29", "8", "República Aristocrática", "OK", "Boletín 8 impreso"],
+  ["AI-HIS-30", "AI-HIS", "Historia", "30", "8", "Primera Guerra Mundial", "OK", "Boletín 8 impreso"],
+  ["AI-HIS-31", "AI-HIS", "Historia", "31", "8", "Revolución rusa", "OK", "Boletín 8 impreso"],
+  ["AI-HIS-32", "AI-HIS", "Historia", "32", "8", "Oncenio y Tercer Militarismo", "OK", "Boletín 8 impreso"],
+  ["AI-GEOG-01", "AI-GEOG", "Geografía", "1", "1", "Ciencia geográfica", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-02", "AI-GEOG", "Geografía", "2", "1", "Movimiento de rotación terrestre", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-03", "AI-GEOG", "Geografía", "3", "1", "Hora internacional", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-04", "AI-GEOG", "Geografía", "4", "1", "Movimiento de traslación terrestre", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-05", "AI-GEOG", "Geografía", "5", "2", "Geodesia", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-06", "AI-GEOG", "Geografía", "6", "2", "Cartografía I", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-07", "AI-GEOG", "Geografía", "7", "2", "Cartografía II", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-08", "AI-GEOG", "Geografía", "8", "2", "Atmósfera", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-09", "AI-GEOG", "Geografía", "9", "3", "Calentamiento global", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-GEOG-10", "AI-GEOG", "Geografía", "10", "3", "Tiempo atmosférico y clima", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-GEOG-11", "AI-GEOG", "Geografía", "11", "3", "Presión atmosférica", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-GEOG-12", "AI-GEOG", "Geografía", "12", "3", "Práctica dirigida", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-GEOG-13", "AI-GEOG", "Geografía", "13", "4", "Clima del Perú I", "OK", "Boletín 4 impreso"],
+  ["AI-GEOG-14", "AI-GEOG", "Geografía", "14", "4", "Clima del Perú II", "OK", "Boletín 4 impreso"],
+  ["AI-GEOG-15", "AI-GEOG", "Geografía", "15", "4", "Clima del Perú III", "OK", "Boletín 4 impreso"],
+  ["AI-GEOG-16", "AI-GEOG", "Geografía", "16", "4", "Geósfera", "OK", "Boletín 4 impreso"],
+  ["AI-GEOG-17", "AI-GEOG", "Geografía", "17", "5", "Geodinámica interna", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-18", "AI-GEOG", "Geografía", "18", "5", "Geodinámica externa", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-19", "AI-GEOG", "Geografía", "19", "5", "Relieve costero", "OK", "Boletín 5 impreso"],
+  ["AI-GEOG-20", "AI-GEOG", "Geografía", "20", "5", "Relieve andino I", "OK", "Boletín 5 impreso"],
+  ["AI-GEOG-21", "AI-GEOG", "Geografía", "21", "6", "Relieve andino II", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-22", "AI-GEOG", "Geografía", "22", "6", "Relieve amazónico", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-23", "AI-GEOG", "Geografía", "23", "6", "Ecosistemas del Perú: 8 regiones", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-24", "AI-GEOG", "Geografía", "24", "6", "Recursos naturales y su problemática", "OK", "Temario Excel (BOL7)"],
+  ["AI-GEOG-25", "AI-GEOG", "Geografía", "25", "7", "Tema 25 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-GEOG-26", "AI-GEOG", "Geografía", "26", "7", "Tema 26 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-GEOG-27", "AI-GEOG", "Geografía", "27", "7", "Tema 27 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-GEOG-28", "AI-GEOG", "Geografía", "28", "7", "Tema 28 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-GEOG-29", "AI-GEOG", "Geografía", "29", "8", "Vertiente hidrográfica del Amazonas", "OK", "Boletín 8 impreso"],
+  ["AI-GEOG-30", "AI-GEOG", "Geografía", "30", "8", "Mar peruano", "OK", "Boletín 8 impreso"],
+  ["AI-GEOG-31", "AI-GEOG", "Geografía", "31", "8", "Fenómeno de El Niño", "OK", "Boletín 8 impreso"],
+  ["AI-GEOG-32", "AI-GEOG", "Geografía", "32", "8", "Actividades económicas I", "OK", "Boletín 8 impreso"],
+  ["AI-ECO-01", "AI-ECO", "Economía", "1", "1", "Ciencia económica y principios básicos", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-02", "AI-ECO", "Economía", "2", "1", "División de la economía", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-03", "AI-ECO", "Economía", "3", "1", "Necesidades, Ingreso familiar y Pobreza", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-04", "AI-ECO", "Economía", "4", "1", "Bienes servicios", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-05", "AI-ECO", "Economía", "5", "2", "Proceso económico y Sectores productivos", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-06", "AI-ECO", "Economía", "6", "2", "Teoría de la producción", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-07", "AI-ECO", "Economía", "7", "2", "Costos de producción y Frontera de posibilidades de producción", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-08", "AI-ECO", "Economía", "8", "2", "Naturaleza y Capital", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-09", "AI-ECO", "Economía", "9", "3", "Factores productivos: el trabajo y el empleo", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-ECO-10", "AI-ECO", "Economía", "10", "3", "Empresa y ciclo de vida del producto", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-ECO-11", "AI-ECO", "Economía", "11", "3", "Emprendimiento", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-ECO-12", "AI-ECO", "Economía", "12", "3", "Estructuras de mercado", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-ECO-13", "AI-ECO", "Economía", "13", "4", "Teoría de la demanda I", "OK", "Boletín 4 impreso"],
+  ["AI-ECO-14", "AI-ECO", "Economía", "14", "4", "Teoría de la demanda II", "OK", "Boletín 4 impreso"],
+  ["AI-ECO-15", "AI-ECO", "Economía", "15", "4", "La oferta", "OK", "Boletín 4 impreso"],
+  ["AI-ECO-16", "AI-ECO", "Economía", "16", "4", "Equilibrio de mercado", "OK", "Boletín 4 impreso"],
+  ["AI-ECO-17", "AI-ECO", "Economía", "17", "5", "Dinero", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-18", "AI-ECO", "Economía", "18", "5", "Inflación", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-19", "AI-ECO", "Economía", "19", "5", "Sistema financiero", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-20", "AI-ECO", "Economía", "20", "5", "Sistema bancario", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-21", "AI-ECO", "Economía", "21", "6", "Sector público", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-22", "AI-ECO", "Economía", "22", "6", "Consumidores, productores y eficiencia de los mercados", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-23", "AI-ECO", "Economía", "23", "6", "Sistema tributario", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-24", "AI-ECO", "Economía", "24", "6", "Economía Informal", "OK", "Temario Excel (BOL7)"],
+  ["AI-ECO-25", "AI-ECO", "Economía", "25", "7", "Tema 25 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ECO-26", "AI-ECO", "Economía", "26", "7", "Tema 26 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ECO-27", "AI-ECO", "Economía", "27", "7", "Tema 27 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ECO-28", "AI-ECO", "Economía", "28", "7", "Tema 28 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-ECO-29", "AI-ECO", "Economía", "29", "8", "Agregados e indicadores económicos", "OK", "Boletín 8 impreso"],
+  ["AI-ECO-30", "AI-ECO", "Economía", "30", "8", "Ciclos económicos, consumo, distribución e inversión", "OK", "Boletín 8 impreso"],
+  ["AI-ECO-31", "AI-ECO", "Economía", "31", "8", "Normas y Constitución Política", "OK", "Boletín 8 impreso"],
+  ["AI-ECO-32", "AI-ECO", "Economía", "32", "8", "Derechos", "OK", "Boletín 8 impreso"],
+  ["AI-FIL-01", "AI-FIL", "Filosofía", "1", "1", "Conceptos básicos", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-02", "AI-FIL", "Filosofía", "2", "1", "Disciplinas filosóficas I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-03", "AI-FIL", "Filosofía", "3", "1", "Disciplinas filosóficas II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-04", "AI-FIL", "Filosofía", "4", "1", "Mito y filosofía", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-05", "AI-FIL", "Filosofía", "5", "2", "Filosofía antigua I: periodo cosmológico", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-06", "AI-FIL", "Filosofía", "6", "2", "Filosofía antigua II: periodo antropológico", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-07", "AI-FIL", "Filosofía", "7", "2", "Filosofía antigua III: periodo ontológico - Platón", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-08", "AI-FIL", "Filosofía", "8", "2", "Filosofía antigua IV: periodo ontológico - Aristóteles", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-09", "AI-FIL", "Filosofía", "9", "3", "Filosofía helenística (cinismo, estoicismo, epicureísmo)", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-FIL-10", "AI-FIL", "Filosofía", "10", "3", "Filosofía medieval: Patrística", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-FIL-11", "AI-FIL", "Filosofía", "11", "3", "Filosofía medieval: Escolástica", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-FIL-12", "AI-FIL", "Filosofía", "12", "3", "Filosofía renacentista: Humanismo", "POR CONFIRMAR", "Deducido del contenido del boletín 3"],
+  ["AI-FIL-13", "AI-FIL", "Filosofía", "13", "4", "Filosofía moderna I: Racionalismo", "OK", "Boletín 4 impreso"],
+  ["AI-FIL-14", "AI-FIL", "Filosofía", "14", "4", "Filosofía moderna II: Empirismo", "OK", "Boletín 4 impreso"],
+  ["AI-FIL-15", "AI-FIL", "Filosofía", "15", "4", "Ilustración", "OK", "Boletín 4 impreso"],
+  ["AI-FIL-16", "AI-FIL", "Filosofía", "16", "4", "Criticismo", "OK", "Boletín 4 impreso"],
+  ["AI-FIL-17", "AI-FIL", "Filosofía", "17", "5", "El idealismo alemán", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-18", "AI-FIL", "Filosofía", "18", "5", "Marxismo", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-19", "AI-FIL", "Filosofía", "19", "5", "Voluntarismo", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-20", "AI-FIL", "Filosofía", "20", "5", "Existencialismo", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-21", "AI-FIL", "Filosofía", "21", "6", "Filosofía analítica", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-22", "AI-FIL", "Filosofía", "22", "6", "Teorías del reconocimiento", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-23", "AI-FIL", "Filosofía", "23", "6", "Filosofía en el Perú I", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-24", "AI-FIL", "Filosofía", "24", "6", "Filosofía en el Perú II", "OK", "Temario Excel (BOL7)"],
+  ["AI-FIL-25", "AI-FIL", "Filosofía", "25", "7", "Tema 25 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-FIL-26", "AI-FIL", "Filosofía", "26", "7", "Tema 26 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-FIL-27", "AI-FIL", "Filosofía", "27", "7", "Tema 27 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-FIL-28", "AI-FIL", "Filosofía", "28", "7", "Tema 28 (por completar)", "POR CONFIRMAR", "Sin fuente"],
+  ["AI-FIL-29", "AI-FIL", "Filosofía", "29", "8", "Epistemología II: teorías epistemológicas", "OK", "Boletín 8 impreso"],
+  ["AI-FIL-30", "AI-FIL", "Filosofía", "30", "8", "Axiología: el valor", "OK", "Boletín 8 impreso"],
+  ["AI-FIL-31", "AI-FIL", "Filosofía", "31", "8", "La moral I", "OK", "Boletín 8 impreso"],
+  ["AI-FIL-32", "AI-FIL", "Filosofía", "32", "8", "Ética II: teorías éticas", "OK", "Boletín 8 impreso"]
+];
+
+var SEED_CALENDARIO = [
+  ["2026-03-02", "2026-03-07", "CLASE", "1", "1", "1", "Inicio de clases 04/03 (clase introductoria)"],
+  ["2026-03-09", "2026-03-14", "CLASE", "2", "1", "1", ""],
+  ["2026-03-16", "2026-03-21", "CLASE", "3", "1", "1", ""],
+  ["2026-03-23", "2026-03-28", "CLASE", "4", "1", "1", ""],
+  ["2026-03-30", "2026-04-04", "CLASE", "5", "2", "1", "Jue 02 y vie 03: Semana Santa (feriado)"],
+  ["2026-04-06", "2026-04-11", "EXAMEN", "", "", "1", "Exámenes mensuales"],
+  ["2026-04-13", "2026-04-18", "CLASE", "6", "2", "1", ""],
+  ["2026-04-20", "2026-04-25", "CLASE", "7", "2", "1", ""],
+  ["2026-04-27", "2026-05-02", "CLASE", "8", "2", "1", "Vie 01/05: Día del Trabajo (feriado)"],
+  ["2026-05-04", "2026-05-09", "CLASE", "9", "3", "1", "Vie 08/05: Simulacro"],
+  ["2026-05-11", "2026-05-16", "EXAMEN", "", "", "1", "Exámenes bimestrales (horario reducido)"],
+  ["2026-05-18", "2026-05-23", "VACACIONES", "", "", "1", "Vacaciones"],
+  ["2026-05-25", "2026-05-30", "CLASE", "10", "3", "2", ""],
+  ["2026-06-01", "2026-06-06", "CLASE", "11", "3", "2", ""],
+  ["2026-06-08", "2026-06-13", "CLASE", "12", "3", "2", ""],
+  ["2026-06-15", "2026-06-20", "EXAMEN", "", "", "2", "Exámenes mensuales"],
+  ["2026-06-22", "2026-06-27", "CLASE", "13", "4", "2", ""],
+  ["2026-06-29", "2026-07-04", "CLASE", "14", "4", "2", "Lun 29/06: San Pedro y San Pablo (feriado)"],
+  ["2026-07-06", "2026-07-11", "CLASE", "15", "4", "2", "Lun 06/07: Día del Maestro · Vie 10/07: Simulacro"],
+  ["2026-07-13", "2026-07-18", "CLASE", "16", "4", "2", ""],
+  ["2026-07-20", "2026-07-25", "EXAMEN", "", "", "2", "Exámenes bimestrales (sáb. 25/07 recupera jue. 23/07)"],
+  ["2026-07-27", "2026-08-01", "VACACIONES", "", "", "2", "Vacaciones (27 jul – 04 ago)"],
+  ["2026-08-03", "2026-08-08", "CLASE", "17", "5", "3", "Clases 05–07 ago · Jue 06/08: Batalla de Junín (feriado)"],
+  ["2026-08-10", "2026-08-15", "CLASE", "18", "5", "3", ""],
+  ["2026-08-17", "2026-08-22", "CLASE", "19", "5", "3", ""],
+  ["2026-08-24", "2026-08-29", "CLASE", "20", "5", "3", ""],
+  ["2026-08-31", "2026-09-05", "EXAMEN", "", "", "3", "Exámenes mensuales"],
+  ["2026-09-07", "2026-09-12", "CLASE", "21", "6", "3", ""],
+  ["2026-09-14", "2026-09-19", "CLASE", "22", "6", "3", ""],
+  ["2026-09-21", "2026-09-26", "CLASE", "23", "6", "3", "Mié 23/09: Día del Estudiante"],
+  ["2026-09-28", "2026-10-03", "CLASE", "24", "6", "3", "Vie 02/10: Simulacro"],
+  ["2026-10-05", "2026-10-10", "EXAMEN", "", "", "3", "Exámenes bimestrales (sáb. 10/10 recupera jue. 08/10)"],
+  ["2026-10-12", "2026-10-17", "VACACIONES", "", "", "3", "Vacaciones"],
+  ["2026-10-19", "2026-10-24", "CLASE", "25", "7", "4", ""],
+  ["2026-10-26", "2026-10-31", "CLASE", "26", "7", "4", ""],
+  ["2026-11-02", "2026-11-07", "CLASE", "27", "7", "4", ""],
+  ["2026-11-09", "2026-11-14", "CLASE", "28", "7", "4", ""],
+  ["2026-11-16", "2026-11-21", "EXAMEN", "", "", "4", "Exámenes mensuales"],
+  ["2026-11-23", "2026-11-28", "CLASE", "29", "8", "4", "Semana de Aniversario"],
+  ["2026-11-30", "2026-12-05", "CLASE", "30", "8", "4", ""],
+  ["2026-12-07", "2026-12-12", "CLASE", "31", "8", "4", "Mar 08 y mié 09: feriados · Vie 11/12: Simulacro"],
+  ["2026-12-14", "2026-12-19", "CLASE", "32", "8", "4", "Clases 14–16 dic; exámenes bimestrales desde el 17/12"],
+  ["2026-12-21", "2026-12-26", "CIERRE", "", "", "4", "Exámenes bimestrales (17–22 dic) y clausura 22/12"]
+];
+
 /* ========================= Code.gs ========================= */
 /**
  * CVI Monte Azul — Control de Asistencia Docente (piloto 16/11/2026)
@@ -462,7 +1082,11 @@ var HOJAS = {
   HORARIO: 'Horario',
   MARCACIONES: 'Marcaciones',
   CLASES: 'Clases dictadas',
-  REPORTE: 'Reporte mensual'
+  REPORTE: 'Reporte mensual',
+  CURSOS: 'Cursos',
+  TEMARIO: 'Temario',
+  CALENDARIO: 'Calendario',
+  LECCIONARIO: 'Leccionario'
 };
 
 // Esquemas: [clave interna, encabezado visible, formato texto?]
@@ -481,7 +1105,19 @@ var ESQUEMAS = {
   'Clases dictadas': [['fecha', 'Fecha', true], ['mes', 'Mes', true], ['marcacion', 'Marcación', true], ['bloque', 'Bloque', true],
     ['salon', 'Salón', true], ['curso', 'Curso', true], ['titular', 'Docente titular', true], ['docente', 'Docente que dictó', true],
     ['dni', 'DNI', true], ['tipo', 'Tipo', true], ['inicio', 'Inicio programado', true], ['fin', 'Fin programado', true],
-    ['horas', 'Horas dictadas', false]]
+    ['horas', 'Horas dictadas', false]],
+  Cursos: [['id', 'ID curso', true], ['salon', 'Salón', true], ['curso', 'Curso', true], ['area', 'Área', true],
+    ['alias', 'Nombre(s) en el horario (separados por |)', true], ['total', 'Total temas', true],
+    ['avanceInicial', 'Avance inicial (temas completados antes del sistema)', true], ['activo', 'Activo (SI/NO)', true]],
+  Temario: [['id', 'ID tema', true], ['cursoId', 'ID curso', true], ['curso', 'Curso', true], ['n', 'N.º tema', true],
+    ['boletin', 'Boletín', true], ['tema', 'Tema', true], ['estadoDato', 'Estado del dato', true], ['fuente', 'Fuente', true]],
+  Calendario: [['inicio', 'Semana (lunes)', true], ['fin', 'Hasta (sábado)', true], ['tipo', 'Tipo (CLASE/EXAMEN/VACACIONES/CIERRE)', true],
+    ['nSemana', 'N.º semana de clase', true], ['boletin', 'Boletín', true], ['bimestre', 'Bimestre', true], ['descripcion', 'Descripción', true]],
+  Leccionario: [['id', 'ID', true], ['fecha', 'Fecha', true], ['mes', 'Mes', true], ['marcacion', 'Marcación', true],
+    ['cursoId', 'ID curso', true], ['curso', 'Curso', true], ['salon', 'Salón', true], ['docente', 'Docente', true], ['dni', 'DNI', true],
+    ['n', 'N.º tema', true], ['temaId', 'ID tema', true], ['tema', 'Tema', true], ['tipo', 'Tipo de avance', true],
+    ['observacion', 'Observación', true], ['bloques', 'Bloques', true], ['registradoPor', 'Registrado por', true],
+    ['estado', 'Estado (REGISTRADO/VALIDADO/CORREGIDO)', true], ['revision', 'Revisión de coordinación', true], ['registrado', 'Registrado', true]]
 };
 
 var CONFIG_DEFAULT = [
@@ -667,6 +1303,14 @@ function infoDocente_(doc) {
   };
 }
 
+/** Igual que buscarDocente, pero agrega las clases de hoy que quedaron sin tema registrado. */
+function buscarDocenteConTemas(texto) {
+  var info = buscarDocente(texto);
+  if (!info.ok) return info;
+  try { info.pendientesTema = pendientesHoyDe_(info); } catch (e) { info.pendientesTema = []; }
+  return info;
+}
+
 function marcarIngreso(p) {
   var info = buscarDocente(p.dni);
   if (!info.ok) return info;
@@ -744,7 +1388,9 @@ function registrarSalida_(info, p, hora) {
   });
   if (filas.length) shC.getRange(shC.getLastRow() + 1, 1, filas.length, filas[0].length).setValues(filas);
 
-  return { ok: true, tipo: 'SALIDA', hora: hora, inicio: m.inicio, docente: m.docente, horas: h, clases: sel };
+  var temas = [];
+  try { temas = temasPendientes_(m.id, sel, m.docente); } catch (e) { Logger.log('temasPendientes_: ' + e); }
+  return { ok: true, tipo: 'SALIDA', hora: hora, inicio: m.inicio, docente: m.docente, horas: h, clases: sel, marcacion: m.id, temas: temas };
 }
 
 /* ============================ API: Panel (requiere PIN) ============================ */
@@ -1007,6 +1653,248 @@ function cambiarActivoDocente(pin, nombre, activo) {
   });
 }
 
+/* ============================ Control académico ============================ */
+
+function cursos_() {
+  return leer_(HOJAS.CURSOS).filter(function (c) { return c.id && norm(c.activo) !== 'no'; })
+    .map(function (c) { c.total = Number(c.total) || 32; c.avanceInicial = Number(c.avanceInicial) || 0; return c; });
+}
+function temario_() {
+  return leer_(HOJAS.TEMARIO).filter(function (t) { return t.id; }).map(function (t) { t.n = Number(t.n); return t; });
+}
+function calendario_() {
+  return leer_(HOJAS.CALENDARIO).filter(function (c) { return c.inicio; }).map(function (c) { c.tipo = String(c.tipo).toUpperCase(); return c; });
+}
+function leccionario_() {
+  return leer_(HOJAS.LECCIONARIO).filter(function (r) { return r.id; }).map(function (r) { r.n = Number(r.n); return r; });
+}
+
+/** Avance completo de un curso (con semáforo frente al calendario). */
+function avanceDe_(curso, temario, lecc, esperado) {
+  var regs = lecc.filter(function (r) { return r.cursoId === curso.id; });
+  var a = avanceCurso(curso.total, curso.avanceInicial, regs);
+  var sem = semaforoAtraso(a.ultimoContinuo, Math.min(esperado.completados, curso.total));
+  var temas = temario.filter(function (t) { return t.cursoId === curso.id; });
+  var titulo = function (n) { var t = temas.filter(function (x) { return x.n === n; })[0]; return t ? t.tema : ''; };
+  var ult = regs.slice().sort(function (x, y) { return String(y.fecha + y.registrado).localeCompare(String(x.fecha + x.registrado)); })[0];
+  return {
+    id: curso.id, curso: curso.curso, area: curso.area, salon: curso.salon, total: curso.total, avanceInicial: curso.avanceInicial,
+    completados: a.completados, parciales: a.parciales, ultimoContinuo: a.ultimoContinuo, siguiente: a.siguiente, sugerido: a.sugerido,
+    cobertura: a.cobertura, totalCompletados: a.totalCompletados, atraso: sem.atraso, semaforo: sem.semaforo,
+    ultimoTema: a.ultimoContinuo ? { n: a.ultimoContinuo, tema: titulo(a.ultimoContinuo) } : null,
+    siguienteTema: a.siguiente ? { n: a.siguiente, tema: titulo(a.siguiente) } : null,
+    porConfirmar: temas.filter(function (t) { return t.estadoDato !== 'OK'; }).length,
+    ultimoRegistro: ult ? { fecha: ult.fecha, n: ult.n, tipo: ult.tipo, docente: ult.docente } : null
+  };
+}
+
+/** Para una marcación: cursos con temario dictados en sus clases y que aún no tienen tema registrado. */
+function temasPendientes_(marcacionId, clases, docente) {
+  var cursos = cursos_();
+  if (!cursos.length) return [];
+  var lecc = leccionario_(), temario = temario_();
+  var esperado = temaEsperado(calendario_(), hoy_());
+  var grupos = {};
+  (clases || []).forEach(function (b) {
+    var c = cursoDeBloque(b, cursos);
+    if (!c) return;
+    if (!grupos[c.id]) grupos[c.id] = { curso: c, bloques: [] };
+    grupos[c.id].bloques.push(b.id);
+  });
+  return Object.keys(grupos).filter(function (id) {
+    return !lecc.some(function (r) { return r.marcacion === marcacionId && r.cursoId === id; });
+  }).map(function (id) {
+    var c = grupos[id].curso, av = avanceDe_(c, temario, lecc, esperado);
+    return {
+      cursoId: c.id, curso: c.curso, salon: c.salon, bloques: grupos[id].bloques, marcacion: marcacionId, sugerido: av.sugerido,
+      esperado: esperado.enCurso, temas: temario.filter(function (t) { return t.cursoId === c.id; }).sort(function (a, b) { return a.n - b.n; })
+        .map(function (t) { return { n: t.n, tema: t.tema, boletin: t.boletin, completado: av.completados.indexOf(t.n) >= 0, parcial: av.parciales.indexOf(t.n) >= 0 }; })
+    };
+  });
+}
+
+/** Clases de marcaciones cerradas hoy que aún no tienen tema registrado (para recordárselo al docente). */
+function pendientesHoyDe_(info) {
+  var porId = {}; info.propios.concat(info.otros).forEach(function (b) { porId[b.id] = b; });
+  var out = [];
+  marcacionesDe_(info.fecha).filter(function (m) { return m.fin && (m.dni === info.dni || norm(m.docente) === norm(info.docente)); })
+    .forEach(function (m) {
+      var clases = m.bloques.concat(m.reemplazos).map(function (id) { return porId[id]; }).filter(Boolean);
+      out = out.concat(temasPendientes_(m.id, clases, info.docente));
+    });
+  return out;
+}
+
+function agregarRegistroTema_(base, item, temario) {
+  var t = temario.filter(function (x) { return x.cursoId === item.cursoId && x.n === Number(item.n); })[0];
+  if (!t) throw new Error('El tema ' + item.n + ' no existe en el temario de ' + item.cursoId + '.');
+  if (TIPOS_AVANCE.indexOf(item.tipo) < 0) throw new Error('Tipo de avance no válido.');
+  var fila = {
+    id: 'L' + Utilities.formatDate(new Date(), TZ, 'yyMMddHHmmss') + Math.floor(Math.random() * 900 + 100),
+    fecha: base.fecha, mes: String(base.fecha).slice(0, 7), marcacion: base.marcacion || '', cursoId: item.cursoId, curso: t.curso,
+    salon: item.salon || 'ANUAL INTEGRAL', docente: base.docente, dni: base.dni || '', n: t.n, temaId: t.id, tema: t.tema, tipo: item.tipo,
+    observacion: String(item.observacion || '').trim(), bloques: item.bloques || [], registradoPor: base.registradoPor,
+    estado: base.registradoPor === 'COORDINACIÓN' ? 'VALIDADO' : 'REGISTRADO', revision: '', registrado: sello_()
+  };
+  agregar_(HOJAS.LECCIONARIO, fila);
+  return fila;
+}
+
+/** El docente registra el/los tema(s) dictados en una marcación cerrada (paso posterior a "Marcar salida"). */
+function registrarTemas(dni, marcacionId, items) {
+  var info = buscarDocente(dni);
+  if (!info.ok) return info;
+  var m = marcacionesDe_(info.fecha).filter(function (x) { return x.id === marcacionId; })[0];
+  if (!m || (m.dni !== info.dni && norm(m.docente) !== norm(info.docente))) return { ok: false, error: 'La marcación no corresponde a este docente.' };
+  return conLock_(function () {
+    var temario = temario_();
+    var guardados = (items || []).map(function (it) {
+      return agregarRegistroTema_({ fecha: m.fecha, marcacion: m.id, docente: info.docente, dni: info.dni, registradoPor: 'DOCENTE' }, it, temario);
+    });
+    return { ok: true, guardados: guardados.length };
+  });
+}
+
+/* ----- Panel de coordinación ----- */
+
+function getAcademico(pin, fecha) {
+  validarPin_(pin);
+  fecha = fecha || hoy_();
+  var cal = calendario_(), esperado = temaEsperado(cal, fecha), cursos = cursos_(), temario = temario_(), lecc = leccionario_();
+  var horario = horario_();
+  var lista = cursos.map(function (c) {
+    var a = avanceDe_(c, temario, lecc, esperado);
+    a.docentes = horario.filter(function (b) { return cursoDeBloque(b, [c]); }).map(function (b) { return b.docente; })
+      .filter(function (v, i, arr) { return v && arr.indexOf(v) === i; });
+    return a;
+  });
+  // Alertas
+  var alertas = [];
+  lista.filter(function (a) { return a.semaforo === 'ROJO'; }).forEach(function (a) {
+    alertas.push({ tipo: 'ATRASO', nivel: 'ROJO', cursoId: a.id, texto: a.curso + ': ' + a.atraso + ' temas de atraso (va en el ' + a.ultimoContinuo + ', debería ir en el ' + esperado.completados + ').' });
+  });
+  var desde = Utilities.formatDate(new Date(new Date().getTime() - 14 * 864e5), TZ, 'yyyy-MM-dd');
+  var marcadas = {};
+  leer_(HOJAS.CLASES).filter(function (c) { return c.fecha >= desde; }).forEach(function (c) {
+    var k = cursoDeBloque({ salon: c.salon, curso: c.curso }, cursos);
+    if (!k) return;
+    var clave = c.marcacion + '|' + k.id;
+    if (marcadas[clave]) return;
+    marcadas[clave] = true;
+    if (!lecc.some(function (r) { return r.marcacion === c.marcacion && r.cursoId === k.id; })) {
+      alertas.push({ tipo: 'SIN_TEMA', nivel: 'AMBAR', cursoId: k.id, fecha: c.fecha, marcacion: c.marcacion, docente: c.docente,
+        texto: c.fecha + ' · ' + c.docente + ' dictó ' + k.curso + ' sin registrar el tema.' });
+    }
+  });
+  var porValidar = lecc.filter(function (r) { return r.estado === 'REGISTRADO'; }).length;
+  var porConfirmar = temario.filter(function (t) { return t.estadoDato !== 'OK'; }).length;
+  var cuenta = function (s) { return lista.filter(function (a) { return a.semaforo === s; }).length; };
+  return {
+    fecha: fecha, esperado: { completados: esperado.completados, enCurso: esperado.enCurso, total: esperado.total },
+    semana: esperado.semana, cursos: lista, alertas: alertas,
+    kpi: {
+      cursos: lista.length, verde: cuenta('VERDE'), ambar: cuenta('AMBAR'), rojo: cuenta('ROJO'),
+      cobertura: lista.length ? Math.round(lista.reduce(function (s, a) { return s + a.cobertura; }, 0) / lista.length * 10) / 10 : 0,
+      porValidar: porValidar, porConfirmar: porConfirmar, sinTema: alertas.filter(function (x) { return x.tipo === 'SIN_TEMA'; }).length
+    }
+  };
+}
+
+function getCursoDetalle(pin, cursoId) {
+  validarPin_(pin);
+  var c = cursos_().filter(function (x) { return x.id === cursoId; })[0];
+  if (!c) throw new Error('Curso no encontrado.');
+  var temario = temario_(), lecc = leccionario_(), esperado = temaEsperado(calendario_(), hoy_());
+  var a = avanceDe_(c, temario, lecc, esperado);
+  var regs = lecc.filter(function (r) { return r.cursoId === cursoId; });
+  a.temas = temario.filter(function (t) { return t.cursoId === cursoId; }).sort(function (x, y) { return x.n - y.n; }).map(function (t) {
+    return {
+      id: t.id, n: t.n, boletin: t.boletin, tema: t.tema, estadoDato: t.estadoDato, fuente: t.fuente,
+      estado: a.completados.indexOf(t.n) >= 0 ? 'COMPLETADO' : a.parciales.indexOf(t.n) >= 0 ? 'PARCIAL' : 'PENDIENTE',
+      registros: regs.filter(function (r) { return r.n === t.n; }).map(function (r) { return { id: r.id, fecha: r.fecha, tipo: r.tipo, docente: r.docente, estado: r.estado }; })
+    };
+  });
+  a.esperado = esperado.completados;
+  return a;
+}
+
+function guardarTituloTema(pin, temaId, titulo) {
+  validarPin_(pin);
+  titulo = String(titulo || '').trim();
+  if (!titulo) return { ok: false, error: 'Escribe el título del tema.' };
+  return conLock_(function () {
+    var t = temario_().filter(function (x) { return x.id === temaId; })[0];
+    if (!t) return { ok: false, error: 'Tema no encontrado.' };
+    var esq = ESQUEMAS.Temario.map(function (c) { return c[0]; }), sh = hoja_(HOJAS.TEMARIO);
+    sh.getRange(t._fila, esq.indexOf('tema') + 1).setValue(titulo);
+    sh.getRange(t._fila, esq.indexOf('estadoDato') + 1).setValue('OK');
+    sh.getRange(t._fila, esq.indexOf('fuente') + 1).setValue('Confirmado por coordinación ' + hoy_());
+    return { ok: true };
+  });
+}
+
+function guardarAvanceInicial(pin, cursoId, n) {
+  validarPin_(pin);
+  n = Number(n);
+  if (!(n >= 0 && n <= 32)) return { ok: false, error: 'Indica un número de tema entre 0 y 32.' };
+  var c = cursos_().filter(function (x) { return x.id === cursoId; })[0];
+  if (!c) return { ok: false, error: 'Curso no encontrado.' };
+  hoja_(HOJAS.CURSOS).getRange(c._fila, ESQUEMAS.Cursos.map(function (x) { return x[0]; }).indexOf('avanceInicial') + 1).setValue(String(n));
+  return { ok: true };
+}
+
+function getLeccionario(pin, filtro) {
+  validarPin_(pin);
+  filtro = filtro || {};
+  var lista = leccionario_().filter(function (r) {
+    return (!filtro.cursoId || r.cursoId === filtro.cursoId) && (!filtro.desde || r.fecha >= filtro.desde) && (!filtro.hasta || r.fecha <= filtro.hasta);
+  }).map(function (r) { delete r._fila; return r; });
+  lista.sort(function (a, b) { return String(b.fecha + b.registrado).localeCompare(String(a.fecha + a.registrado)); });
+  return { registros: lista.slice(0, 300), cursos: cursos_().map(function (c) { return { id: c.id, curso: c.curso }; }) };
+}
+
+/** Coordinación registra un tema (p. ej. si el docente no lo hizo). p = {fecha, cursoId, n, tipo, observacion, docente} */
+function coordRegistrarTema(pin, p) {
+  validarPin_(pin);
+  if (!p.fecha || !/^\d{4}-\d{2}-\d{2}$/.test(p.fecha)) return { ok: false, error: 'Indica la fecha.' };
+  if (p.fecha > hoy_()) return { ok: false, error: 'No se puede registrar una fecha futura.' };
+  return conLock_(function () {
+    var r = agregarRegistroTema_({ fecha: p.fecha, marcacion: p.marcacion || '', docente: p.docente || 'Coordinación', dni: '', registradoPor: 'COORDINACIÓN' },
+      { cursoId: p.cursoId, n: p.n, tipo: p.tipo, observacion: p.observacion }, temario_());
+    return { ok: true, registro: r };
+  });
+}
+
+/** Validar, corregir o eliminar un registro del leccionario. accion: VALIDAR | CORREGIR | ELIMINAR */
+function revisarRegistro(pin, id, accion, cambios) {
+  validarPin_(pin);
+  return conLock_(function () {
+    var r = leccionario_().filter(function (x) { return x.id === id; })[0];
+    if (!r) return { ok: false, error: 'El registro ya no existe.' };
+    var sh = hoja_(HOJAS.LECCIONARIO);
+    if (accion === 'ELIMINAR') { sh.deleteRow(r._fila); return { ok: true }; }
+    if (accion === 'CORREGIR') {
+      cambios = cambios || {};
+      var t = temario_().filter(function (x) { return x.cursoId === r.cursoId && x.n === Number(cambios.n || r.n); })[0];
+      if (!t) return { ok: false, error: 'Tema no válido.' };
+      if (cambios.tipo && TIPOS_AVANCE.indexOf(cambios.tipo) < 0) return { ok: false, error: 'Tipo no válido.' };
+      var antes = r.n + '/' + r.tipo;
+      r.n = t.n; r.temaId = t.id; r.tema = t.tema; r.tipo = cambios.tipo || r.tipo;
+      if (cambios.observacion !== undefined) r.observacion = cambios.observacion;
+      r.estado = 'CORREGIDO'; r.revision = 'Corregido ' + sello_() + ' (antes: tema ' + antes + ')';
+    } else {
+      r.estado = 'VALIDADO'; r.revision = 'Validado ' + sello_();
+    }
+    sh.getRange(r._fila, 1, 1, ESQUEMAS.Leccionario.length).setValues([filaDe_(HOJAS.LECCIONARIO, r)]);
+    return { ok: true };
+  });
+}
+
+function getCalendario(pin) {
+  validarPin_(pin);
+  return { semanas: calendario_().map(function (c) { delete c._fila; return c; }), hoy: hoy_() };
+}
+
 /* ============================ API: Fotochecks en Drive ============================ */
 
 /**
@@ -1061,6 +1949,11 @@ function setup() {
   if (doc.getLastRow() < 2) doc.getRange(2, 1, SEED_DOCENTES.length, SEED_DOCENTES[0].length).setValues(SEED_DOCENTES);
   var hor = hoja_(HOJAS.HORARIO);
   if (hor.getLastRow() < 2) hor.getRange(2, 1, SEED_HORARIO.length, SEED_HORARIO[0].length).setValues(SEED_HORARIO);
+  // Control académico: se cargan solo si las hojas están vacías (no se pisa lo editado por coordinación).
+  [[HOJAS.CURSOS, SEED_CURSOS], [HOJAS.TEMARIO, SEED_TEMARIO], [HOJAS.CALENDARIO, SEED_CALENDARIO]].forEach(function (par) {
+    var sh = hoja_(par[0]);
+    if (sh.getLastRow() < 2 && par[1].length) sh.getRange(2, 1, par[1].length, par[1][0].length).setValues(par[1]);
+  });
   var def = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1');
   if (def && def.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(def);
   var cambios = actualizarDatos_();
@@ -1185,6 +2078,22 @@ var __HTML = {
     "  .cuenta { margin-top: 18px; font-size: 13px; color: var(--texto-2); }",
     "",
     "  .pie { text-align: center; font-size: 12px; color: var(--gris); margin-top: 26px; }",
+    "",
+    "  /* ---------- Registro de tema (control académico) ---------- */",
+    "  .temas-box { text-align: left; margin: 20px auto 0; max-width: 560px; }",
+    "  .temas-box h3 { font-family: 'Cantata One', serif; font-size: 20px; text-align: center; }",
+    "  .temas-box .sub { text-align: center; color: var(--texto-2); font-size: 14px; margin: 4px 0 12px; }",
+    "  .tema-card { background: var(--fondo); border: 2px solid var(--borde); border-radius: 14px; padding: 14px; margin-top: 12px; }",
+    "  .tema-card .cab { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }",
+    "  .tema-card .cab b { font-size: 16px; }",
+    "  .tema-card select { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border: 2px solid var(--borde); background: var(--blanco); font-size: 15px; font-weight: 600; }",
+    "  .tema-card select:focus { border-color: var(--rojo); outline: none; }",
+    "  .tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }",
+    "  .tipo { border: 2px solid var(--borde); background: var(--blanco); border-radius: 12px; padding: 10px 8px; font-weight: 700; font-size: 13.5px; cursor: pointer; text-align: center; }",
+    "  .tipo.sel { border-color: var(--negro); background: var(--negro); color: var(--amarillo); }",
+    "  .tema-card input.obs { width: 100%; margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--borde); }",
+    "  .pendiente-banner { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 14px 16px; border-radius: 14px;",
+    "    background: var(--amarillo-suave); color: #5d4300; margin-top: 12px; border: 1px solid #ecd9a6; font-weight: 600; }",
     "  .pie a { color: var(--gris); }",
     "  @media (max-width: 560px) {",
     "    .bienvenida h1 { font-size: 24px; }",
@@ -1235,6 +2144,7 @@ var __HTML = {
     "        </div>",
     "      </div>",
     "",
+    "      <div id=\"pendientes-tema\"></div>",
     "      <div class=\"h-seccion\" id=\"titulo-clases\">Tus salones de hoy</div>",
     "      <div class=\"clases\" id=\"lista-propias\"></div>",
     "",
@@ -1271,6 +2181,7 @@ var __HTML = {
     "        <div id=\"listo-estado\"></div>",
     "        <div class=\"metricas oculto\" id=\"listo-metricas\"></div>",
     "        <div class=\"lista-clases\" id=\"listo-clases\"></div>",
+    "        <div id=\"listo-temas\"></div>",
     "        <div style=\"margin-top:22px\"><button class=\"btn btn-negro\" id=\"btn-listo\" type=\"button\" style=\"min-width:200px\">Listo</button></div>",
     "        <div class=\"cuenta\" id=\"cuenta\"></div>",
     "      </div>",
@@ -1341,7 +2252,7 @@ var __HTML = {
     "    var dni = extraerDni($('dni').value) || $('dni').value.replace(/\\D/g, '');",
     "    if (dni.length !== 8 && dni.length !== 9) { error('error-dni', 'Escribe tu DNI (8 dígitos) o tu celular (9 dígitos).'); return; }",
     "    var ok = document.querySelector('.tecla.ok'); ok.disabled = true; ok.innerHTML = '<span class=\"spinner\"></span>';",
-    "    api('buscarDocente', dni).then(function (r) {",
+    "    api('buscarDocenteConTemas', dni).then(function (r) {",
     "      if (!r.ok) { error('error-dni', r.error); return; }",
     "      estado.docente = r; pintarDocente();",
     "    }).catch(function (e) { error('error-dni', 'Sin conexión con el servidor. Intenta de nuevo. (' + e.message + ')'); })",
@@ -1398,6 +2309,13 @@ var __HTML = {
     "    $('lista-reemplazos').classList.toggle('oculto', !abrir);",
     "    $('btn-reemplazo').classList.toggle('abierto', abrir);",
     "",
+    "    var pend = d.pendientesTema || [];",
+    "    $('pendientes-tema').innerHTML = pend.length && !ab ? '<div class=\"pendiente-banner\"><span>📚 Tienes ' + pend.length + ' clase(s) de hoy sin tema registrado</span>' +",
+    "      '<button class=\"btn btn-negro\" id=\"btn-reg-pend\" type=\"button\" style=\"padding:10px 14px\">Registrar ahora</button></div><div id=\"form-pend\"></div>' : '';",
+    "    if (pend.length && !ab) $('btn-reg-pend').addEventListener('click', function () {",
+    "      this.parentNode.classList.add('oculto');",
+    "      formTemas($('form-pend'), pend, function () { setTimeout(function () { $('pendientes-tema').innerHTML = ''; }, 2500); });",
+    "    });",
     "    estado.obs = ''; $('obs-detalle').value = ''; pintarObs();",
     "    error('error-marca');",
     "    var btn = $('btn-marcar');",
@@ -1481,9 +2399,62 @@ var __HTML = {
     "      return '<div><b>' + esc(b.salon) + '</b><span class=\"muted\">' + esc(b.curso) + ' · ' + esc(b.inicio) + '–' + esc(b.fin) + '</span></div>';",
     "    }).join('');",
     "    mostrar('paso-listo');",
-    "    var s = 10; $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s';",
+    "    $('listo-temas').innerHTML = '';",
+    "    if (r.temas && r.temas.length) {",
+    "      clearInterval(estado.timer); $('cuenta').textContent = '';",
+    "      formTemas($('listo-temas'), r.temas, function () { cuentaRegresiva(8); });",
+    "    } else {",
+    "      cuentaRegresiva(10);",
+    "    }",
+    "  }",
+    "  function cuentaRegresiva(s) {",
+    "    $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s';",
     "    clearInterval(estado.timer);",
     "    estado.timer = setInterval(function () { s--; $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s'; if (s <= 0) reiniciar(); }, 1000);",
+    "  }",
+    "",
+    "  /* ---------- Registro del tema dictado (control académico) ---------- */",
+    "  var TIPOS = [['COMPLETADO', '✅ Completé el tema'], ['PARCIAL', '⏳ Avance parcial'], ['REPASO', '🔁 Repaso'], ['EVALUACION', '📝 Práctica / evaluación']];",
+    "  function formTemas(cont, items, alTerminar) {",
+    "    var dni = estado.docente ? estado.docente.dni : '';",
+    "    cont.innerHTML = '<div class=\"temas-box\"><h3>📚 ¿Qué tema dictaste?</h3><div class=\"sub\">Confirma el tema de cada curso. Ya viene propuesto el que corresponde.</div>' +",
+    "      items.map(function (it, i) {",
+    "        return '<div class=\"tema-card\" data-i=\"' + i + '\"><div class=\"cab\"><b>' + esc(it.curso) + '</b><span class=\"muted\" style=\"font-size:13px\">' + esc(it.salon) +",
+    "          (it.esperado ? ' · semana ' + it.esperado + ' del calendario' : '') + '</span></div>' +",
+    "          '<select class=\"sel-tema\">' + it.temas.map(function (t) {",
+    "            return '<option value=\"' + t.n + '\"' + (t.n === it.sugerido ? ' selected' : '') + '>' + t.n + ' · ' + esc(t.tema) +",
+    "              (t.completado ? '  ✓' : t.parcial ? '  (parcial)' : '') + '  (Bol. ' + esc(t.boletin) + ')</option>';",
+    "          }).join('') + '</select>' +",
+    "          '<div class=\"tipos\">' + TIPOS.map(function (x, k) { return '<button type=\"button\" class=\"tipo' + (k ? '' : ' sel') + '\" data-t=\"' + x[0] + '\">' + x[1] + '</button>'; }).join('') + '</div>' +",
+    "          '<input class=\"obs\" maxlength=\"200\" placeholder=\"Observación (opcional): ej. faltó tiempo para la práctica\"></div>';",
+    "      }).join('') +",
+    "      '<div class=\"alerta oculto\" id=\"err-temas\"></div>' +",
+    "      '<div style=\"display:flex;gap:10px;margin-top:14px;flex-wrap:wrap\"><button class=\"btn btn-rojo\" id=\"btn-guardar-temas\" type=\"button\" style=\"flex:1;min-width:180px\">Guardar tema' + (items.length > 1 ? 's' : '') + '</button>' +",
+    "      '<button class=\"btn btn-claro\" id=\"btn-omitir-temas\" type=\"button\">Más tarde</button></div></div>';",
+    "    cont.querySelectorAll('.tipos').forEach(function (g) {",
+    "      g.addEventListener('click', function (e) {",
+    "        var b = e.target.closest('[data-t]'); if (!b) return;",
+    "        g.querySelectorAll('.tipo').forEach(function (x) { x.classList.toggle('sel', x === b); });",
+    "      });",
+    "    });",
+    "    $('btn-omitir-temas').addEventListener('click', function () { cont.innerHTML = '<div class=\"muted\" style=\"margin-top:14px\">Puedes registrarlo después, al volver a ingresar tu DNI.</div>'; alTerminar(); });",
+    "    $('btn-guardar-temas').addEventListener('click', function () {",
+    "      var btn = this, porMarc = {};",
+    "      cont.querySelectorAll('.tema-card').forEach(function (c) {",
+    "        var it = items[+c.getAttribute('data-i')];",
+    "        (porMarc[it.marcacion] = porMarc[it.marcacion] || []).push({",
+    "          cursoId: it.cursoId, salon: it.salon, bloques: it.bloques, n: +c.querySelector('.sel-tema').value,",
+    "          tipo: c.querySelector('.tipo.sel').getAttribute('data-t'), observacion: c.querySelector('.obs').value",
+    "        });",
+    "      });",
+    "      btn.disabled = true; btn.innerHTML = '<span class=\"spinner\"></span> Guardando…';",
+    "      Promise.all(Object.keys(porMarc).map(function (m) { return api('registrarTemas', dni, m, porMarc[m]); })).then(function (rs) {",
+    "        var mal = rs.filter(function (x) { return !x.ok; })[0];",
+    "        if (mal) { error('err-temas', mal.error); btn.disabled = false; btn.textContent = 'Reintentar'; return; }",
+    "        cont.innerHTML = '<div class=\"chip ok\" style=\"margin-top:16px;font-size:15px;padding:10px 14px\"><span class=\"punto\"></span>Tema' + (items.length > 1 ? 's' : '') + ' registrado' + (items.length > 1 ? 's' : '') + '. ¡Gracias!</div>';",
+    "        alTerminar();",
+    "      }).catch(function (e) { error('err-temas', 'No se pudo guardar: ' + e.message); btn.disabled = false; btn.textContent = 'Reintentar'; });",
+    "    });",
     "  }",
     "  $('btn-listo').addEventListener('click', reiniciar);",
     "",
@@ -1652,6 +2623,37 @@ var __HTML = {
     "  .form-grid .ayuda { font-weight: 500; font-size: 12px; color: var(--gris); }",
     "  .req { color: var(--rojo); }",
     "",
+    "  /* ---------- Académico ---------- */",
+    "  .ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }",
+    "  .ac-card { padding: 14px 16px; cursor: pointer; border-left: 6px solid var(--gris); }",
+    "  .ac-card:hover { border-color: var(--amarillo); }",
+    "  .ac-card.VERDE { border-left-color: #2e8b4e; } .ac-card.AMBAR { border-left-color: var(--amarillo); } .ac-card.ROJO { border-left-color: var(--rojo); }",
+    "  .ac-card .top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }",
+    "  .ac-card .n { font-weight: 800; font-size: 16px; }",
+    "  .ac-card .d { font-size: 12.5px; color: var(--texto-2); }",
+    "  .ac-card .linea { font-size: 13px; margin-top: 4px; overflow-wrap: anywhere; }",
+    "  .barra32 { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; margin: 10px 0 6px; position: relative; }",
+    "  .barra32 span { height: 12px; border-radius: 2px; background: #e4ddd2; }",
+    "  .barra32 span.c { background: #2e8b4e; } .barra32 span.p { background: var(--amarillo); }",
+    "  .barra32 span.esp { box-shadow: 2px 0 0 0 var(--rojo); }",
+    "  .barra32 span.bol { margin-left: 3px; }",
+    "  .sem { font-size: 12px; font-weight: 800; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }",
+    "  .sem.VERDE { background: var(--ok-suave); color: var(--ok); } .sem.AMBAR { background: var(--warn-suave); color: var(--warn); } .sem.ROJO { background: var(--rojo-suave); color: var(--rojo); }",
+    "  .alerta-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid var(--gris-suave); font-size: 14px; }",
+    "  .alerta-item:last-child { border-bottom: 0; }",
+    "  .temas-lista .bolh { font-size: 12px; font-weight: 800; color: var(--rojo); text-transform: uppercase; letter-spacing: .05em; margin: 14px 0 6px; }",
+    "  .tema-fila { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--blanco); border: 1px solid var(--borde); margin-bottom: 6px; }",
+    "  .tema-fila .num { font-weight: 800; text-align: center; border-radius: 8px; padding: 4px 0; background: var(--gris-suave); }",
+    "  .tema-fila.COMPLETADO .num { background: #2e8b4e; color: #fff; } .tema-fila.PARCIAL .num { background: var(--amarillo); }",
+    "  .tema-fila .t { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }",
+    "  .tema-fila .t.conf { color: var(--warn); }",
+    "  .tema-fila .r { font-size: 11.5px; color: var(--texto-2); }",
+    "  .tema-fila input { width: 100%; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--rojo); font-size: 14px; }",
+    "  .mini { border: 0; background: none; cursor: pointer; font-size: 16px; padding: 4px 6px; border-radius: 8px; }",
+    "  .mini:hover { background: var(--gris-suave); }",
+    "  tr.sem-actual td { background: var(--amarillo-suave); font-weight: 700; }",
+    "  @media (max-width: 760px) { .ac-grid { grid-template-columns: minmax(0, 1fr); } .barra32 span { height: 10px; } }",
+    "",
     "  /* ---------- Fotochecks ---------- */",
     "  .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }",
     "  .fotocheck { background: var(--blanco); border-radius: 14px; overflow: hidden; border: 1px solid var(--borde); text-align: center; break-inside: avoid; }",
@@ -1687,8 +2689,8 @@ var __HTML = {
     "    body { padding-bottom: 76px; }",
     "    .contenedor { padding: 16px 12px 28px; }",
     "    /* Navegación inferior fija estilo app */",
-    "    .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; border: 0; border-top: 3px solid var(--amarillo); background: var(--negro); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }",
-    "    .tab { flex-direction: column; gap: 2px; padding: 6px 1px; font-size: 10.5px; color: #cfc8bd; border-radius: 10px; }",
+    "    .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; border: 0; border-top: 3px solid var(--amarillo); background: var(--negro); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }",
+    "    .tab { flex-direction: column; gap: 2px; padding: 6px 0; font-size: 9.5px; letter-spacing: -.01em; color: #cfc8bd; border-radius: 10px; }",
     "    .tab .ico { font-size: 20px; }",
     "    .tab.activo { background: #262626; color: var(--amarillo); }",
     "    .tab .txt-largo { display: none; }",
@@ -1753,6 +2755,7 @@ var __HTML = {
     "          <button class=\"tab\" data-tab=\"marcar\" type=\"button\"><span class=\"ico\">✍️</span><span>Marcar<span class=\"txt-largo\"> asistencia</span></span></button>",
     "          <button class=\"tab\" data-tab=\"horario\" type=\"button\"><span class=\"ico\">🗓️</span><span>Horario</span></button>",
     "          <button class=\"tab\" data-tab=\"docentes\" type=\"button\"><span class=\"ico\">👥</span><span>Docentes</span></button>",
+    "          <button class=\"tab\" data-tab=\"academico\" type=\"button\"><span class=\"ico\">📚</span><span>Académico</span></button>",
     "          <button class=\"tab\" data-tab=\"reporte\" type=\"button\"><span class=\"ico\">📊</span><span>Reporte</span></button>",
     "          <button class=\"tab\" data-tab=\"qr\" type=\"button\"><span class=\"ico\">🪪</span><span>QR<span class=\"txt-largo\"> fotochecks</span></span></button>",
     "        </nav>",
@@ -1846,6 +2849,40 @@ var __HTML = {
     "        </div>",
     "        <div class=\"doc-grid\" id=\"d-grid\"></div>",
     "        <p class=\"muted\" style=\"font-size:13px;margin-top:14px\">Los docentes <b>inactivos</b> no pueden marcar asistencia ni aparecen para asignar en el horario. Sus registros pasados se conservan.</p>",
+    "      </div>",
+    "",
+    "      <!-- ===================== ACADÉMICO ===================== -->",
+    "      <div id=\"t-academico\" class=\"oculto\">",
+    "        <div class=\"seccion-t\" style=\"margin-top:0\">",
+    "          <h2>Control académico · Anual Integral</h2>",
+    "          <span id=\"ac-semana\"></span>",
+    "        </div>",
+    "        <div class=\"barra\">",
+    "          <div class=\"seg\" id=\"ac-vista\"><button type=\"button\" class=\"sel\" data-v=\"avance\">Avance</button><button type=\"button\" data-v=\"lecc\">Leccionario</button><button type=\"button\" data-v=\"cal\">Calendario</button></div>",
+    "          <span class=\"muted\" id=\"ac-msg\"></span>",
+    "        </div>",
+    "        <div id=\"ac-avance\">",
+    "          <div class=\"kpis\" id=\"ac-kpis\"></div>",
+    "          <div id=\"ac-alertas\"></div>",
+    "          <div class=\"seccion-t\"><h2>Avance por curso</h2>",
+    "            <div class=\"leyenda\"><span><i style=\"background:#2e8b4e\"></i>Completado</span><span><i style=\"background:var(--amarillo)\"></i>Parcial</span><span><i style=\"background:#e4ddd2\"></i>Pendiente</span><span><i style=\"background:var(--rojo);width:3px\"></i>Debería ir aquí</span></div>",
+    "          </div>",
+    "          <div class=\"ac-grid\" id=\"ac-cursos\"></div>",
+    "        </div>",
+    "        <div id=\"ac-lecc\" class=\"oculto\">",
+    "          <div class=\"barra\">",
+    "            <div class=\"controles\">",
+    "              <select id=\"lc-curso\" class=\"campo\"><option value=\"\">Todos los cursos</option></select>",
+    "              <input type=\"date\" id=\"lc-desde\" class=\"campo\"><input type=\"date\" id=\"lc-hasta\" class=\"campo\">",
+    "            </div>",
+    "            <button class=\"btn btn-rojo btn-s\" id=\"lc-nuevo\" type=\"button\">＋ Registrar tema</button>",
+    "          </div>",
+    "          <div class=\"tarjeta tabla-scroll\"><table id=\"lc-tabla\" class=\"tabla-resp\"></table></div>",
+    "        </div>",
+    "        <div id=\"ac-cal\" class=\"oculto\">",
+    "          <p class=\"muted\" style=\"font-size:14px;margin-top:0\">1 tema por semana de clase. Las semanas de exámenes y vacaciones no cuentan para el avance esperado. Se edita en la hoja “Calendario”.</p>",
+    "          <div class=\"tarjeta tabla-scroll\"><table id=\"cal-tabla\" class=\"tabla-resp\"></table></div>",
+    "        </div>",
     "      </div>",
     "",
     "      <!-- ===================== REPORTE ===================== -->",
@@ -1945,12 +2982,13 @@ var __HTML = {
     "    var b = e.target.closest('[data-tab]'); if (!b) return;",
     "    var t = b.getAttribute('data-tab');",
     "    document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('activo', x === b); });",
-    "    ['hoy', 'marcar', 'horario', 'docentes', 'reporte', 'qr'].forEach(function (x) { $('t-' + x).classList.toggle('oculto', x !== t); });",
+    "    ['hoy', 'marcar', 'horario', 'docentes', 'academico', 'reporte', 'qr'].forEach(function (x) { $('t-' + x).classList.toggle('oculto', x !== t); });",
     "    window.scrollTo(0, 0);",
     "    if (t === 'hoy') cargarHoy();",
     "    if (t === 'marcar') cargarCoord();",
     "    if (t === 'horario') cargarHorario();",
     "    if (t === 'docentes') cargarDocentes();",
+    "    if (t === 'academico') cargarAcademico();",
     "    if (t === 'reporte') cargarReporte();",
     "    if (t === 'qr') cargarQR();",
     "  });",
@@ -2291,6 +3329,191 @@ var __HTML = {
     "        toast('✅ ' + (r.nuevo ? 'Docente agregado: ' : 'Datos guardados: ') + esc(r.docente.docente) + (r.renombrados ? ' · ' + r.renombrados + ' bloque(s) del horario actualizados' : ''));",
     "        cargarDocentes();",
     "      }).catch(function (e) { btn.disabled = false; $('g-err').textContent = e.message; $('g-err').classList.remove('oculto'); });",
+    "    });",
+    "  }",
+    "",
+    "  /* ===================== ACADÉMICO ===================== */",
+    "  var TIPOS_AV = { COMPLETADO: '✅ Completado', PARCIAL: '⏳ Parcial', REPASO: '🔁 Repaso', EVALUACION: '📝 Práctica/Evaluación' };",
+    "  var SEM_TXT = { VERDE: 'Al día', AMBAR: '1 tema de atraso', ROJO: 'Atrasado' };",
+    "  S.acVista = 'avance'; S.ac = null;",
+    "  $('ac-vista').addEventListener('click', function (e) {",
+    "    var b = e.target.closest('[data-v]'); if (!b) return;",
+    "    S.acVista = b.getAttribute('data-v');",
+    "    this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('sel', x === b); });",
+    "    ['avance', 'lecc', 'cal'].forEach(function (v) { $('ac-' + v).classList.toggle('oculto', v !== S.acVista); });",
+    "    if (S.acVista === 'lecc') cargarLeccionario();",
+    "    if (S.acVista === 'cal') cargarCalendario();",
+    "  });",
+    "  function cargarAcademico() {",
+    "    if (!S.ac) $('ac-cursos').innerHTML = '<div class=\"muted\">Cargando…</div>';",
+    "    api('getAcademico', S.pin).then(function (r) { S.ac = r; pintarAcademico(r); })",
+    "      .catch(function (e) { $('ac-cursos').innerHTML = '<div class=\"alerta\">' + esc(e.message) + '</div>'; });",
+    "    if (S.acVista === 'lecc') cargarLeccionario();",
+    "  }",
+    "  function barra32(c, esperado) {",
+    "    var h = '';",
+    "    for (var n = 1; n <= c.total; n++) {",
+    "      var cl = c.completados.indexOf(n) >= 0 ? 'c' : c.parciales.indexOf(n) >= 0 ? 'p' : '';",
+    "      if (n === esperado) cl += ' esp';",
+    "      h += '<span class=\"' + cl + '\" title=\"Tema ' + n + '\"></span>';",
+    "    }",
+    "    return '<div class=\"barra32\">' + h + '</div>';",
+    "  }",
+    "  function pintarAcademico(r) {",
+    "    var sm = r.semana;",
+    "    $('ac-semana').innerHTML = sm ? (sm.tipo === 'CLASE'",
+    "      ? '<span class=\"chip oscuro\">Semana ' + esc(sm.nSemana) + ' de 32 · Boletín ' + esc(sm.boletin) + ' · Bimestre ' + esc(sm.bimestre) + '</span>'",
+    "      : '<span class=\"chip warn\">' + esc(sm.descripcion || sm.tipo) + ' · no avanza tema</span>') : '';",
+    "    var k = r.kpi;",
+    "    $('ac-kpis').innerHTML = kpi('Cobertura promedio', k.cobertura + '%', '', 'destacado', k.cobertura) +",
+    "      kpi('Cursos al día', k.verde, 'de ' + k.cursos) + kpi('1 tema de atraso', k.ambar, '', k.ambar ? 'alerta-k' : '') +",
+    "      kpi('Atrasados (2+)', k.rojo, '', k.rojo ? 'alerta-k' : '') + kpi('Clases sin tema', k.sinTema, '', k.sinTema ? 'alerta-k' : '') +",
+    "      kpi('Temas por confirmar', k.porConfirmar, '', '');",
+    "    var al = r.alertas.slice(0, 12);",
+    "    $('ac-alertas').innerHTML = al.length ? '<div class=\"seccion-t\"><h2>⚠️ Alertas</h2><span class=\"muted\">' + r.alertas.length + ' en total</span></div><div class=\"tarjeta\">' + al.map(function (a) {",
+    "      return '<div class=\"alerta-item\"><span>' + (a.nivel === 'ROJO' ? '🔴' : '🟡') + '</span><span style=\"flex:1\">' + esc(a.texto) + '</span>' +",
+    "        (a.tipo === 'SIN_TEMA' ? '<button class=\"btn btn-claro btn-s\" data-sin=\"' + esc(a.cursoId) + '|' + esc(a.fecha) + '|' + esc(a.marcacion) + '|' + esc(a.docente) + '\" type=\"button\" style=\"padding:6px 10px\">Registrar</button>' : '') + '</div>';",
+    "    }).join('') + '</div>' : '';",
+    "    $('ac-cursos').innerHTML = r.cursos.map(function (c) {",
+    "      return '<div class=\"tarjeta ac-card ' + c.semaforo + '\" data-curso=\"' + esc(c.id) + '\"><div class=\"top\"><div><div class=\"n\">' + esc(c.curso) + '</div>' +",
+    "        '<div class=\"d\">' + esc(c.docentes.join(', ') || 'Sin docente en el horario') + '</div></div><span class=\"sem ' + c.semaforo + '\">' + SEM_TXT[c.semaforo] + '</span></div>' +",
+    "        barra32(c, r.esperado.completados) +",
+    "        '<div class=\"linea\">✅ <b>Va en el tema ' + c.ultimoContinuo + '</b>' + (c.ultimoTema ? ' · ' + esc(c.ultimoTema.tema) : '') + '</div>' +",
+    "        (c.siguienteTema ? '<div class=\"linea muted\">➡ Sigue: ' + c.siguienteTema.n + ' · ' + esc(c.siguienteTema.tema) + '</div>' : '<div class=\"linea\">🎉 Currícula completa</div>') +",
+    "        '<div class=\"d\" style=\"margin-top:6px\">Cobertura ' + c.cobertura + '% · debería ir en el ' + r.esperado.completados + (c.porConfirmar ? ' · ⚠ ' + c.porConfirmar + ' tema(s) por confirmar' : '') + '</div></div>';",
+    "    }).join('');",
+    "  }",
+    "  $('ac-cursos').addEventListener('click', function (e) { var c = e.target.closest('[data-curso]'); if (c) abrirCurso(c.getAttribute('data-curso')); });",
+    "  $('ac-alertas').addEventListener('click', function (e) {",
+    "    var b = e.target.closest('[data-sin]'); if (!b) return;",
+    "    var p = b.getAttribute('data-sin').split('|');",
+    "    formRegistroCoord({ cursoId: p[0], fecha: p[1], marcacion: p[2], docente: p[3] });",
+    "  });",
+    "",
+    "  function abrirCurso(id) {",
+    "    abrirModal('Cargando…', '<div class=\"muted\">Cargando…</div>');",
+    "    api('getCursoDetalle', S.pin, id).then(function (c) {",
+    "      $('modal-titulo').textContent = c.curso + ' · ' + c.salon;",
+    "      var porBol = {};",
+    "      c.temas.forEach(function (t) { (porBol[t.boletin] = porBol[t.boletin] || []).push(t); });",
+    "      $('modal-cuerpo').innerHTML =",
+    "        '<div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between\"><span class=\"sem ' + c.semaforo + '\">' + SEM_TXT[c.semaforo] +",
+    "        (c.atraso ? ' · ' + c.atraso + ' tema(s)' : '') + '</span><span class=\"muted\" style=\"font-size:13px\">Cobertura ' + c.cobertura + '% · debería ir en el tema ' + c.esperado + '</span></div>' +",
+    "        barra32(c, c.esperado) +",
+    "        '<div class=\"hora-coord\" style=\"margin-top:12px\"><div style=\"flex:1;min-width:200px\"><div style=\"font-weight:800\">Avance inicial</div><div class=\"muted\" style=\"font-size:13px\">Temas que ya estaban completos antes de usar el sistema (línea base). Ajústalo si el curso iba atrasado.</div></div>' +",
+    "        '<input type=\"number\" min=\"0\" max=\"32\" id=\"cd-base\" value=\"' + c.avanceInicial + '\" style=\"width:90px\"><button class=\"btn btn-negro btn-s\" id=\"cd-base-ok\" type=\"button\">Guardar</button></div>' +",
+    "        '<div class=\"temas-lista\">' + Object.keys(porBol).sort(function (a, b) { return a - b; }).map(function (b) {",
+    "          return '<div class=\"bolh\">Boletín ' + b + '</div>' + porBol[b].map(function (t) {",
+    "            var reg = t.registros.length ? t.registros.map(function (r) { return r.fecha + ' ' + (TIPOS_AV[r.tipo] || r.tipo) + ' (' + r.docente + ')'; }).join(' · ') : (t.estado === 'COMPLETADO' ? 'Completado antes del sistema' : '');",
+    "            return '<div class=\"tema-fila ' + t.estado + '\" data-tema=\"' + esc(t.id) + '\"><span class=\"num\">' + t.n + '</span><div><div class=\"t' + (t.estadoDato !== 'OK' ? ' conf' : '') + '\">' + esc(t.tema) +",
+    "              (t.estadoDato !== 'OK' ? ' <span class=\"chip warn\" style=\"font-size:11px;padding:2px 7px\">por confirmar</span>' : '') + '</div><div class=\"r\">' + esc(reg) + '</div></div>' +",
+    "              '<div style=\"white-space:nowrap\"><button class=\"mini\" data-edit=\"' + esc(t.id) + '\" title=\"Editar título\" type=\"button\">✏️</button><button class=\"mini\" data-reg=\"' + t.n + '\" title=\"Registrar como dictado\" type=\"button\">➕</button></div></div>';",
+    "          }).join('');",
+    "        }).join('') + '</div>';",
+    "      $('cd-base-ok').addEventListener('click', function () {",
+    "        api('guardarAvanceInicial', S.pin, c.id, $('cd-base').value).then(function (r) {",
+    "          if (!r.ok) return toast('Error: ' + esc(r.error));",
+    "          toast('✅ Avance inicial guardado'); cargarAcademico(); abrirCurso(c.id);",
+    "        });",
+    "      });",
+    "      $('modal-cuerpo').querySelector('.temas-lista').addEventListener('click', function (e) {",
+    "        var be = e.target.closest('[data-edit]'), br = e.target.closest('[data-reg]');",
+    "        if (br) return formRegistroCoord({ cursoId: c.id, n: +br.getAttribute('data-reg') });",
+    "        if (!be) return;",
+    "        var fila = be.closest('.tema-fila'), tdiv = fila.querySelector('.t'), actual = c.temas.filter(function (x) { return x.id === be.getAttribute('data-edit'); })[0];",
+    "        tdiv.innerHTML = '<input value=\"' + esc(actual.tema.indexOf('(por completar)') >= 0 ? '' : actual.tema) + '\" placeholder=\"Título del tema ' + actual.n + '\">';",
+    "        var inp = tdiv.querySelector('input'); inp.focus();",
+    "        var guardar = function () {",
+    "          if (!inp.value.trim() || inp.value.trim() === actual.tema) { abrirCurso(c.id); return; }",
+    "          api('guardarTituloTema', S.pin, actual.id, inp.value).then(function (r) {",
+    "            if (!r.ok) return toast('Error: ' + esc(r.error));",
+    "            toast('✅ Tema ' + actual.n + ' actualizado'); abrirCurso(c.id); cargarAcademico();",
+    "          });",
+    "        };",
+    "        inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') guardar(); if (ev.key === 'Escape') abrirCurso(c.id); });",
+    "        inp.addEventListener('blur', guardar);",
+    "      });",
+    "    }).catch(function (e) { $('modal-cuerpo').innerHTML = '<div class=\"alerta\">' + esc(e.message) + '</div>'; });",
+    "  }",
+    "",
+    "  function formRegistroCoord(pre) {",
+    "    var cursos = (S.ac && S.ac.cursos) || S.cursosAc || [];",
+    "    if (!cursos.length) { api('getLeccionario', S.pin, {}).then(function (r) { S.cursosAc = r.cursos; formRegistroCoord(pre); }).catch(function (e) { toast('Error: ' + esc(e.message)); }); return; }",
+    "    var hoy = horaLima(); var f = pre.fecha || (hoy.getFullYear() + '-' + ('0' + (hoy.getMonth() + 1)).slice(-2) + '-' + ('0' + hoy.getDate()).slice(-2));",
+    "    abrirModal('Registrar tema dictado', '<div class=\"form-grid\">' +",
+    "      '<label class=\"full\">Curso<select id=\"rc-curso\">' + cursos.map(function (c) { return '<option value=\"' + esc(c.id) + '\"' + (c.id === pre.cursoId ? ' selected' : '') + '>' + esc(c.curso) + '</option>'; }).join('') + '</select></label>' +",
+    "      '<label class=\"full\">Tema<select id=\"rc-tema\"></select></label>' +",
+    "      '<label>Fecha<input type=\"date\" id=\"rc-fecha\" value=\"' + esc(f) + '\"></label>' +",
+    "      '<label>Tipo de avance<select id=\"rc-tipo\">' + Object.keys(TIPOS_AV).map(function (t) { return '<option value=\"' + t + '\">' + TIPOS_AV[t] + '</option>'; }).join('') + '</select></label>' +",
+    "      '<label class=\"full\">Docente<input id=\"rc-doc\" value=\"' + esc(pre.docente || '') + '\" placeholder=\"Quién dictó la clase\"></label>' +",
+    "      '<label class=\"full\">Observación<input id=\"rc-obs\" placeholder=\"Opcional\"></label></div>' +",
+    "      '<div class=\"alerta oculto\" id=\"rc-err\"></div><div style=\"margin-top:16px\"><button class=\"btn btn-rojo btn-grande\" id=\"rc-ok\" type=\"button\">Registrar</button></div>' +",
+    "      '<div class=\"muted\" style=\"font-size:12px;text-align:center;margin-top:8px\">Queda registrado por “Coordinación” y validado.</div>');",
+    "    var cargarTemas = function () {",
+    "      $('rc-tema').innerHTML = '<option>Cargando…</option>';",
+    "      api('getCursoDetalle', S.pin, $('rc-curso').value).then(function (c) {",
+    "        var sel = pre.n && $('rc-curso').value === pre.cursoId ? pre.n : c.sugerido;",
+    "        $('rc-tema').innerHTML = c.temas.map(function (t) { return '<option value=\"' + t.n + '\"' + (t.n === sel ? ' selected' : '') + '>' + t.n + ' · ' + esc(t.tema) + (t.estado === 'COMPLETADO' ? ' ✓' : '') + '</option>'; }).join('');",
+    "      }).catch(function (e) { $('rc-err').textContent = e.message; $('rc-err').classList.remove('oculto'); });",
+    "    };",
+    "    $('rc-curso').addEventListener('change', cargarTemas); cargarTemas();",
+    "    $('rc-ok').addEventListener('click', function () {",
+    "      var b = this; b.disabled = true;",
+    "      api('coordRegistrarTema', S.pin, { cursoId: $('rc-curso').value, n: +$('rc-tema').value, fecha: $('rc-fecha').value, tipo: $('rc-tipo').value,",
+    "        observacion: $('rc-obs').value, docente: $('rc-doc').value, marcacion: pre.marcacion || '' }).then(function (r) {",
+    "        b.disabled = false;",
+    "        if (!r.ok) { $('rc-err').textContent = r.error; $('rc-err').classList.remove('oculto'); return; }",
+    "        cerrarModal(); toast('✅ Tema registrado'); cargarAcademico();",
+    "      }).catch(function (e) { b.disabled = false; $('rc-err').textContent = e.message; $('rc-err').classList.remove('oculto'); });",
+    "    });",
+    "  }",
+    "  $('lc-nuevo').addEventListener('click', function () { formRegistroCoord({}); });",
+    "",
+    "  ['lc-curso', 'lc-desde', 'lc-hasta'].forEach(function (id) { $(id).addEventListener('change', cargarLeccionario); });",
+    "  function cargarLeccionario() {",
+    "    $('lc-tabla').innerHTML = '<tbody><tr><td class=\"vacio-t\">Cargando…</td></tr></tbody>';",
+    "    api('getLeccionario', S.pin, { cursoId: $('lc-curso').value, desde: $('lc-desde').value, hasta: $('lc-hasta').value }).then(function (r) {",
+    "      if ($('lc-curso').options.length <= 1) $('lc-curso').innerHTML = '<option value=\"\">Todos los cursos</option>' + r.cursos.map(function (c) { return '<option value=\"' + esc(c.id) + '\">' + esc(c.curso) + '</option>'; }).join('');",
+    "      S.lecc = r.registros; S.cursosAc = r.cursos;",
+    "      if (!r.registros.length) { $('lc-tabla').innerHTML = '<tbody><tr><td class=\"vacio-t\">Aún no hay temas registrados con estos filtros.</td></tr></tbody>'; return; }",
+    "      var est = { REGISTRADO: '<span class=\"chip\">Por validar</span>', VALIDADO: '<span class=\"chip ok\">Validado</span>', CORREGIDO: '<span class=\"chip warn\">Corregido</span>' };",
+    "      $('lc-tabla').innerHTML = '<thead><tr><th>Fecha</th><th>Curso</th><th>Tema</th><th>Avance</th><th>Docente</th><th>Estado</th><th></th></tr></thead><tbody>' + r.registros.map(function (x) {",
+    "        return '<tr><td class=\"titulo\"><b>' + esc(x.fecha) + '</b></td><td data-l=\"Curso\">' + esc(x.curso) + '</td><td data-l=\"Tema\">' + x.n + ' · ' + esc(x.tema) +",
+    "          (x.observacion ? '<div class=\"muted\" style=\"font-size:12px\">' + esc(x.observacion) + '</div>' : '') + '</td><td data-l=\"Avance\">' + (TIPOS_AV[x.tipo] || esc(x.tipo)) + '</td>' +",
+    "          '<td data-l=\"Docente\">' + esc(x.docente) + '<div class=\"muted\" style=\"font-size:11px\">' + esc(x.registradoPor) + '</div></td><td data-l=\"Estado\">' + (est[x.estado] || esc(x.estado)) + '</td>' +",
+    "          '<td style=\"white-space:nowrap\">' + (x.estado === 'REGISTRADO' ? '<button class=\"mini\" data-val=\"' + esc(x.id) + '\" title=\"Validar\" type=\"button\">✔️</button>' : '') +",
+    "          '<button class=\"mini\" data-cor=\"' + esc(x.id) + '\" title=\"Corregir\" type=\"button\">✏️</button><button class=\"mini\" data-del=\"' + esc(x.id) + '\" title=\"Eliminar\" type=\"button\">🗑️</button></td></tr>';",
+    "      }).join('') + '</tbody>';",
+    "    }).catch(function (e) { $('lc-tabla').innerHTML = '<tbody><tr><td class=\"vacio-t\">' + esc(e.message) + '</td></tr></tbody>'; });",
+    "  }",
+    "  $('lc-tabla').addEventListener('click', function (e) {",
+    "    var v = e.target.closest('[data-val]'), c = e.target.closest('[data-cor]'), d = e.target.closest('[data-del]');",
+    "    var fin = function (r, msg) { if (!r.ok) return toast('Error: ' + esc(r.error)); toast(msg); cargarLeccionario(); cargarAcademico(); };",
+    "    if (v) api('revisarRegistro', S.pin, v.getAttribute('data-val'), 'VALIDAR').then(function (r) { fin(r, '✔️ Registro validado'); });",
+    "    if (d && confirm('¿Eliminar este registro del leccionario?')) api('revisarRegistro', S.pin, d.getAttribute('data-del'), 'ELIMINAR').then(function (r) { fin(r, '🗑️ Registro eliminado'); });",
+    "    if (c) {",
+    "      var x = S.lecc.filter(function (y) { return y.id === c.getAttribute('data-cor'); })[0];",
+    "      abrirModal('Corregir registro', '<div class=\"form-grid\"><label class=\"full\">Tema<select id=\"cr-tema\"><option>Cargando…</option></select></label>' +",
+    "        '<label class=\"full\">Tipo de avance<select id=\"cr-tipo\">' + Object.keys(TIPOS_AV).map(function (t) { return '<option value=\"' + t + '\"' + (t === x.tipo ? ' selected' : '') + '>' + TIPOS_AV[t] + '</option>'; }).join('') + '</select></label>' +",
+    "        '<label class=\"full\">Observación<input id=\"cr-obs\" value=\"' + esc(x.observacion) + '\"></label></div><div style=\"margin-top:16px\"><button class=\"btn btn-rojo btn-grande\" id=\"cr-ok\" type=\"button\">Guardar corrección</button></div>');",
+    "      api('getCursoDetalle', S.pin, x.cursoId).catch(function (e) { toast('Error: ' + esc(e.message)); return { temas: [] }; }).then(function (k) {",
+    "        $('cr-tema').innerHTML = k.temas.map(function (t) { return '<option value=\"' + t.n + '\"' + (t.n === x.n ? ' selected' : '') + '>' + t.n + ' · ' + esc(t.tema) + '</option>'; }).join('');",
+    "      });",
+    "      $('cr-ok').addEventListener('click', function () {",
+    "        api('revisarRegistro', S.pin, x.id, 'CORREGIR', { n: +$('cr-tema').value, tipo: $('cr-tipo').value, observacion: $('cr-obs').value }).then(function (r) { cerrarModal(); fin(r, '✏️ Registro corregido'); });",
+    "      });",
+    "    }",
+    "  });",
+    "",
+    "  function cargarCalendario() {",
+    "    api('getCalendario', S.pin).then(function (r) {",
+    "      var chip = { CLASE: 'ok', EXAMEN: 'warn', VACACIONES: 'rojo', CIERRE: 'oscuro' };",
+    "      $('cal-tabla').innerHTML = '<thead><tr><th>Semana</th><th>Tipo</th><th>Semana de clase</th><th>Boletín</th><th>Bimestre</th><th>Notas</th></tr></thead><tbody>' + r.semanas.map(function (s) {",
+    "        var actual = s.inicio <= r.hoy && r.hoy <= s.fin;",
+    "        return '<tr' + (actual ? ' class=\"sem-actual\"' : '') + '><td class=\"titulo\"><b>' + esc(s.inicio.slice(8) + '/' + s.inicio.slice(5, 7)) + ' – ' + esc(s.fin.slice(8) + '/' + s.fin.slice(5, 7)) + '</b>' + (actual ? ' ⬅ hoy' : '') + '</td>' +",
+    "          '<td data-l=\"Tipo\"><span class=\"chip ' + (chip[s.tipo] || '') + '\">' + esc(s.tipo) + '</span></td><td data-l=\"Semana\" class=\"num\">' + esc(s.nSemana || '—') + '</td>' +",
+    "          '<td data-l=\"Boletín\" class=\"num\">' + esc(s.boletin || '—') + '</td><td data-l=\"Bimestre\" class=\"num\">' + esc(s.bimestre) + '</td><td data-l=\"Notas\">' + esc(s.descripcion || '') + '</td></tr>';",
+    "      }).join('') + '</tbody>';",
     "    });",
     "  }",
     "",

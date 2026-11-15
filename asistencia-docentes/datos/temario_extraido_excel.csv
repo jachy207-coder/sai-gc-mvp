@@ -1,0 +1,284 @@
+curso,area,n_tema,boletin,tema,paginas,fuente
+Aritmética,Matemáticas,1,1,Problemas contextualizados en los que intervienen operaciones básicas,6,BOL7:fila 10
+Aritmética,Matemáticas,2,1,Razones I,6,BOL7:fila 11
+Aritmética,Matemáticas,3,1,Razones II,6,BOL7:fila 12
+Aritmética,Matemáticas,4,1,Razones III,6,BOL7:fila 13
+Aritmética,Matemáticas,5,2,Regla del tanto por ciento I,3,BOL7:fila 14
+Aritmética,Matemáticas,6,2,Regla del tanto por ciento II,3,BOL7:fila 15
+Aritmética,Matemáticas,7,2,Magnitudes proporcionales I,3,BOL7:fila 16
+Aritmética,Matemáticas,8,2,Magnitudes proporcionales II,3,BOL7:fila 17
+Aritmética,Matemáticas,21,6,Numeración III,5,BOL7:fila 238
+Aritmética,Matemáticas,22,6,Operaciones fundamentales I,5,BOL7:fila 239
+Aritmética,Matemáticas,23,6,Operaciones fundamentales II,5,BOL7:fila 240
+Aritmética,Matemáticas,24,6,Sucesiones I,5,BOL7:fila 241
+Aritmética,Matemáticas,25,7,Sucesiones II,5,BOL7:fila 438
+Aritmética,Matemáticas,26,7,Teoría de divisibilidad I,5,BOL7:fila 439
+Aritmética,Matemáticas,27,7,Teoría de divisibilidad II,5,BOL7:fila 440
+Aritmética,Matemáticas,28,7,Teoría de divisibilidad III,5,BOL7:fila 441
+Aritmética,Matemáticas,29,8,Números simples y compuestos I,5,BOL8:fila 238
+Aritmética,Matemáticas,30,8,Números simples y compuestos II,4,BOL8:fila 239
+Aritmética,Matemáticas,31,8,MCD y MCM I,5,BOL8:fila 240
+Aritmética,Matemáticas,32,8,MCD y MCM II,4,BOL8:fila 241
+Biología,Ciencias,1,1,Ser Vivo y método científico,14,BOL7:fila 501
+Biología,Ciencias,2,1,Bioquímica I: Glúcidos y lípidos,14,BOL7:fila 502
+Biología,Ciencias,3,1,Bioquímica II: Proteínas,22,BOL7:fila 503
+Biología,Ciencias,4,1,Bioquímica III: Ácidos nucleidos,14,BOL7:fila 504
+Biología,Ciencias,5,2,"Citología I: Teoría celular, pared celular y membrana plasmática",3,BOL7:fila 517
+Biología,Ciencias,6,2,Citología II: citoplasma,3,BOL7:fila 518
+Biología,Ciencias,7,2,Metabolismo celular eucariota I: fotosíntesis,4,BOL7:fila 519
+Biología,Ciencias,8,2,Metabolismo celular eucariota II: respiración celular,3,BOL7:fila 520
+Biología,Ciencias,21,6,Plantas III: Reproducción vegetal y Coordinación química vegetal,5,BOL7:fila 222
+Biología,Ciencias,22,6,Animales I: Taxonomía,5,BOL7:fila 223
+Biología,Ciencias,23,6,Animales II: Sistema digestivo animal,5,BOL7:fila 224
+Biología,Ciencias,24,6,Animales III: Circulación animal,5,BOL7:fila 225
+Biología,Ciencias,25,7,Animales IV: Respiración y Excreción animal,5,BOL7:fila 542
+Biología,Ciencias,26,7,Histología humana I,5,BOL7:fila 543
+Biología,Ciencias,27,7,Histología humana II,5,BOL7:fila 544
+Biología,Ciencias,28,7,Histología humana III,5,BOL7:fila 545
+Biología,Ciencias,29,8,Sistema digestivo humano,5,BOL8:fila 222
+Biología,Ciencias,30,8,Sistema cardiovascular humano,5,BOL8:fila 223
+Biología,Ciencias,31,8,Sistema respiratorio y excretor humano,5,BOL8:fila 224
+Biología,Ciencias,32,8,Sistema nervioso humano,5,BOL8:fila 225
+Economía,Letras,1,1,Ciencia económica y principios básicos,7,BOL7:fila 26
+Economía,Letras,2,1,División de la economía,8,BOL7:fila 27
+Economía,Letras,3,1,"Necesidades, Ingreso familiar y Pobreza",9,BOL7:fila 28
+Economía,Letras,4,1,Bienes servicios,9,BOL7:fila 29
+Economía,Letras,5,2,Proceso económico y Sectores productivos,4,BOL7:fila 38
+Economía,Letras,6,2,Teoría de la producción,5,BOL7:fila 39
+Economía,Letras,7,2,Costos de producción y Frontera de posibilidades de producción,5,BOL7:fila 40
+Economía,Letras,8,2,Naturaleza y Capital,5,BOL7:fila 41
+Economía,Letras,17,5,Dinero,5,BOL7:fila 74
+Economía,Letras,18,5,Inflación,5,BOL7:fila 75
+Economía,Letras,19,5,Sistema financiero,5,BOL7:fila 76
+Economía,Letras,20,5,Sistema bancario,5,BOL7:fila 77
+Economía,Letras,21,6,Sector público,5,BOL7:fila 78
+Economía,Letras,22,6,"Consumidores, productores y eficiencia de los mercados",4,BOL7:fila 79
+Economía,Letras,23,6,Sistema tributario,5,BOL7:fila 80
+Economía,Letras,24,6,Economía Informal,5,BOL7:fila 81
+Economía,Letras,29,8,Agregados e indicadores económicos,5,BOL8:fila 78
+Economía,Letras,30,8,"Ciclos económicos, Consumo, Distribución e Inversión",5,BOL8:fila 79
+Economía,Letras,31,8,Normas y Constitución Política,5,BOL8:fila 80
+Economía,Letras,32,8,Derechos,5,BOL8:fila 81
+Filosofía,Letras,1,1,Conceptos básicos,16,BOL7:fila 18
+Filosofía,Letras,2,1,Disciplinas filosóficas I,12,BOL7:fila 19
+Filosofía,Letras,3,1,Disciplinas filosóficas II,11,BOL7:fila 20
+Filosofía,Letras,4,1,Mito y filosofía,16,BOL7:fila 21
+Filosofía,Letras,5,2,Filosofía antigua I: periodo cosmológico,4,BOL7:fila 22
+Filosofía,Letras,6,2,Filosofía antigua II: periodo antropológico,4,BOL7:fila 23
+Filosofía,Letras,7,2,Filosofía antigua III: periodo ontológico - Platón,5,BOL7:fila 24
+Filosofía,Letras,8,2,Filosofía antigua IV: periodo ontológico - Aristóteles,4,BOL7:fila 25
+Filosofía,Letras,17,5,El idealismo alemán,6,BOL7:fila 30
+Filosofía,Letras,18,5,Marxismo,6,BOL7:fila 31
+Filosofía,Letras,19,5,Voluntarismo,6,BOL7:fila 32
+Filosofía,Letras,20,5,Existencialismo,6,BOL7:fila 33
+Filosofía,Letras,21,6,Filosofía analítica,5,BOL7:fila 34
+Filosofía,Letras,22,6,Teorías del reconocimiento,5,BOL7:fila 35
+Filosofía,Letras,23,6,Filosofía en el Perú I,5,BOL7:fila 36
+Filosofía,Letras,24,6,Filosofía en el Perú II,5,BOL7:fila 37
+Filosofía,Letras,29,8,Epistemología II: teorías epistemológicas,6,BOL8:fila 34
+Filosofía,Letras,30,8,Axiología: el valor,5,BOL8:fila 35
+Filosofía,Letras,31,8,La moral I,4,BOL8:fila 36
+Filosofía,Letras,32,8,Ética II Teorías éticas,5,BOL8:fila 37
+Física,Ciencias,1,1,Análiss Dimensional,13,BOL7:fila 42
+Física,Ciencias,2,1,Análisis Vectorial I,14,BOL7:fila 43
+Física,Ciencias,3,1,Análisis Vectorial II,10,BOL7:fila 44
+Física,Ciencias,4,1,Cinemática I,10,BOL7:fila 45
+Física,Ciencias,5,2,Cinemática II,3,BOL7:fila 46
+Física,Ciencias,6,2,Cinemática III,3,BOL7:fila 47
+Física,Ciencias,7,2,Cinemática IV,3,BOL7:fila 48
+Física,Ciencias,8,2,Cinemática V,4,BOL7:fila 49
+Física,Ciencias,21,6,Oscilaciones II,5,BOL7:fila 186
+Física,Ciencias,22,6,Ondas mecánicas I,7,BOL7:fila 187
+Física,Ciencias,23,6,Ondas mecánicas II,5,BOL7:fila 188
+Física,Ciencias,24,6,Hidrostática I,6,BOL7:fila 189
+Física,Ciencias,25,7,Hidrostática II,6,BOL7:fila 450
+Física,Ciencias,26,7,Fenómenos térmicos I,5,BOL7:fila 451
+Física,Ciencias,27,7,Fenómenos térmicos II,6,BOL7:fila 452
+Física,Ciencias,28,7,Electrostática I,5,BOL7:fila 453
+Física,Ciencias,29,8,Electrostática II,7,BOL8:fila 186
+Física,Ciencias,30,8,Electrostática III,6,BOL8:fila 187
+Física,Ciencias,31,8,Electrostática IV,7,BOL8:fila 188
+Física,Ciencias,32,8,Electrodinámica I,5,BOL8:fila 189
+Geografía,Letras,1,1,Ciencia geográfica,13,BOL7:fila 54
+Geografía,Letras,2,1,Movimiento de rotación terrestre,16,BOL7:fila 55
+Geografía,Letras,3,1,Hora internacional,11,BOL7:fila 56
+Geografía,Letras,4,1,Movimiento de traslación terrestre,10,BOL7:fila 57
+Geografía,Letras,5,2,Geodesia,4,BOL7:fila 82
+Geografía,Letras,6,2,Cartografía I,5,BOL7:fila 83
+Geografía,Letras,7,2,Cartografía II,4,BOL7:fila 84
+Geografía,Letras,8,2,Atmósfera,4,BOL7:fila 85
+Geografía,Letras,17,5,Geodinámica interna,6,BOL7:fila 106
+Geografía,Letras,18,5,Geodinámica externa,5,BOL7:fila 107
+Geografía,Letras,21,6,Relieve andino II,6,BOL7:fila 86
+Geografía,Letras,22,6,Relieve amazónico,8,BOL7:fila 87
+Geografía,Letras,23,6,Ecosistemas del Perú: 8 regiones,8,BOL7:fila 108
+Geografía,Letras,24,6,Recursos naturales y su problemática,6,BOL7:fila 109
+Geografía,Letras,29,8,Vertiente hidrográfica del Amazonas,5,BOL8:fila 86
+Geografía,Letras,30,8,Mar peruano,5,BOL8:fila 87
+Geografía,Letras,31,8,Fenómeno de El Niño,5,BOL8:fila 108
+Geografía,Letras,32,8,Actividades económicas I,5,BOL8:fila 109
+Geometría,Matemáticas,1,1,Segmentos y Triángulo rectángulo,8,BOL7:fila 90
+Geometría,Matemáticas,2,1,Ángulos,9,BOL7:fila 91
+Geometría,Matemáticas,3,1,Posiciones relativas entre dos rectas,8,BOL7:fila 92
+Geometría,Matemáticas,4,1,Triángulos,8,BOL7:fila 93
+Geometría,Matemáticas,5,2,Triángulos II,3,BOL7:fila 94
+Geometría,Matemáticas,6,2,Triángulos III,3,BOL7:fila 95
+Geometría,Matemáticas,7,2,Congruencia de triángulos,3,BOL7:fila 96
+Geometría,Matemáticas,8,2,Aplicaciones de la congruencia I,3,BOL7:fila 97
+Geometría,Matemáticas,21,6,Relaciones métricas en el triángulo rectángulo,5,BOL7:fila 246
+Geometría,Matemáticas,22,6,Relaciones métricas en triángulos oblicuángulos,5,BOL7:fila 247
+Geometría,Matemáticas,23,6,Áreas de regiones triangulares,5,BOL7:fila 248
+Geometría,Matemáticas,24,6,Razón de áreas de regiones triangulares,6,BOL7:fila 249
+Geometría,Matemáticas,25,7,Áreas de regiones cuadrangulares,5,BOL7:fila 442
+Geometría,Matemáticas,26,7,Razón de áreas de regiones cuadrangulares,6,BOL7:fila 443
+Geometría,Matemáticas,27,7,Áreas de regiones circulares,6,BOL7:fila 444
+Geometría,Matemáticas,28,7,Geometría del espacio I,6,BOL7:fila 445
+Geometría,Matemáticas,29,8,Geometría del espacio II,5,BOL8:fila 246
+Geometría,Matemáticas,30,8,Prisma,5,BOL8:fila 247
+Geometría,Matemáticas,31,8,Cilindro,5,BOL8:fila 248
+Geometría,Matemáticas,32,8,Pirámide,6,BOL8:fila 249
+Historia,Letras,1,1,La Historia y su periodización,11,BOL7:fila 98
+Historia,Letras,2,1,Comunidad primitiva en el mundo,20,BOL7:fila 99
+Historia,Letras,3,1,Comunidad primitiva en el Perú,16,BOL7:fila 100
+Historia,Letras,4,1,Mesopotamia,23,BOL7:fila 101
+Historia,Letras,5,2,Formativo,4,BOL7:fila 110
+Historia,Letras,6,2,Primer Desarrollo Regional,5,BOL7:fila 111
+Historia,Letras,7,2,Grecia,4,BOL7:fila 112
+Historia,Letras,8,2,Roma,4,BOL7:fila 113
+Historia,Letras,17,5,Virreinato I,5,BOL7:fila 126
+Historia,Letras,21,6,"Revolución francesa II, Restauración absolutista",5,BOL7:fila 114
+Historia,Letras,22,6,Juntas de gobierno y Rebeliones criollas,5,BOL7:fila 127
+Historia,Letras,23,6,Corrientes libertadoras,5,BOL7:fila 128
+Historia,Letras,24,6,Primer militarismo: República temprana,5,BOL7:fila 129
+Historia,Letras,29,8,República Aristocrática,5,BOL8:fila 114
+Historia,Letras,30,8,Primera Guerra Mundial,5,BOL8:fila 127
+Historia,Letras,31,8,Revolución rusa,5,BOL8:fila 128
+Historia,Letras,32,8,Oncenio y Tercer Militarismo,5,BOL8:fila 129
+Inglés,Letras,5,2,Present Simple II,1,BOL7:fila 130
+Inglés,Letras,6,2,Present Continuous,1,BOL7:fila 131
+Inglés,Letras,7,2,Present Continuos and Present Simple,1,BOL7:fila 132
+Inglés,Letras,8,2,Past Simple I,1,BOL7:fila 133
+Lenguaje,Letras,1,1,La comunicación,14,BOL7:fila 138
+Lenguaje,Letras,2,1,El lenguaje,15,BOL7:fila 139
+Lenguaje,Letras,3,1,Los planos del lenguaje,15,BOL7:fila 140
+Lenguaje,Letras,4,1,La realidad lingüística del Perú,13,BOL7:fila 141
+Lenguaje,Letras,5,2,El signo y el signo lingüístico,4,BOL7:fila 150
+Lenguaje,Letras,6,2,La semántica,4,BOL7:fila 151
+Lenguaje,Letras,7,2,Las relaciones semánticas,4,BOL7:fila 152
+Lenguaje,Letras,8,2,La fonología,4,BOL7:fila 153
+Lenguaje,Letras,21,6,El adjetivo,5,BOL7:fila 154
+Lenguaje,Letras,22,6,Los determinantes,5,BOL7:fila 155
+Lenguaje,Letras,23,6,El pronombre,5,BOL7:fila 156
+Lenguaje,Letras,24,6,El verbo: accidentes gramaticales,5,BOL7:fila 157
+Lenguaje,Letras,29,8,La preposición,5,BOL8:fila 154
+Lenguaje,Letras,30,8,La conjunción,5,BOL8:fila 155
+Lenguaje,Letras,31,8,La sintaxis,5,BOL8:fila 156
+Lenguaje,Letras,32,8,El sujeto,5,BOL8:fila 157
+Literatura,Letras,1,1,Conceptos básicos de literatura,8,BOL7:fila 509
+Literatura,Letras,2,1,Figuras literarias,10,BOL7:fila 510
+Literatura,Letras,3,1,Clasicismo griego I: Ilíada,8,BOL7:fila 511
+Literatura,Letras,4,1,Clasicismo griego II: Odisea,10,BOL7:fila 512
+Psicología,Letras,1,1,Orientación vocacional y proyecto vial,11,BOL7:fila 513
+Psicología,Letras,2,1,Psicología I,11,BOL7:fila 514
+Psicología,Letras,3,1,Psicología II,14,BOL7:fila 515
+Psicología,Letras,4,1,Bases biológicas del psiquismo I,16,BOL7:fila 516
+Química,Ciencias,1,1,Introdución a la Química,12,BOL7:fila 158
+Química,Ciencias,2,1,Materia,11,BOL7:fila 159
+Química,Ciencias,3,1,Estructura atómica I,12,BOL7:fila 160
+Química,Ciencias,4,1,Estructura atómica II,10,BOL7:fila 161
+Química,Ciencias,5,2,Estructura electrónica del átomo,5,BOL7:fila 162
+Química,Ciencias,6,2,Configuración electrónica,4,BOL7:fila 163
+Química,Ciencias,7,2,Tabla periódica moderna,4,BOL7:fila 164
+Química,Ciencias,8,2,Propiedades periódicas atómicas,4,BOL7:fila 165
+Química,Ciencias,21,6,Reacciones químicas I,7,BOL7:fila 202
+Química,Ciencias,22,6,Reacciones químicas II,6,BOL7:fila 203
+Química,Ciencias,23,6,Estequiometría I,6,BOL7:fila 204
+Química,Ciencias,24,6,Estequiometría II,5,BOL7:fila 205
+Química,Ciencias,25,7,Peso equivalente,5,BOL7:fila 454
+Química,Ciencias,26,7,Soluciones I,6,BOL7:fila 455
+Química,Ciencias,27,7,Soluciones II,6,BOL7:fila 456
+Química,Ciencias,28,7,Soluciones III,6,BOL7:fila 457
+Química,Ciencias,29,8,Cinética química,7,BOL8:fila 202
+Química,Ciencias,30,8,Equilibrio químico,6,BOL8:fila 203
+Química,Ciencias,31,8,Ácidos y bases I,6,BOL8:fila 204
+Química,Ciencias,32,8,Ácidos y bases II,5,BOL8:fila 205
+Razonamiento Matemático,Aptitud Académica,1,1,Fuerzas intermoleculares,8,BOL7:fila 174
+Razonamiento Matemático,Aptitud Académica,2,1,Elementos recreativos,10,BOL7:fila 175
+Razonamiento Matemático,Aptitud Académica,3,1,Situaciones lógicas I,8,BOL7:fila 176
+Razonamiento Matemático,Aptitud Académica,4,1,Situaciones lógicas II,8,BOL7:fila 177
+Razonamiento Matemático,Aptitud Académica,5,2,Situaciones lógicas III,4,BOL7:fila 178
+Razonamiento Matemático,Aptitud Académica,6,2,Situaciones logicas IV,4,BOL7:fila 179
+Razonamiento Matemático,Aptitud Académica,7,2,Lazos familiares,2,BOL7:fila 180
+Razonamiento Matemático,Aptitud Académica,8,2,Ordenamineto de informacion I,4,BOL7:fila 181
+Razonamiento Matemático,Aptitud Académica,21,6,Inductivo verbal,5,BOL7:fila 50
+Razonamiento Matemático,Aptitud Académica,22,6,Rutas y trayectorias,6,BOL7:fila 51
+Razonamiento Matemático,Aptitud Académica,23,6,Trazos de figuras,6,BOL7:fila 52
+Razonamiento Matemático,Aptitud Académica,24,6,Planteo de ecuaciones I,4,BOL7:fila 53
+Razonamiento Matemático,Aptitud Académica,25,7,Planteo de ecuaciones II,4,BOL7:fila 426
+Razonamiento Matemático,Aptitud Académica,26,7,Planteo de ecuaciones III,4,BOL7:fila 427
+Razonamiento Matemático,Aptitud Académica,27,7,Cronometría I,4,BOL7:fila 428
+Razonamiento Matemático,Aptitud Académica,28,7,Cronometría II,5,BOL7:fila 429
+Razonamiento Matemático,Aptitud Académica,29,8,Cronometría III,6,BOL8:fila 50
+Razonamiento Matemático,Aptitud Académica,30,8,Frecuencia de sucesos,4,BOL8:fila 51
+Razonamiento Matemático,Aptitud Académica,31,8,Conteo de figuras y Semejanza de figuras,6,BOL8:fila 52
+Razonamiento Matemático,Aptitud Académica,32,8,Áreas y perímetros de regiones planas,6,BOL8:fila 53
+Razonamiento Verbal,Aptitud Académica,1,1,Introducción al curso de Habilidad Verbal,9,BOL7:fila 190
+Razonamiento Verbal,Aptitud Académica,2,1,Naturaleza de la comprensión lectora,10,BOL7:fila 191
+Razonamiento Verbal,Aptitud Académica,3,1,Coherencia y jerarquía textual,10,BOL7:fila 192
+Razonamiento Verbal,Aptitud Académica,4,1,Cohesión textual I,11,BOL7:fila 193
+Razonamiento Verbal,Aptitud Académica,5,2,Cohesión textual II,6,BOL7:fila 194
+Razonamiento Verbal,Aptitud Académica,6,2,Primer taller de lectura,5,BOL7:fila 195
+Razonamiento Verbal,Aptitud Académica,7,2,Primera práctica de reforzamiento,4,BOL7:fila 196
+Razonamiento Verbal,Aptitud Académica,8,2,Método de lectura láser,4,BOL7:fila 197
+Razonamiento Verbal,Aptitud Académica,21,6,Cuarto taller de lectura,10,BOL7:fila 170
+Razonamiento Verbal,Aptitud Académica,22,6,Textos expositivos,8,BOL7:fila 171
+Razonamiento Verbal,Aptitud Académica,23,6,Textos discontinuos,10,BOL7:fila 172
+Razonamiento Verbal,Aptitud Académica,24,6,Textos con gráfico,9,BOL7:fila 173
+Razonamiento Verbal,Aptitud Académica,25,7,Textos argumentativos,8,BOL7:fila 430
+Razonamiento Verbal,Aptitud Académica,26,7,Textos dialécticos,9,BOL7:fila 431
+Razonamiento Verbal,Aptitud Académica,27,7,Quinto taller de lectura,9,BOL7:fila 432
+Razonamiento Verbal,Aptitud Académica,28,7,Textos según su estructura jerárquica,8,BOL7:fila 433
+Razonamiento Verbal,Aptitud Académica,29,8,Intención comunicativa y contexto,8,BOL8:fila 170
+Razonamiento Verbal,Aptitud Académica,30,8,Textos literarios,8,BOL8:fila 171
+Razonamiento Verbal,Aptitud Académica,31,8,Textos científicos,9,BOL8:fila 172
+Razonamiento Verbal,Aptitud Académica,32,8,Textos filosóficos,8,BOL8:fila 173
+Trigonometría,Matemáticas,1,1,Introducción a la trigonometría,5,BOL7:fila 206
+Trigonometría,Matemáticas,2,1,Sistemas de medidas angulares,4,BOL7:fila 207
+Trigonometría,Matemáticas,3,1,Conversión entre los sistemas de medidas angulares,4,BOL7:fila 208
+Trigonometría,Matemáticas,4,1,Longitud de arco,5,BOL7:fila 209
+Trigonometría,Matemáticas,5,2,Área de un sector circular,3,BOL7:fila 210
+Trigonometría,Matemáticas,6,2,Razones trigonométricas de un ángulo agudo en el triángulo rectángulo,3,BOL7:fila 211
+Trigonometría,Matemáticas,7,2,Razones trigonométricas de ángulos agudos notables,3,BOL7:fila 212
+Trigonometría,Matemáticas,8,2,Propiedades de las razones trigonométricas,2,BOL7:fila 213
+Trigonometría,Matemáticas,21,6,Identidades de ángulos compuestos III,5,BOL7:fila 534
+Trigonometría,Matemáticas,22,6,Identidades de ángulos compuestos IV,4,BOL7:fila 535
+Trigonometría,Matemáticas,23,6,Reducción al primer cuadrante I,4,BOL7:fila 536
+Trigonometría,Matemáticas,24,6,Reducción al primer cuadrante II,4,BOL7:fila 537
+Trigonometría,Matemáticas,25,7,Identidades del ángulo doble I,4,BOL7:fila 446
+Trigonometría,Matemáticas,26,7,Identidades del ángulo doble II,4,BOL7:fila 447
+Trigonometría,Matemáticas,27,7,Identidades del ángulo doble III,4,BOL7:fila 448
+Trigonometría,Matemáticas,28,7,Transformaciones trigonométricas I,4,BOL7:fila 449
+Trigonometría,Matemáticas,29,8,Transformaciones trigonométricas II,4,BOL8:fila 534
+Trigonometría,Matemáticas,30,8,Triángulos oblicuángulos I,5,BOL8:fila 535
+Trigonometría,Matemáticas,31,8,Triángulos oblicuángulos II,5,BOL8:fila 536
+Trigonometría,Matemáticas,32,8,Circunferencia trigonométrica I,5,BOL8:fila 537
+Álgebra,Matemáticas,1,1,Ecuaciones lineales,4,BOL7:fila 2
+Álgebra,Matemáticas,2,1,Ecuaciones cuadráticas,6,BOL7:fila 3
+Álgebra,Matemáticas,3,1,Sistema de ecuaciones 2x2,4,BOL7:fila 4
+Álgebra,Matemáticas,4,1,Potenciación,8,BOL7:fila 5
+Álgebra,Matemáticas,5,2,Radicación,2,BOL7:fila 6
+Álgebra,Matemáticas,6,2,Productos notables I,3,BOL7:fila 7
+Álgebra,Matemáticas,7,2,Productos notables II,2,BOL7:fila 8
+Álgebra,Matemáticas,8,2,Polinomios I,3,BOL7:fila 9
+Álgebra,Matemáticas,21,6,Introducción a los números reales,5,BOL7:fila 230
+Álgebra,Matemáticas,22,6,Desigualdades I,4,BOL7:fila 231
+Álgebra,Matemáticas,23,6,Desigualdades II e Inecuación lineal,4,BOL7:fila 232
+Álgebra,Matemáticas,24,6,Inecuación cuadrática I,5,BOL7:fila 233
+Álgebra,Matemáticas,25,7,Inecuación cuadrática II y Polinomial de grado superior,5,BOL7:fila 434
+Álgebra,Matemáticas,26,7,Inecuación polinomial de grado tres,5,BOL7:fila 435
+Álgebra,Matemáticas,27,7,Problemas DECO,5,BOL7:fila 436
+Álgebra,Matemáticas,28,7,Valor absoluto I,5,BOL7:fila 437
+Álgebra,Matemáticas,29,8,Valor absoluto II,4,BOL8:fila 230
+Álgebra,Matemáticas,30,8,Logaritmos,5,BOL8:fila 231
+Álgebra,Matemáticas,31,8,Ecuaciones logarítmicas,4,BOL8:fila 232
+Álgebra,Matemáticas,32,8,Funciones reales,5,BOL8:fila 233

@@ -150,6 +150,37 @@
   .form-grid .ayuda { font-weight: 500; font-size: 12px; color: var(--gris); }
   .req { color: var(--rojo); }
 
+  /* ---------- Académico ---------- */
+  .ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+  .ac-card { padding: 14px 16px; cursor: pointer; border-left: 6px solid var(--gris); }
+  .ac-card:hover { border-color: var(--amarillo); }
+  .ac-card.VERDE { border-left-color: #2e8b4e; } .ac-card.AMBAR { border-left-color: var(--amarillo); } .ac-card.ROJO { border-left-color: var(--rojo); }
+  .ac-card .top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+  .ac-card .n { font-weight: 800; font-size: 16px; }
+  .ac-card .d { font-size: 12.5px; color: var(--texto-2); }
+  .ac-card .linea { font-size: 13px; margin-top: 4px; overflow-wrap: anywhere; }
+  .barra32 { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; margin: 10px 0 6px; position: relative; }
+  .barra32 span { height: 12px; border-radius: 2px; background: #e4ddd2; }
+  .barra32 span.c { background: #2e8b4e; } .barra32 span.p { background: var(--amarillo); }
+  .barra32 span.esp { box-shadow: 2px 0 0 0 var(--rojo); }
+  .barra32 span.bol { margin-left: 3px; }
+  .sem { font-size: 12px; font-weight: 800; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+  .sem.VERDE { background: var(--ok-suave); color: var(--ok); } .sem.AMBAR { background: var(--warn-suave); color: var(--warn); } .sem.ROJO { background: var(--rojo-suave); color: var(--rojo); }
+  .alerta-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid var(--gris-suave); font-size: 14px; }
+  .alerta-item:last-child { border-bottom: 0; }
+  .temas-lista .bolh { font-size: 12px; font-weight: 800; color: var(--rojo); text-transform: uppercase; letter-spacing: .05em; margin: 14px 0 6px; }
+  .tema-fila { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--blanco); border: 1px solid var(--borde); margin-bottom: 6px; }
+  .tema-fila .num { font-weight: 800; text-align: center; border-radius: 8px; padding: 4px 0; background: var(--gris-suave); }
+  .tema-fila.COMPLETADO .num { background: #2e8b4e; color: #fff; } .tema-fila.PARCIAL .num { background: var(--amarillo); }
+  .tema-fila .t { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+  .tema-fila .t.conf { color: var(--warn); }
+  .tema-fila .r { font-size: 11.5px; color: var(--texto-2); }
+  .tema-fila input { width: 100%; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--rojo); font-size: 14px; }
+  .mini { border: 0; background: none; cursor: pointer; font-size: 16px; padding: 4px 6px; border-radius: 8px; }
+  .mini:hover { background: var(--gris-suave); }
+  tr.sem-actual td { background: var(--amarillo-suave); font-weight: 700; }
+  @media (max-width: 760px) { .ac-grid { grid-template-columns: minmax(0, 1fr); } .barra32 span { height: 10px; } }
+
   /* ---------- Fotochecks ---------- */
   .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
   .fotocheck { background: var(--blanco); border-radius: 14px; overflow: hidden; border: 1px solid var(--borde); text-align: center; break-inside: avoid; }
@@ -185,8 +216,8 @@
     body { padding-bottom: 76px; }
     .contenedor { padding: 16px 12px 28px; }
     /* Navegación inferior fija estilo app */
-    .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; border: 0; border-top: 3px solid var(--amarillo); background: var(--negro); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
-    .tab { flex-direction: column; gap: 2px; padding: 6px 1px; font-size: 10.5px; color: #cfc8bd; border-radius: 10px; }
+    .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; border: 0; border-top: 3px solid var(--amarillo); background: var(--negro); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+    .tab { flex-direction: column; gap: 2px; padding: 6px 0; font-size: 9.5px; letter-spacing: -.01em; color: #cfc8bd; border-radius: 10px; }
     .tab .ico { font-size: 20px; }
     .tab.activo { background: #262626; color: var(--amarillo); }
     .tab .txt-largo { display: none; }
@@ -251,6 +282,7 @@
           <button class="tab" data-tab="marcar" type="button"><span class="ico">✍️</span><span>Marcar<span class="txt-largo"> asistencia</span></span></button>
           <button class="tab" data-tab="horario" type="button"><span class="ico">🗓️</span><span>Horario</span></button>
           <button class="tab" data-tab="docentes" type="button"><span class="ico">👥</span><span>Docentes</span></button>
+          <button class="tab" data-tab="academico" type="button"><span class="ico">📚</span><span>Académico</span></button>
           <button class="tab" data-tab="reporte" type="button"><span class="ico">📊</span><span>Reporte</span></button>
           <button class="tab" data-tab="qr" type="button"><span class="ico">🪪</span><span>QR<span class="txt-largo"> fotochecks</span></span></button>
         </nav>
@@ -344,6 +376,40 @@
         </div>
         <div class="doc-grid" id="d-grid"></div>
         <p class="muted" style="font-size:13px;margin-top:14px">Los docentes <b>inactivos</b> no pueden marcar asistencia ni aparecen para asignar en el horario. Sus registros pasados se conservan.</p>
+      </div>
+
+      <!-- ===================== ACADÉMICO ===================== -->
+      <div id="t-academico" class="oculto">
+        <div class="seccion-t" style="margin-top:0">
+          <h2>Control académico · Anual Integral</h2>
+          <span id="ac-semana"></span>
+        </div>
+        <div class="barra">
+          <div class="seg" id="ac-vista"><button type="button" class="sel" data-v="avance">Avance</button><button type="button" data-v="lecc">Leccionario</button><button type="button" data-v="cal">Calendario</button></div>
+          <span class="muted" id="ac-msg"></span>
+        </div>
+        <div id="ac-avance">
+          <div class="kpis" id="ac-kpis"></div>
+          <div id="ac-alertas"></div>
+          <div class="seccion-t"><h2>Avance por curso</h2>
+            <div class="leyenda"><span><i style="background:#2e8b4e"></i>Completado</span><span><i style="background:var(--amarillo)"></i>Parcial</span><span><i style="background:#e4ddd2"></i>Pendiente</span><span><i style="background:var(--rojo);width:3px"></i>Debería ir aquí</span></div>
+          </div>
+          <div class="ac-grid" id="ac-cursos"></div>
+        </div>
+        <div id="ac-lecc" class="oculto">
+          <div class="barra">
+            <div class="controles">
+              <select id="lc-curso" class="campo"><option value="">Todos los cursos</option></select>
+              <input type="date" id="lc-desde" class="campo"><input type="date" id="lc-hasta" class="campo">
+            </div>
+            <button class="btn btn-rojo btn-s" id="lc-nuevo" type="button">＋ Registrar tema</button>
+          </div>
+          <div class="tarjeta tabla-scroll"><table id="lc-tabla" class="tabla-resp"></table></div>
+        </div>
+        <div id="ac-cal" class="oculto">
+          <p class="muted" style="font-size:14px;margin-top:0">1 tema por semana de clase. Las semanas de exámenes y vacaciones no cuentan para el avance esperado. Se edita en la hoja “Calendario”.</p>
+          <div class="tarjeta tabla-scroll"><table id="cal-tabla" class="tabla-resp"></table></div>
+        </div>
       </div>
 
       <!-- ===================== REPORTE ===================== -->
@@ -443,12 +509,13 @@
     var b = e.target.closest('[data-tab]'); if (!b) return;
     var t = b.getAttribute('data-tab');
     document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('activo', x === b); });
-    ['hoy', 'marcar', 'horario', 'docentes', 'reporte', 'qr'].forEach(function (x) { $('t-' + x).classList.toggle('oculto', x !== t); });
+    ['hoy', 'marcar', 'horario', 'docentes', 'academico', 'reporte', 'qr'].forEach(function (x) { $('t-' + x).classList.toggle('oculto', x !== t); });
     window.scrollTo(0, 0);
     if (t === 'hoy') cargarHoy();
     if (t === 'marcar') cargarCoord();
     if (t === 'horario') cargarHorario();
     if (t === 'docentes') cargarDocentes();
+    if (t === 'academico') cargarAcademico();
     if (t === 'reporte') cargarReporte();
     if (t === 'qr') cargarQR();
   });
@@ -789,6 +856,191 @@
         toast('✅ ' + (r.nuevo ? 'Docente agregado: ' : 'Datos guardados: ') + esc(r.docente.docente) + (r.renombrados ? ' · ' + r.renombrados + ' bloque(s) del horario actualizados' : ''));
         cargarDocentes();
       }).catch(function (e) { btn.disabled = false; $('g-err').textContent = e.message; $('g-err').classList.remove('oculto'); });
+    });
+  }
+
+  /* ===================== ACADÉMICO ===================== */
+  var TIPOS_AV = { COMPLETADO: '✅ Completado', PARCIAL: '⏳ Parcial', REPASO: '🔁 Repaso', EVALUACION: '📝 Práctica/Evaluación' };
+  var SEM_TXT = { VERDE: 'Al día', AMBAR: '1 tema de atraso', ROJO: 'Atrasado' };
+  S.acVista = 'avance'; S.ac = null;
+  $('ac-vista').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-v]'); if (!b) return;
+    S.acVista = b.getAttribute('data-v');
+    this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('sel', x === b); });
+    ['avance', 'lecc', 'cal'].forEach(function (v) { $('ac-' + v).classList.toggle('oculto', v !== S.acVista); });
+    if (S.acVista === 'lecc') cargarLeccionario();
+    if (S.acVista === 'cal') cargarCalendario();
+  });
+  function cargarAcademico() {
+    if (!S.ac) $('ac-cursos').innerHTML = '<div class="muted">Cargando…</div>';
+    api('getAcademico', S.pin).then(function (r) { S.ac = r; pintarAcademico(r); })
+      .catch(function (e) { $('ac-cursos').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
+    if (S.acVista === 'lecc') cargarLeccionario();
+  }
+  function barra32(c, esperado) {
+    var h = '';
+    for (var n = 1; n <= c.total; n++) {
+      var cl = c.completados.indexOf(n) >= 0 ? 'c' : c.parciales.indexOf(n) >= 0 ? 'p' : '';
+      if (n === esperado) cl += ' esp';
+      h += '<span class="' + cl + '" title="Tema ' + n + '"></span>';
+    }
+    return '<div class="barra32">' + h + '</div>';
+  }
+  function pintarAcademico(r) {
+    var sm = r.semana;
+    $('ac-semana').innerHTML = sm ? (sm.tipo === 'CLASE'
+      ? '<span class="chip oscuro">Semana ' + esc(sm.nSemana) + ' de 32 · Boletín ' + esc(sm.boletin) + ' · Bimestre ' + esc(sm.bimestre) + '</span>'
+      : '<span class="chip warn">' + esc(sm.descripcion || sm.tipo) + ' · no avanza tema</span>') : '';
+    var k = r.kpi;
+    $('ac-kpis').innerHTML = kpi('Cobertura promedio', k.cobertura + '%', '', 'destacado', k.cobertura) +
+      kpi('Cursos al día', k.verde, 'de ' + k.cursos) + kpi('1 tema de atraso', k.ambar, '', k.ambar ? 'alerta-k' : '') +
+      kpi('Atrasados (2+)', k.rojo, '', k.rojo ? 'alerta-k' : '') + kpi('Clases sin tema', k.sinTema, '', k.sinTema ? 'alerta-k' : '') +
+      kpi('Temas por confirmar', k.porConfirmar, '', '');
+    var al = r.alertas.slice(0, 12);
+    $('ac-alertas').innerHTML = al.length ? '<div class="seccion-t"><h2>⚠️ Alertas</h2><span class="muted">' + r.alertas.length + ' en total</span></div><div class="tarjeta">' + al.map(function (a) {
+      return '<div class="alerta-item"><span>' + (a.nivel === 'ROJO' ? '🔴' : '🟡') + '</span><span style="flex:1">' + esc(a.texto) + '</span>' +
+        (a.tipo === 'SIN_TEMA' ? '<button class="btn btn-claro btn-s" data-sin="' + esc(a.cursoId) + '|' + esc(a.fecha) + '|' + esc(a.marcacion) + '|' + esc(a.docente) + '" type="button" style="padding:6px 10px">Registrar</button>' : '') + '</div>';
+    }).join('') + '</div>' : '';
+    $('ac-cursos').innerHTML = r.cursos.map(function (c) {
+      return '<div class="tarjeta ac-card ' + c.semaforo + '" data-curso="' + esc(c.id) + '"><div class="top"><div><div class="n">' + esc(c.curso) + '</div>' +
+        '<div class="d">' + esc(c.docentes.join(', ') || 'Sin docente en el horario') + '</div></div><span class="sem ' + c.semaforo + '">' + SEM_TXT[c.semaforo] + '</span></div>' +
+        barra32(c, r.esperado.completados) +
+        '<div class="linea">✅ <b>Va en el tema ' + c.ultimoContinuo + '</b>' + (c.ultimoTema ? ' · ' + esc(c.ultimoTema.tema) : '') + '</div>' +
+        (c.siguienteTema ? '<div class="linea muted">➡ Sigue: ' + c.siguienteTema.n + ' · ' + esc(c.siguienteTema.tema) + '</div>' : '<div class="linea">🎉 Currícula completa</div>') +
+        '<div class="d" style="margin-top:6px">Cobertura ' + c.cobertura + '% · debería ir en el ' + r.esperado.completados + (c.porConfirmar ? ' · ⚠ ' + c.porConfirmar + ' tema(s) por confirmar' : '') + '</div></div>';
+    }).join('');
+  }
+  $('ac-cursos').addEventListener('click', function (e) { var c = e.target.closest('[data-curso]'); if (c) abrirCurso(c.getAttribute('data-curso')); });
+  $('ac-alertas').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sin]'); if (!b) return;
+    var p = b.getAttribute('data-sin').split('|');
+    formRegistroCoord({ cursoId: p[0], fecha: p[1], marcacion: p[2], docente: p[3] });
+  });
+
+  function abrirCurso(id) {
+    abrirModal('Cargando…', '<div class="muted">Cargando…</div>');
+    api('getCursoDetalle', S.pin, id).then(function (c) {
+      $('modal-titulo').textContent = c.curso + ' · ' + c.salon;
+      var porBol = {};
+      c.temas.forEach(function (t) { (porBol[t.boletin] = porBol[t.boletin] || []).push(t); });
+      $('modal-cuerpo').innerHTML =
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><span class="sem ' + c.semaforo + '">' + SEM_TXT[c.semaforo] +
+        (c.atraso ? ' · ' + c.atraso + ' tema(s)' : '') + '</span><span class="muted" style="font-size:13px">Cobertura ' + c.cobertura + '% · debería ir en el tema ' + c.esperado + '</span></div>' +
+        barra32(c, c.esperado) +
+        '<div class="hora-coord" style="margin-top:12px"><div style="flex:1;min-width:200px"><div style="font-weight:800">Avance inicial</div><div class="muted" style="font-size:13px">Temas que ya estaban completos antes de usar el sistema (línea base). Ajústalo si el curso iba atrasado.</div></div>' +
+        '<input type="number" min="0" max="32" id="cd-base" value="' + c.avanceInicial + '" style="width:90px"><button class="btn btn-negro btn-s" id="cd-base-ok" type="button">Guardar</button></div>' +
+        '<div class="temas-lista">' + Object.keys(porBol).sort(function (a, b) { return a - b; }).map(function (b) {
+          return '<div class="bolh">Boletín ' + b + '</div>' + porBol[b].map(function (t) {
+            var reg = t.registros.length ? t.registros.map(function (r) { return r.fecha + ' ' + (TIPOS_AV[r.tipo] || r.tipo) + ' (' + r.docente + ')'; }).join(' · ') : (t.estado === 'COMPLETADO' ? 'Completado antes del sistema' : '');
+            return '<div class="tema-fila ' + t.estado + '" data-tema="' + esc(t.id) + '"><span class="num">' + t.n + '</span><div><div class="t' + (t.estadoDato !== 'OK' ? ' conf' : '') + '">' + esc(t.tema) +
+              (t.estadoDato !== 'OK' ? ' <span class="chip warn" style="font-size:11px;padding:2px 7px">por confirmar</span>' : '') + '</div><div class="r">' + esc(reg) + '</div></div>' +
+              '<div style="white-space:nowrap"><button class="mini" data-edit="' + esc(t.id) + '" title="Editar título" type="button">✏️</button><button class="mini" data-reg="' + t.n + '" title="Registrar como dictado" type="button">➕</button></div></div>';
+          }).join('');
+        }).join('') + '</div>';
+      $('cd-base-ok').addEventListener('click', function () {
+        api('guardarAvanceInicial', S.pin, c.id, $('cd-base').value).then(function (r) {
+          if (!r.ok) return toast('Error: ' + esc(r.error));
+          toast('✅ Avance inicial guardado'); cargarAcademico(); abrirCurso(c.id);
+        });
+      });
+      $('modal-cuerpo').querySelector('.temas-lista').addEventListener('click', function (e) {
+        var be = e.target.closest('[data-edit]'), br = e.target.closest('[data-reg]');
+        if (br) return formRegistroCoord({ cursoId: c.id, n: +br.getAttribute('data-reg') });
+        if (!be) return;
+        var fila = be.closest('.tema-fila'), tdiv = fila.querySelector('.t'), actual = c.temas.filter(function (x) { return x.id === be.getAttribute('data-edit'); })[0];
+        tdiv.innerHTML = '<input value="' + esc(actual.tema.indexOf('(por completar)') >= 0 ? '' : actual.tema) + '" placeholder="Título del tema ' + actual.n + '">';
+        var inp = tdiv.querySelector('input'); inp.focus();
+        var guardar = function () {
+          if (!inp.value.trim() || inp.value.trim() === actual.tema) { abrirCurso(c.id); return; }
+          api('guardarTituloTema', S.pin, actual.id, inp.value).then(function (r) {
+            if (!r.ok) return toast('Error: ' + esc(r.error));
+            toast('✅ Tema ' + actual.n + ' actualizado'); abrirCurso(c.id); cargarAcademico();
+          });
+        };
+        inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') guardar(); if (ev.key === 'Escape') abrirCurso(c.id); });
+        inp.addEventListener('blur', guardar);
+      });
+    }).catch(function (e) { $('modal-cuerpo').innerHTML = '<div class="alerta">' + esc(e.message) + '</div>'; });
+  }
+
+  function formRegistroCoord(pre) {
+    var cursos = (S.ac && S.ac.cursos) || S.cursosAc || [];
+    if (!cursos.length) { api('getLeccionario', S.pin, {}).then(function (r) { S.cursosAc = r.cursos; formRegistroCoord(pre); }).catch(function (e) { toast('Error: ' + esc(e.message)); }); return; }
+    var hoy = horaLima(); var f = pre.fecha || (hoy.getFullYear() + '-' + ('0' + (hoy.getMonth() + 1)).slice(-2) + '-' + ('0' + hoy.getDate()).slice(-2));
+    abrirModal('Registrar tema dictado', '<div class="form-grid">' +
+      '<label class="full">Curso<select id="rc-curso">' + cursos.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === pre.cursoId ? ' selected' : '') + '>' + esc(c.curso) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="full">Tema<select id="rc-tema"></select></label>' +
+      '<label>Fecha<input type="date" id="rc-fecha" value="' + esc(f) + '"></label>' +
+      '<label>Tipo de avance<select id="rc-tipo">' + Object.keys(TIPOS_AV).map(function (t) { return '<option value="' + t + '">' + TIPOS_AV[t] + '</option>'; }).join('') + '</select></label>' +
+      '<label class="full">Docente<input id="rc-doc" value="' + esc(pre.docente || '') + '" placeholder="Quién dictó la clase"></label>' +
+      '<label class="full">Observación<input id="rc-obs" placeholder="Opcional"></label></div>' +
+      '<div class="alerta oculto" id="rc-err"></div><div style="margin-top:16px"><button class="btn btn-rojo btn-grande" id="rc-ok" type="button">Registrar</button></div>' +
+      '<div class="muted" style="font-size:12px;text-align:center;margin-top:8px">Queda registrado por “Coordinación” y validado.</div>');
+    var cargarTemas = function () {
+      $('rc-tema').innerHTML = '<option>Cargando…</option>';
+      api('getCursoDetalle', S.pin, $('rc-curso').value).then(function (c) {
+        var sel = pre.n && $('rc-curso').value === pre.cursoId ? pre.n : c.sugerido;
+        $('rc-tema').innerHTML = c.temas.map(function (t) { return '<option value="' + t.n + '"' + (t.n === sel ? ' selected' : '') + '>' + t.n + ' · ' + esc(t.tema) + (t.estado === 'COMPLETADO' ? ' ✓' : '') + '</option>'; }).join('');
+      }).catch(function (e) { $('rc-err').textContent = e.message; $('rc-err').classList.remove('oculto'); });
+    };
+    $('rc-curso').addEventListener('change', cargarTemas); cargarTemas();
+    $('rc-ok').addEventListener('click', function () {
+      var b = this; b.disabled = true;
+      api('coordRegistrarTema', S.pin, { cursoId: $('rc-curso').value, n: +$('rc-tema').value, fecha: $('rc-fecha').value, tipo: $('rc-tipo').value,
+        observacion: $('rc-obs').value, docente: $('rc-doc').value, marcacion: pre.marcacion || '' }).then(function (r) {
+        b.disabled = false;
+        if (!r.ok) { $('rc-err').textContent = r.error; $('rc-err').classList.remove('oculto'); return; }
+        cerrarModal(); toast('✅ Tema registrado'); cargarAcademico();
+      }).catch(function (e) { b.disabled = false; $('rc-err').textContent = e.message; $('rc-err').classList.remove('oculto'); });
+    });
+  }
+  $('lc-nuevo').addEventListener('click', function () { formRegistroCoord({}); });
+
+  ['lc-curso', 'lc-desde', 'lc-hasta'].forEach(function (id) { $(id).addEventListener('change', cargarLeccionario); });
+  function cargarLeccionario() {
+    $('lc-tabla').innerHTML = '<tbody><tr><td class="vacio-t">Cargando…</td></tr></tbody>';
+    api('getLeccionario', S.pin, { cursoId: $('lc-curso').value, desde: $('lc-desde').value, hasta: $('lc-hasta').value }).then(function (r) {
+      if ($('lc-curso').options.length <= 1) $('lc-curso').innerHTML = '<option value="">Todos los cursos</option>' + r.cursos.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.curso) + '</option>'; }).join('');
+      S.lecc = r.registros; S.cursosAc = r.cursos;
+      if (!r.registros.length) { $('lc-tabla').innerHTML = '<tbody><tr><td class="vacio-t">Aún no hay temas registrados con estos filtros.</td></tr></tbody>'; return; }
+      var est = { REGISTRADO: '<span class="chip">Por validar</span>', VALIDADO: '<span class="chip ok">Validado</span>', CORREGIDO: '<span class="chip warn">Corregido</span>' };
+      $('lc-tabla').innerHTML = '<thead><tr><th>Fecha</th><th>Curso</th><th>Tema</th><th>Avance</th><th>Docente</th><th>Estado</th><th></th></tr></thead><tbody>' + r.registros.map(function (x) {
+        return '<tr><td class="titulo"><b>' + esc(x.fecha) + '</b></td><td data-l="Curso">' + esc(x.curso) + '</td><td data-l="Tema">' + x.n + ' · ' + esc(x.tema) +
+          (x.observacion ? '<div class="muted" style="font-size:12px">' + esc(x.observacion) + '</div>' : '') + '</td><td data-l="Avance">' + (TIPOS_AV[x.tipo] || esc(x.tipo)) + '</td>' +
+          '<td data-l="Docente">' + esc(x.docente) + '<div class="muted" style="font-size:11px">' + esc(x.registradoPor) + '</div></td><td data-l="Estado">' + (est[x.estado] || esc(x.estado)) + '</td>' +
+          '<td style="white-space:nowrap">' + (x.estado === 'REGISTRADO' ? '<button class="mini" data-val="' + esc(x.id) + '" title="Validar" type="button">✔️</button>' : '') +
+          '<button class="mini" data-cor="' + esc(x.id) + '" title="Corregir" type="button">✏️</button><button class="mini" data-del="' + esc(x.id) + '" title="Eliminar" type="button">🗑️</button></td></tr>';
+      }).join('') + '</tbody>';
+    }).catch(function (e) { $('lc-tabla').innerHTML = '<tbody><tr><td class="vacio-t">' + esc(e.message) + '</td></tr></tbody>'; });
+  }
+  $('lc-tabla').addEventListener('click', function (e) {
+    var v = e.target.closest('[data-val]'), c = e.target.closest('[data-cor]'), d = e.target.closest('[data-del]');
+    var fin = function (r, msg) { if (!r.ok) return toast('Error: ' + esc(r.error)); toast(msg); cargarLeccionario(); cargarAcademico(); };
+    if (v) api('revisarRegistro', S.pin, v.getAttribute('data-val'), 'VALIDAR').then(function (r) { fin(r, '✔️ Registro validado'); });
+    if (d && confirm('¿Eliminar este registro del leccionario?')) api('revisarRegistro', S.pin, d.getAttribute('data-del'), 'ELIMINAR').then(function (r) { fin(r, '🗑️ Registro eliminado'); });
+    if (c) {
+      var x = S.lecc.filter(function (y) { return y.id === c.getAttribute('data-cor'); })[0];
+      abrirModal('Corregir registro', '<div class="form-grid"><label class="full">Tema<select id="cr-tema"><option>Cargando…</option></select></label>' +
+        '<label class="full">Tipo de avance<select id="cr-tipo">' + Object.keys(TIPOS_AV).map(function (t) { return '<option value="' + t + '"' + (t === x.tipo ? ' selected' : '') + '>' + TIPOS_AV[t] + '</option>'; }).join('') + '</select></label>' +
+        '<label class="full">Observación<input id="cr-obs" value="' + esc(x.observacion) + '"></label></div><div style="margin-top:16px"><button class="btn btn-rojo btn-grande" id="cr-ok" type="button">Guardar corrección</button></div>');
+      api('getCursoDetalle', S.pin, x.cursoId).catch(function (e) { toast('Error: ' + esc(e.message)); return { temas: [] }; }).then(function (k) {
+        $('cr-tema').innerHTML = k.temas.map(function (t) { return '<option value="' + t.n + '"' + (t.n === x.n ? ' selected' : '') + '>' + t.n + ' · ' + esc(t.tema) + '</option>'; }).join('');
+      });
+      $('cr-ok').addEventListener('click', function () {
+        api('revisarRegistro', S.pin, x.id, 'CORREGIR', { n: +$('cr-tema').value, tipo: $('cr-tipo').value, observacion: $('cr-obs').value }).then(function (r) { cerrarModal(); fin(r, '✏️ Registro corregido'); });
+      });
+    }
+  });
+
+  function cargarCalendario() {
+    api('getCalendario', S.pin).then(function (r) {
+      var chip = { CLASE: 'ok', EXAMEN: 'warn', VACACIONES: 'rojo', CIERRE: 'oscuro' };
+      $('cal-tabla').innerHTML = '<thead><tr><th>Semana</th><th>Tipo</th><th>Semana de clase</th><th>Boletín</th><th>Bimestre</th><th>Notas</th></tr></thead><tbody>' + r.semanas.map(function (s) {
+        var actual = s.inicio <= r.hoy && r.hoy <= s.fin;
+        return '<tr' + (actual ? ' class="sem-actual"' : '') + '><td class="titulo"><b>' + esc(s.inicio.slice(8) + '/' + s.inicio.slice(5, 7)) + ' – ' + esc(s.fin.slice(8) + '/' + s.fin.slice(5, 7)) + '</b>' + (actual ? ' ⬅ hoy' : '') + '</td>' +
+          '<td data-l="Tipo"><span class="chip ' + (chip[s.tipo] || '') + '">' + esc(s.tipo) + '</span></td><td data-l="Semana" class="num">' + esc(s.nSemana || '—') + '</td>' +
+          '<td data-l="Boletín" class="num">' + esc(s.boletin || '—') + '</td><td data-l="Bimestre" class="num">' + esc(s.bimestre) + '</td><td data-l="Notas">' + esc(s.descripcion || '') + '</td></tr>';
+      }).join('') + '</tbody>';
     });
   }
 

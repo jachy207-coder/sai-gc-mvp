@@ -1,0 +1,44 @@
+semana_inicio,semana_fin,tipo,n_semana_clase,boletin,bimestre,descripcion
+2026-03-02,2026-03-07,CLASE,1,1,1,Inicio de clases 04/03 (clase introductoria)
+2026-03-09,2026-03-14,CLASE,2,1,1,
+2026-03-16,2026-03-21,CLASE,3,1,1,
+2026-03-23,2026-03-28,CLASE,4,1,1,
+2026-03-30,2026-04-04,CLASE,5,2,1,Jue 02 y vie 03: Semana Santa (feriado)
+2026-04-06,2026-04-11,EXAMEN,,,1,Exámenes mensuales
+2026-04-13,2026-04-18,CLASE,6,2,1,
+2026-04-20,2026-04-25,CLASE,7,2,1,
+2026-04-27,2026-05-02,CLASE,8,2,1,Vie 01/05: Día del Trabajo (feriado)
+2026-05-04,2026-05-09,CLASE,9,3,1,Vie 08/05: Simulacro
+2026-05-11,2026-05-16,EXAMEN,,,1,Exámenes bimestrales (horario reducido)
+2026-05-18,2026-05-23,VACACIONES,,,1,Vacaciones
+2026-05-25,2026-05-30,CLASE,10,3,2,
+2026-06-01,2026-06-06,CLASE,11,3,2,
+2026-06-08,2026-06-13,CLASE,12,3,2,
+2026-06-15,2026-06-20,EXAMEN,,,2,Exámenes mensuales
+2026-06-22,2026-06-27,CLASE,13,4,2,
+2026-06-29,2026-07-04,CLASE,14,4,2,Lun 29/06: San Pedro y San Pablo (feriado)
+2026-07-06,2026-07-11,CLASE,15,4,2,Lun 06/07: Día del Maestro · Vie 10/07: Simulacro
+2026-07-13,2026-07-18,CLASE,16,4,2,
+2026-07-20,2026-07-25,EXAMEN,,,2,Exámenes bimestrales (sáb. 25/07 recupera jue. 23/07)
+2026-07-27,2026-08-01,VACACIONES,,,2,Vacaciones (27 jul – 04 ago)
+2026-08-03,2026-08-08,CLASE,17,5,3,Clases 05–07 ago · Jue 06/08: Batalla de Junín (feriado)
+2026-08-10,2026-08-15,CLASE,18,5,3,
+2026-08-17,2026-08-22,CLASE,19,5,3,
+2026-08-24,2026-08-29,CLASE,20,5,3,
+2026-08-31,2026-09-05,EXAMEN,,,3,Exámenes mensuales
+2026-09-07,2026-09-12,CLASE,21,6,3,
+2026-09-14,2026-09-19,CLASE,22,6,3,
+2026-09-21,2026-09-26,CLASE,23,6,3,Mié 23/09: Día del Estudiante
+2026-09-28,2026-10-03,CLASE,24,6,3,Vie 02/10: Simulacro
+2026-10-05,2026-10-10,EXAMEN,,,3,Exámenes bimestrales (sáb. 10/10 recupera jue. 08/10)
+2026-10-12,2026-10-17,VACACIONES,,,3,Vacaciones
+2026-10-19,2026-10-24,CLASE,25,7,4,
+2026-10-26,2026-10-31,CLASE,26,7,4,
+2026-11-02,2026-11-07,CLASE,27,7,4,
+2026-11-09,2026-11-14,CLASE,28,7,4,
+2026-11-16,2026-11-21,EXAMEN,,,4,Exámenes mensuales
+2026-11-23,2026-11-28,CLASE,29,8,4,Semana de Aniversario
+2026-11-30,2026-12-05,CLASE,30,8,4,
+2026-12-07,2026-12-12,CLASE,31,8,4,Mar 08 y mié 09: feriados · Vie 11/12: Simulacro
+2026-12-14,2026-12-19,CLASE,32,8,4,Clases 14–16 dic; exámenes bimestrales desde el 17/12
+2026-12-21,2026-12-26,CIERRE,,,4,Exámenes bimestrales (17–22 dic) y clausura 22/12

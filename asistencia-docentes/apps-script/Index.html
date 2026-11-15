@@ -59,6 +59,22 @@
   .cuenta { margin-top: 18px; font-size: 13px; color: var(--texto-2); }
 
   .pie { text-align: center; font-size: 12px; color: var(--gris); margin-top: 26px; }
+
+  /* ---------- Registro de tema (control académico) ---------- */
+  .temas-box { text-align: left; margin: 20px auto 0; max-width: 560px; }
+  .temas-box h3 { font-family: 'Cantata One', serif; font-size: 20px; text-align: center; }
+  .temas-box .sub { text-align: center; color: var(--texto-2); font-size: 14px; margin: 4px 0 12px; }
+  .tema-card { background: var(--fondo); border: 2px solid var(--borde); border-radius: 14px; padding: 14px; margin-top: 12px; }
+  .tema-card .cab { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .tema-card .cab b { font-size: 16px; }
+  .tema-card select { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border: 2px solid var(--borde); background: var(--blanco); font-size: 15px; font-weight: 600; }
+  .tema-card select:focus { border-color: var(--rojo); outline: none; }
+  .tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .tipo { border: 2px solid var(--borde); background: var(--blanco); border-radius: 12px; padding: 10px 8px; font-weight: 700; font-size: 13.5px; cursor: pointer; text-align: center; }
+  .tipo.sel { border-color: var(--negro); background: var(--negro); color: var(--amarillo); }
+  .tema-card input.obs { width: 100%; margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--borde); }
+  .pendiente-banner { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 14px 16px; border-radius: 14px;
+    background: var(--amarillo-suave); color: #5d4300; margin-top: 12px; border: 1px solid #ecd9a6; font-weight: 600; }
   .pie a { color: var(--gris); }
   @media (max-width: 560px) {
     .bienvenida h1 { font-size: 24px; }
@@ -109,6 +125,7 @@
         </div>
       </div>
 
+      <div id="pendientes-tema"></div>
       <div class="h-seccion" id="titulo-clases">Tus salones de hoy</div>
       <div class="clases" id="lista-propias"></div>
 
@@ -145,6 +162,7 @@
         <div id="listo-estado"></div>
         <div class="metricas oculto" id="listo-metricas"></div>
         <div class="lista-clases" id="listo-clases"></div>
+        <div id="listo-temas"></div>
         <div style="margin-top:22px"><button class="btn btn-negro" id="btn-listo" type="button" style="min-width:200px">Listo</button></div>
         <div class="cuenta" id="cuenta"></div>
       </div>
@@ -215,7 +233,7 @@
     var dni = extraerDni($('dni').value) || $('dni').value.replace(/\D/g, '');
     if (dni.length !== 8 && dni.length !== 9) { error('error-dni', 'Escribe tu DNI (8 dígitos) o tu celular (9 dígitos).'); return; }
     var ok = document.querySelector('.tecla.ok'); ok.disabled = true; ok.innerHTML = '<span class="spinner"></span>';
-    api('buscarDocente', dni).then(function (r) {
+    api('buscarDocenteConTemas', dni).then(function (r) {
       if (!r.ok) { error('error-dni', r.error); return; }
       estado.docente = r; pintarDocente();
     }).catch(function (e) { error('error-dni', 'Sin conexión con el servidor. Intenta de nuevo. (' + e.message + ')'); })
@@ -272,6 +290,13 @@
     $('lista-reemplazos').classList.toggle('oculto', !abrir);
     $('btn-reemplazo').classList.toggle('abierto', abrir);
 
+    var pend = d.pendientesTema || [];
+    $('pendientes-tema').innerHTML = pend.length && !ab ? '<div class="pendiente-banner"><span>📚 Tienes ' + pend.length + ' clase(s) de hoy sin tema registrado</span>' +
+      '<button class="btn btn-negro" id="btn-reg-pend" type="button" style="padding:10px 14px">Registrar ahora</button></div><div id="form-pend"></div>' : '';
+    if (pend.length && !ab) $('btn-reg-pend').addEventListener('click', function () {
+      this.parentNode.classList.add('oculto');
+      formTemas($('form-pend'), pend, function () { setTimeout(function () { $('pendientes-tema').innerHTML = ''; }, 2500); });
+    });
     estado.obs = ''; $('obs-detalle').value = ''; pintarObs();
     error('error-marca');
     var btn = $('btn-marcar');
@@ -355,9 +380,62 @@
       return '<div><b>' + esc(b.salon) + '</b><span class="muted">' + esc(b.curso) + ' · ' + esc(b.inicio) + '–' + esc(b.fin) + '</span></div>';
     }).join('');
     mostrar('paso-listo');
-    var s = 10; $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s';
+    $('listo-temas').innerHTML = '';
+    if (r.temas && r.temas.length) {
+      clearInterval(estado.timer); $('cuenta').textContent = '';
+      formTemas($('listo-temas'), r.temas, function () { cuentaRegresiva(8); });
+    } else {
+      cuentaRegresiva(10);
+    }
+  }
+  function cuentaRegresiva(s) {
+    $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s';
     clearInterval(estado.timer);
     estado.timer = setInterval(function () { s--; $('cuenta').textContent = 'Volviendo al inicio en ' + s + ' s'; if (s <= 0) reiniciar(); }, 1000);
+  }
+
+  /* ---------- Registro del tema dictado (control académico) ---------- */
+  var TIPOS = [['COMPLETADO', '✅ Completé el tema'], ['PARCIAL', '⏳ Avance parcial'], ['REPASO', '🔁 Repaso'], ['EVALUACION', '📝 Práctica / evaluación']];
+  function formTemas(cont, items, alTerminar) {
+    var dni = estado.docente ? estado.docente.dni : '';
+    cont.innerHTML = '<div class="temas-box"><h3>📚 ¿Qué tema dictaste?</h3><div class="sub">Confirma el tema de cada curso. Ya viene propuesto el que corresponde.</div>' +
+      items.map(function (it, i) {
+        return '<div class="tema-card" data-i="' + i + '"><div class="cab"><b>' + esc(it.curso) + '</b><span class="muted" style="font-size:13px">' + esc(it.salon) +
+          (it.esperado ? ' · semana ' + it.esperado + ' del calendario' : '') + '</span></div>' +
+          '<select class="sel-tema">' + it.temas.map(function (t) {
+            return '<option value="' + t.n + '"' + (t.n === it.sugerido ? ' selected' : '') + '>' + t.n + ' · ' + esc(t.tema) +
+              (t.completado ? '  ✓' : t.parcial ? '  (parcial)' : '') + '  (Bol. ' + esc(t.boletin) + ')</option>';
+          }).join('') + '</select>' +
+          '<div class="tipos">' + TIPOS.map(function (x, k) { return '<button type="button" class="tipo' + (k ? '' : ' sel') + '" data-t="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+          '<input class="obs" maxlength="200" placeholder="Observación (opcional): ej. faltó tiempo para la práctica"></div>';
+      }).join('') +
+      '<div class="alerta oculto" id="err-temas"></div>' +
+      '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="btn btn-rojo" id="btn-guardar-temas" type="button" style="flex:1;min-width:180px">Guardar tema' + (items.length > 1 ? 's' : '') + '</button>' +
+      '<button class="btn btn-claro" id="btn-omitir-temas" type="button">Más tarde</button></div></div>';
+    cont.querySelectorAll('.tipos').forEach(function (g) {
+      g.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-t]'); if (!b) return;
+        g.querySelectorAll('.tipo').forEach(function (x) { x.classList.toggle('sel', x === b); });
+      });
+    });
+    $('btn-omitir-temas').addEventListener('click', function () { cont.innerHTML = '<div class="muted" style="margin-top:14px">Puedes registrarlo después, al volver a ingresar tu DNI.</div>'; alTerminar(); });
+    $('btn-guardar-temas').addEventListener('click', function () {
+      var btn = this, porMarc = {};
+      cont.querySelectorAll('.tema-card').forEach(function (c) {
+        var it = items[+c.getAttribute('data-i')];
+        (porMarc[it.marcacion] = porMarc[it.marcacion] || []).push({
+          cursoId: it.cursoId, salon: it.salon, bloques: it.bloques, n: +c.querySelector('.sel-tema').value,
+          tipo: c.querySelector('.tipo.sel').getAttribute('data-t'), observacion: c.querySelector('.obs').value
+        });
+      });
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando…';
+      Promise.all(Object.keys(porMarc).map(function (m) { return api('registrarTemas', dni, m, porMarc[m]); })).then(function (rs) {
+        var mal = rs.filter(function (x) { return !x.ok; })[0];
+        if (mal) { error('err-temas', mal.error); btn.disabled = false; btn.textContent = 'Reintentar'; return; }
+        cont.innerHTML = '<div class="chip ok" style="margin-top:16px;font-size:15px;padding:10px 14px"><span class="punto"></span>Tema' + (items.length > 1 ? 's' : '') + ' registrado' + (items.length > 1 ? 's' : '') + '. ¡Gracias!</div>';
+        alTerminar();
+      }).catch(function (e) { error('err-temas', 'No se pudo guardar: ' + e.message); btn.disabled = false; btn.textContent = 'Reintentar'; });
+    });
   }
   $('btn-listo').addEventListener('click', reiniciar);
 

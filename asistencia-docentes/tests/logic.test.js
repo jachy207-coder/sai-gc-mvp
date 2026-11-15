@@ -156,3 +156,57 @@ test('docentes: validación al agregar y editar', () => {
   assert.deepEqual(L.validarDocente({ docente: 'Ana Pérez', dni: '12345678', celular: '+51 987 654 321' }, ds, 'Ana Pérez').errores, []);
   assert.equal(L.validarDocente({ docente: 'X', celular: '+51 987 000 111' }, ds, '').celular, '987000111');
 });
+
+function calendarioReal() {
+  const csv = fs.readFileSync(path.join(__dirname, '../datos/calendario_academico_2026.csv'), 'utf8').trim().split('\n');
+  csv.shift();
+  return csv.map((l) => { const c = l.split(','); return { inicio: c[0], fin: c[1], tipo: c[2], nSemana: c[3], boletin: c[4], bimestre: c[5] }; });
+}
+
+test('calendario 2026: 32 semanas de clase y tema esperado por fecha', () => {
+  const cal = calendarioReal();
+  assert.equal(cal.filter((s) => s.tipo === 'CLASE').length, 32);
+  // Semana de exámenes mensuales (16–21 nov): no hay tema en curso; deberían ir 28 temas completos
+  assert.deepEqual([L.temaEsperado(cal, '2026-11-18').completados, L.temaEsperado(cal, '2026-11-18').enCurso], [28, null]);
+  // Lunes 23/11: semana de clase 29 (boletín 8)
+  const e = L.temaEsperado(cal, '2026-11-23');
+  assert.equal(e.enCurso, 29); assert.equal(e.completados, 28); assert.equal(e.semana.boletin, '8');
+  assert.equal(L.temaEsperado(cal, '2026-03-04').enCurso, 1);
+  assert.equal(L.temaEsperado(cal, '2026-05-20').semana.tipo, 'VACACIONES');
+  assert.equal(L.temaEsperado(cal, '2026-12-17').completados, 31); // la semana 32 cierra el sáb. 19/12
+  assert.equal(L.temaEsperado(cal, '2026-12-21').completados, 32);
+});
+
+test('avance del curso, tema sugerido y semáforo', () => {
+  let a = L.avanceCurso(32, 28, []);
+  assert.equal(a.ultimoContinuo, 28); assert.equal(a.siguiente, 29); assert.equal(a.sugerido, 29); assert.equal(a.cobertura, 87.5);
+  a = L.avanceCurso(32, 28, [{ n: 29, tipo: 'PARCIAL', fecha: '2026-11-23' }]);
+  assert.equal(a.sugerido, 29, 'continúa el tema parcial'); assert.deepEqual(a.parciales, [29]);
+  a = L.avanceCurso(32, 28, [{ n: 29, tipo: 'PARCIAL', fecha: '2026-11-23' }, { n: 29, tipo: 'COMPLETADO', fecha: '2026-11-24' }]);
+  assert.equal(a.sugerido, 30); assert.deepEqual(a.parciales, []); assert.equal(a.ultimoContinuo, 29);
+  a = L.avanceCurso(32, 26, [{ n: 28, tipo: 'COMPLETADO', fecha: '2026-11-23' }]); // se saltó el 27
+  assert.equal(a.ultimoContinuo, 26); assert.equal(a.siguiente, 27); assert.equal(a.totalCompletados, 27);
+  a = L.avanceCurso(32, 28, [{ n: 29, tipo: 'REPASO', fecha: '2026-11-23' }]);
+  assert.equal(a.ultimoContinuo, 28, 'un repaso no completa el tema');
+  assert.deepEqual(L.semaforoAtraso(28, 28), { atraso: 0, semaforo: 'VERDE' });
+  assert.deepEqual(L.semaforoAtraso(27, 28), { atraso: 1, semaforo: 'AMBAR' });
+  assert.deepEqual(L.semaforoAtraso(25, 28), { atraso: 3, semaforo: 'ROJO' });
+});
+
+test('bloque del horario → curso del temario (alias)', () => {
+  const cursos = [{ id: 'AI-RM', salon: 'ANUAL INTEGRAL', curso: 'Razonamiento Matemático', alias: 'RAZ. MATEMÁTICO|RM' },
+    { id: 'AI-ALG', salon: 'ANUAL INTEGRAL', curso: 'Álgebra', alias: 'ÁLGEBRA' }];
+  assert.equal(L.cursoDeBloque({ salon: 'ANUAL INTEGRAL', curso: 'RAZ. MATEMÁTICO' }, cursos).id, 'AI-RM');
+  assert.equal(L.cursoDeBloque({ salon: 'ANUAL INTEGRAL', curso: 'ALGEBRA' }, cursos).id, 'AI-ALG');
+  assert.equal(L.cursoDeBloque({ salon: 'LÍDERES 5-6', curso: 'ÁLGEBRA' }, cursos), null, 'otro salón no aplica');
+  assert.equal(L.cursoDeBloque({ salon: 'ANUAL INTEGRAL', curso: 'EDUC. FÍSICA' }, cursos), null);
+});
+
+test('temario depurado: 15 cursos × 32 temas, sin huecos ni duplicados', () => {
+  const rows = fs.readFileSync(path.join(__dirname, '../datos/temario_anual_integral_2026.csv'), 'utf8').trim().split('\n').slice(1);
+  assert.equal(rows.length, 480);
+  const porCurso = {};
+  rows.forEach((l) => { const c = l.split(','); (porCurso[c[1]] = porCurso[c[1]] || new Set()).add(Number(c[3])); });
+  assert.equal(Object.keys(porCurso).length, 15);
+  Object.entries(porCurso).forEach(([c, s]) => assert.equal(s.size, 32, c));
+});

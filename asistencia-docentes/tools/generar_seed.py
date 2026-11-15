@@ -31,7 +31,11 @@ seed = (
     " *  Datos base: horario por salón 2026 (HORARIO MONTE AZUL 2026 - 21.03.26.xlsx)\n"
     " *  y docentes encontrados en el horario. Solo se usan en setup() si las hojas están vacías. */\n\n"
     f"var SEED_HORARIO = {filas_js(horario[1:])};\n\n"
-    f"var SEED_DOCENTES = {filas_js(docentes[1:])};\n"
+    f"var SEED_DOCENTES = {filas_js(docentes[1:])};\n\n"
+    "/* Control académico (Anual Integral 2026): generado por tools/construir_temario.py */\n"
+    f"var SEED_CURSOS = {filas_js(leer('cursos_anual_integral_2026.csv')[1:])};\n\n"
+    f"var SEED_TEMARIO = {filas_js(leer('temario_anual_integral_2026.csv')[1:])};\n\n"
+    f"var SEED_CALENDARIO = {filas_js(leer('calendario_academico_2026.csv')[1:])};\n"
 )
 (BASE / "apps-script" / "Seed.gs").write_text(seed, encoding="utf-8")
 

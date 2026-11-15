@@ -20,7 +20,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 
 1. Abre la hoja **"CVI Asistencia Docente - Monte Azul (piloto)"**, que está en tu Drive dentro de *CVI MONTE AZUL 2026*. Ya tiene a los docentes con su celular y el horario.
 2. Ve a **Extensiones → Apps Script**. Se abre el editor con un archivo llamado `Código.gs`.
-3. Abre el Google Doc **"CÓDIGO PARA PEGAR v3 - CVI Asistencia"** (o la versión más reciente), que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
+3. Abre el Google Doc **"CÓDIGO PARA PEGAR v4 - CVI Asistencia"** (o la versión más reciente), que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
    1. Haz clic dentro del texto, pulsa **Ctrl+A** y luego **Ctrl+C**.
    2. En el editor de Apps Script, haz clic dentro de `Código.gs`, pulsa **Ctrl+A** y **Supr** para borrar lo que haya, y luego **Ctrl+V** y **Ctrl+S**.
    3. Revisa que la **primera línea** sea `/**` y que la **última** diga `FIN DEL ARCHIVO`.
@@ -98,6 +98,21 @@ asistencia-docentes/
 ```
 
 Para probar en local, ejecuta `FAKE_NOW="2026-11-16T07:58:00-05:00" node tools/servidor-local.js` y abre http://localhost:8787. El simulador asigna DNIs de prueba del 70000001 al 70000020; el PIN del panel es 91515.
+
+
+## 📚 Control académico (Anual Integral)
+
+- **Temario depurado:** 15 cursos × 32 temas = 480 (8 boletines × 4 temas). Se tomó de los boletines impresos y de los Excel de temario. Los temas sin fuente aparecen como **"por confirmar"** y se completan desde el panel (✏️ en el detalle del curso).
+- **Calendario 2026:** 32 semanas de clase, 1 tema por semana. Las semanas de exámenes y de vacaciones no cuentan. Está en la hoja **Calendario** y se puede ajustar ahí.
+- **Docente:**
+  - Al marcar **SALIDA**, la app pregunta *"¿Qué tema dictaste?"* con el tema sugerido ya seleccionado. El docente elige Completado, Avance parcial, Repaso o Práctica/evaluación.
+  - Si elige "Más tarde", la app se lo recuerda la próxima vez que ingrese su DNI.
+- **Coordinación (panel → 📚 Académico):**
+  - **Avance:** semáforo por curso (al día, 1 tema de atraso, 2 o más), cobertura, tema actual vs. esperado, alertas.
+  - **Detalle del curso:** los 32 temas con su estado, editar títulos, registrar un tema y fijar el *avance inicial*, es decir, los temas ya completados antes de usar el sistema. El valor inicial es 28.
+  - **Leccionario:** historial con validar ✔️, corregir ✏️, eliminar 🗑️ y "＋ Registrar tema" por coordinación.
+  - **Calendario:** semanas de clase, exámenes y vacaciones, con la semana actual resaltada.
+- **Hojas nuevas:** Cursos, Temario, Calendario y Leccionario. `setup()` las crea y carga una sola vez; no pisa los cambios hechos después.
 
 ## Limitaciones del piloto
 

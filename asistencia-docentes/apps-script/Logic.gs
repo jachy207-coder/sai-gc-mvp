@@ -291,6 +291,76 @@ function validarDocente(d, docentes, nombreAnterior) {
   return { errores: errores, dni: dni, celular: cel, docente: nombre };
 }
 
+/* ---------------- Control académico ---------------- */
+
+var TIPOS_AVANCE = ['COMPLETADO', 'PARCIAL', 'REPASO', 'EVALUACION'];
+
+/** Semana del calendario que contiene la fecha (inicio = lunes, fin = sábado), o null. */
+function semanaDeFecha(calendario, fecha) {
+  return (calendario || []).filter(function (s) { return s.inicio <= fecha && fecha <= s.fin; })[0] || null;
+}
+
+/**
+ * Tema esperado según el calendario (1 tema por semana de clase; exámenes y vacaciones no cuentan).
+ *  - enCurso: N.º de semana de clase en curso (null si la semana es de exámenes/vacaciones)
+ *  - completados: semanas de clase que ya terminaron antes de la fecha → temas que deberían estar completos
+ */
+function temaEsperado(calendario, fecha) {
+  var clases = (calendario || []).filter(function (s) { return s.tipo === 'CLASE'; });
+  var completados = clases.filter(function (s) { return s.fin < fecha; }).length;
+  var semana = semanaDeFecha(calendario, fecha);
+  var enCurso = semana && semana.tipo === 'CLASE' ? Number(semana.nSemana) : null;
+  return { completados: completados, enCurso: enCurso, semana: semana, total: clases.length };
+}
+
+/**
+ * Avance de un curso a partir del leccionario.
+ * @param total          temas del curso (32)
+ * @param avanceInicial  temas completados antes de usar el sistema (línea base)
+ * @param registros      [{n, tipo, fecha}] del leccionario de ese curso
+ */
+function avanceCurso(total, avanceInicial, registros) {
+  var completados = {}, parciales = {};
+  var base = Math.max(0, Math.min(Number(avanceInicial) || 0, total));
+  for (var i = 1; i <= base; i++) completados[i] = true;
+  var orden = (registros || []).slice().sort(function (a, b) { return String(a.fecha).localeCompare(String(b.fecha)); });
+  orden.forEach(function (r) {
+    var n = Number(r.n);
+    if (!n) return;
+    if (r.tipo === 'COMPLETADO') completados[n] = true;
+    else if (r.tipo === 'PARCIAL') parciales[n] = true;
+  });
+  Object.keys(completados).forEach(function (n) { delete parciales[n]; });
+  var siguiente = 1;
+  while (completados[siguiente] && siguiente <= total) siguiente++;
+  var ultimo = orden.length ? orden[orden.length - 1] : null;
+  // Si el último registro fue un avance parcial de un tema aún no completado, se sugiere continuar ese tema.
+  var sugerido = ultimo && ultimo.tipo === 'PARCIAL' && !completados[Number(ultimo.n)] ? Number(ultimo.n) : Math.min(siguiente, total);
+  var n = Object.keys(completados).length;
+  return {
+    completados: Object.keys(completados).map(Number).sort(function (a, b) { return a - b; }),
+    parciales: Object.keys(parciales).map(Number).sort(function (a, b) { return a - b; }),
+    ultimoContinuo: siguiente - 1, siguiente: siguiente > total ? null : siguiente, sugerido: sugerido,
+    cobertura: total ? Math.round(n / total * 1000) / 10 : 0, totalCompletados: n
+  };
+}
+
+/** Semáforo de atraso: 0 → VERDE, 1 → AMBAR, 2 o más → ROJO. */
+function semaforoAtraso(ultimoContinuo, esperadoCompletados) {
+  var atraso = Math.max(0, esperadoCompletados - ultimoContinuo);
+  return { atraso: atraso, semaforo: atraso === 0 ? 'VERDE' : atraso === 1 ? 'AMBAR' : 'ROJO' };
+}
+
+/** Curso del temario que corresponde a un bloque del horario (por salón y nombre/alias del curso). */
+function cursoDeBloque(bloque, cursos) {
+  var c = norm(bloque.curso);
+  return (cursos || []).filter(function (k) {
+    if (norm(k.salon) !== norm(bloque.salon)) return false;
+    var alias = [k.curso].concat(String(k.alias || '').split('|'));
+    return alias.some(function (a) { return a && norm(a) === c; });
+  })[0] || null;
+}
+
 // Exportar para pruebas en Node (ignorado en Apps Script).
 if (typeof module !== 'undefined') {
   module.exports = {
@@ -298,6 +368,8 @@ if (typeof module !== 'undefined') {
     extraerDni: extraerDni, bloquesDelDia: bloquesDelDia, evaluarIngreso: evaluarIngreso,
     horasSuperpuestas: horasSuperpuestas, calcularHoras: calcularHoras,
     estadoBloques: estadoBloques, resumenMensual: resumenMensual,
-    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque, validarDocente: validarDocente
+    validarBloque: validarBloque, prefijoSalon: prefijoSalon, nuevoIdBloque: nuevoIdBloque, validarDocente: validarDocente,
+    TIPOS_AVANCE: TIPOS_AVANCE, semanaDeFecha: semanaDeFecha, temaEsperado: temaEsperado, avanceCurso: avanceCurso,
+    semaforoAtraso: semaforoAtraso, cursoDeBloque: cursoDeBloque
   };
 }
