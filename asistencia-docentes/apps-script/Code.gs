@@ -946,5 +946,64 @@ function actualizarDatos_() {
   cfg.forEach(function (r, i) {
     if (r[0] === 'PIN_PANEL' && r[1] === '2026') { shC.getRange(i + 2, 2).setValue('91515'); cambios.push('PIN del panel actualizado'); }
   });
+  aplicarMigraciones_(cambios);
   return cambios;
+}
+
+/**
+ * Cambios puntuales de datos, cada uno se aplica UNA sola vez (queda anotado en Config → MIGRACIONES).
+ * horario: [ID bloque, docente anterior, docente nuevo] → solo cambia si el bloque aún tiene al docente anterior.
+ * docentes: filas nuevas (si no existen) · inactivar: docentes que dejan de dictar (Activo = NO).
+ */
+var MIGRACIONES = [{
+  id: '2026-11-16-asignacion-IVB',
+  descripcion: 'Asignación de docentes IV bimestre (examen mensual 16–21 nov 2026)',
+  docentes: [['', 'Dharma', '', 'Inicial Pequeñines 3', '904405961', '', 'SI', 'Ingresa en noviembre 2026']],
+  horario: [
+    ['PE-LU-1', 'Cherceni Floridas', 'Dharma'], ['PE-MA-1', 'Cherceni Floridas', 'Dharma'], ['PE-MI-1', 'Cherceni Floridas', 'Dharma'],
+    ['PE-JU-1', 'Cherceni Floridas', 'Dharma'], ['PE-VI-1', 'Cherceni Floridas', 'Dharma'],
+    ['EX-LU-1', 'Ariana Cancino', 'Cherceni Floridas'], ['EX-MA-1', 'Ariana Cancino', 'Cherceni Floridas'], ['EX-MI-1', 'Ariana Cancino', 'Cherceni Floridas'],
+    ['EX-JU-1', 'Ariana Cancino', 'Cherceni Floridas'], ['EX-VI-1', 'Ariana Cancino', 'Cherceni Floridas'],
+    ['CR-MI-1', 'Justin Guillén', 'Nicol Vallejos'],
+    ['LI-MI-2', 'Susan Adama', 'Yuli Cucho'], ['LI-MI-4', 'Susan Adama', 'Yuli Cucho']
+  ],
+  inactivar: ['Ariana Cancino', 'Justin Guillén']
+}];
+
+function aplicarMigraciones_(cambios) {
+  var shC = hoja_(HOJAS.CONFIG);
+  var cfg = shC.getRange(2, 1, Math.max(shC.getLastRow() - 1, 1), 2).getDisplayValues();
+  var filaMig = -1, hechas = [];
+  cfg.forEach(function (r, i) { if (r[0] === 'MIGRACIONES') { filaMig = i + 2; hechas = String(r[1]).split(',').filter(String); } });
+  MIGRACIONES.forEach(function (mig) {
+    if (hechas.indexOf(mig.id) >= 0) return;
+    var esqD = ESQUEMAS.Docentes.map(function (c) { return c[0]; });
+    var colDoc = esqD.indexOf('docente'), colAct = esqD.indexOf('activo');
+    var shD = hoja_(HOJAS.DOCENTES), n = Math.max(shD.getLastRow() - 1, 0);
+    var datos = n ? shD.getRange(2, 1, n, esqD.length).getDisplayValues() : [];
+    var nuevos = 0, inact = 0, bloques = 0;
+    (mig.docentes || []).forEach(function (d) {
+      if (datos.some(function (r) { return norm(r[colDoc]) === norm(d[colDoc]); })) return;
+      var fila = d.slice(); while (fila.length < esqD.length) fila.push('');
+      datos.push(fila); nuevos++;
+    });
+    (mig.inactivar || []).forEach(function (nom) {
+      datos.forEach(function (r) { if (norm(r[colDoc]) === norm(nom) && norm(r[colAct]) !== 'no') { r[colAct] = 'NO'; inact++; } });
+    });
+    if (datos.length) shD.getRange(2, 1, datos.length, esqD.length).setValues(datos);
+    var shH = hoja_(HOJAS.HORARIO), nh = shH.getLastRow() - 1;
+    if (nh > 0) {
+      var hv = shH.getRange(2, 1, nh, 7).getDisplayValues();
+      var cambio = false;
+      (mig.horario || []).forEach(function (h) {
+        hv.forEach(function (r) { if (r[0] === h[0] && norm(r[6]) === norm(h[1])) { r[6] = h[2]; bloques++; cambio = true; } });
+      });
+      if (cambio) shH.getRange(2, 7, nh, 1).setValues(hv.map(function (r) { return [r[6]]; }));
+    }
+    hechas.push(mig.id);
+    cambios.push(mig.descripcion + ': ' + bloques + ' bloque(s) reasignados, ' + nuevos + ' docente(s) nuevo(s), ' + inact + ' inactivado(s)');
+  });
+  var valor = hechas.join(',');
+  if (filaMig > 0) shC.getRange(filaMig, 2).setValue(valor);
+  else shC.getRange(shC.getLastRow() + 1, 1, 1, 3).setValues([['MIGRACIONES', valor, 'Actualizaciones de datos ya aplicadas (no editar)']]);
 }

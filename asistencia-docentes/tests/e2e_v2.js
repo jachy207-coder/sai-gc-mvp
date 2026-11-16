@@ -28,7 +28,7 @@ async function entrarPanel(page) {
   assert(yuli && yuli[4] === '920005517', 'Yuly → Yuli Cucho con celular 920005517');
   assert(jhon[4] === '957239619' && jhon[0] === '71234567', 'Jhon Vásquez: celular completado y su DNI existente NO se borró');
   const hor = await js(`JSON.stringify(SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Horario')._datos)`).then(JSON.parse);
-  assert(hor.filter((r) => r[6] === 'Yuli Cucho').length === 2 && !hor.some((r) => r[6] === 'Yuly'), 'Horario: bloques de Yuly renombrados');
+  assert(hor.filter((r) => r[6] === 'Yuli Cucho').length === 4 && !hor.some((r) => r[6] === 'Yuly'), 'Horario: bloques de Yuly renombrados');
   assert((await js('setup()')).includes('ya estaban al día'), 'setup() es repetible (segunda vez no cambia nada)');
 
   const browser = await chromium.launch();
@@ -115,12 +115,12 @@ async function entrarPanel(page) {
   await page.waitForSelector('#qr-msg >> text=fotochecks listos', { timeout: 60000 });
   const drv = await (await fetch(BASE + '/__drive')).json();
   const carp = drv.find((c) => c.nombre.startsWith('Fotochecks QR'));
-  assert(carp && carp.archivos.filter((n) => n.endsWith('.png')).length >= 20 && carp.archivos.includes('Fotochecks_QR_CVI.zip'), 'ZIP en Drive con ' + carp.archivos.length + ' archivos');
+  assert(carp && carp.archivos.filter((n) => n.endsWith('.png')).length >= 19 && carp.archivos.includes('Fotochecks_QR_CVI.zip'), 'ZIP en Drive con ' + carp.archivos.length + ' archivos');
 
   console.log('4b) Módulo Docentes: agregar, editar, activar/desactivar');
   await page.click('[data-tab="docentes"]');
   await page.waitForSelector('.dc');
-  assert((await page.locator('.dc').count()) === 20, 'lista 20 docentes activos');
+  assert((await page.locator('.dc').count()) === 19, 'lista 19 docentes activos (IV bimestre)');
   await page.click('#d-nuevo'); await page.waitForSelector('#g-docente');
   await page.fill('#g-docente', 'Rosa Díaz'); await page.fill('#g-nombre', 'Rosa María Díaz Torres');
   await page.fill('#g-cel', '912 000 111'); await page.fill('#g-esp', 'Inglés'); await page.fill('#g-notas', 'Ingresa en diciembre');
@@ -136,9 +136,9 @@ async function entrarPanel(page) {
   await page.click('.dc[data-doc="Yuli Cucho"] .n'); await page.waitForSelector('#g-docente');
   await page.fill('#g-docente', 'Yuli Cucho Ramos'); await page.fill('#g-dni', '45678912');
   await page.click('#g-guardar'); await page.waitForSelector('#toast:not(.oculto) >> text=Datos guardados');
-  assert((await page.textContent('#toast')).includes('2 bloque(s) del horario actualizados'), 'renombrar actualiza sus 2 bloques del horario');
+  assert((await page.textContent('#toast')).includes('4 bloque(s) del horario actualizados'), 'renombrar actualiza sus 4 bloques del horario');
   const hy = await js(`JSON.stringify(SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Horario')._datos.filter(function(r){return r[6]==='Yuli Cucho Ramos'}).length)`);
-  assert(hy === '2', 'Horario en la hoja con el nombre nuevo');
+  assert(hy === '4', 'Horario en la hoja con el nombre nuevo');
   await page.click('.dc[data-doc="Rosa Díaz"] [data-sw]');
   await page.waitForSelector('#toast:not(.oculto) >> text=desactivado');
   const rosa = await js(`JSON.stringify(SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Docentes')._datos.filter(function(r){return r[1]==='Rosa Díaz'})[0])`).then(JSON.parse);

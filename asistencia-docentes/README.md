@@ -20,7 +20,7 @@ Aplicativo web sobre **Google Sheets + Google Apps Script** (gratis, sin servido
 
 1. Abre la hoja **"CVI Asistencia Docente - Monte Azul (piloto)"**, que está en tu Drive dentro de *CVI MONTE AZUL 2026*. Ya tiene a los docentes con su celular y el horario.
 2. Ve a **Extensiones → Apps Script**. Se abre el editor con un archivo llamado `Código.gs`.
-3. Abre el Google Doc **"CÓDIGO PARA PEGAR v4 - CVI Asistencia"** (o la versión más reciente), que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
+3. Abre el Google Doc **"CÓDIGO PARA PEGAR v5 - CVI Asistencia"** (o la versión más reciente), que está en la carpeta *CÓDIGO APP ASISTENCIA DOCENTE*.
    1. Haz clic dentro del texto, pulsa **Ctrl+A** y luego **Ctrl+C**.
    2. En el editor de Apps Script, haz clic dentro de `Código.gs`, pulsa **Ctrl+A** y **Supr** para borrar lo que haya, y luego **Ctrl+V** y **Ctrl+S**.
    3. Revisa que la **primera línea** sea `/**` y que la **última** diga `FIN DEL ARCHIVO`.

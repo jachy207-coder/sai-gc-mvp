@@ -14,10 +14,10 @@ dni,docente,nombre_completo,especialidad,celular,correo,activo
 ,Erika Ramírez,Erika Beatriz Ramírez Montesinos,Arte y Computación,963559152,erikamontesinos1984@gmail.com,SI
 ,Yuli Cucho,Yuli Cucho,Matemática,920005517,,SI
 ,Nicol Vallejos,Nicol Andrea Vallejos Suárez,Polidocencia Creadores 3-4,906608891,nicolvallejos05@gmail.com,SI
-,Justin Guillén,Justin Anthony Guillén López,Geometría,987702349,justinguillenlopez.sjb@gmail.com,SI
+,Justin Guillén,Justin Anthony Guillén López,Geometría,987702349,justinguillenlopez.sjb@gmail.com,NO
 ,Marleny Landeo,Marleny Landeo Daniel,Polidocencia Aventureros 1-2,931000890,marlenylandeodaniel@gmail.com,SI
 ,Alanis Cárdenas,Alanis Romina Cárdenas Tambo,Tutoría Líderes 5-6,941072934,alanina.miau@gmail.com,SI
-,Ariana Cancino,Ariana Naomi Cancino Guardamino,Inicial Exploradores 4-5,982391670,cancinoariana71@gmail.com,SI
+,Ariana Cancino,Ariana Naomi Cancino Guardamino,Inicial Exploradores 4-5,982391670,cancinoariana71@gmail.com,NO
 ,Cherceni Floridas,Cherceni Alexandra Floridas Piña,Inicial Pequeñines 3,970414409,cherceni1234floridas@gmail.com,SI
 ,Alexander Yanac,Alexander Yanac Hurtado,Física y Trigonometría,920077386,alexanderyanachurtado@gmail.com,NO
 ,Mitzi Matias,Mitzi Marjorie Matias Rodriguez,Comunicación,941112806,mitzimatias7@gmail.com,NO
@@ -25,3 +25,4 @@ dni,docente,nombre_completo,especialidad,celular,correo,activo
 ,Jeremy Loarte,Jeremy Imanol Loarte Fuentes Rivera,,978420702,jeremyloarte3@gmail.com,NO
 ,Gladys Rodas,Gladys Milagros Rodas Zapana,Inglés,937589188,gmilagrosrodas24@gmail.com,NO
 ,Kevin Albán,Kevin Alexis Albán Becerra,Educ. Física,923073349,kevinalban15@gmail.com,NO
+,Dharma,,Inicial Pequeñines 3,904405961,,SI

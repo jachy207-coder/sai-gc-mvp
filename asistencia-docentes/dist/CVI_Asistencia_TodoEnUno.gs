@@ -425,9 +425,9 @@ var SEED_HORARIO = [
   ["LI-MA-4", "LÍDERES 5-6", "MARTES", "12:15", "12:30", "INGLÉS", "Ivonne Solórzano", "Docente no indicado en celda: asumido"],
   ["LI-MA-5", "LÍDERES 5-6", "MARTES", "12:30", "14:00", "TUTORÍA", "Alanis Cárdenas", "Tutora del salón: asumido"],
   ["LI-MI-1", "LÍDERES 5-6", "MIERCOLES", "08:00", "10:00", "QUÍMICA", "Susan Adama", ""],
-  ["LI-MI-2", "LÍDERES 5-6", "MIERCOLES", "10:15", "11:00", "PLAN LECTOR", "Susan Adama", ""],
+  ["LI-MI-2", "LÍDERES 5-6", "MIERCOLES", "10:15", "11:00", "PLAN LECTOR", "Yuli Cucho", ""],
   ["LI-MI-3", "LÍDERES 5-6", "MIERCOLES", "11:00", "12:00", "COMPUTACIÓN", "Erika Ramírez", ""],
-  ["LI-MI-4", "LÍDERES 5-6", "MIERCOLES", "12:15", "14:00", "GEOMETRÍA", "Susan Adama", ""],
+  ["LI-MI-4", "LÍDERES 5-6", "MIERCOLES", "12:15", "14:00", "GEOMETRÍA", "Yuli Cucho", ""],
   ["LI-JU-1", "LÍDERES 5-6", "JUEVES", "08:00", "10:00", "HISTORIA", "Wilber Escobar", ""],
   ["LI-JU-2", "LÍDERES 5-6", "JUEVES", "10:15", "12:00", "ÁLGEBRA", "Alberto Yanac", ""],
   ["LI-JU-3", "LÍDERES 5-6", "JUEVES", "12:15", "14:00", "TRIGONOMETRÍA", "Alberto Yanac", ""],
@@ -441,7 +441,7 @@ var SEED_HORARIO = [
   ["CR-MA-1", "CREADORES 3-4", "MARTES", "08:00", "10:00", "LENGUAJE", "Nicol Vallejos", ""],
   ["CR-MA-2", "CREADORES 3-4", "MARTES", "10:15", "12:00", "BIOLOGÍA", "Nicol Vallejos", ""],
   ["CR-MA-3", "CREADORES 3-4", "MARTES", "12:15", "14:00", "RAZ. VERBAL", "Nicol Vallejos", ""],
-  ["CR-MI-1", "CREADORES 3-4", "MIERCOLES", "08:00", "10:00", "GEOMETRÍA", "Justin Guillén", ""],
+  ["CR-MI-1", "CREADORES 3-4", "MIERCOLES", "08:00", "10:00", "GEOMETRÍA", "Nicol Vallejos", ""],
   ["CR-MI-2", "CREADORES 3-4", "MIERCOLES", "10:15", "12:00", "HISTORIA DEL PERÚ", "Nicol Vallejos", ""],
   ["CR-MI-3", "CREADORES 3-4", "MIERCOLES", "12:15", "14:00", "CALIGRAFÍA Y PLAN LECTOR", "Nicol Vallejos", ""],
   ["CR-JU-1", "CREADORES 3-4", "JUEVES", "08:00", "10:00", "ÁLGEBRA", "Nicol Vallejos", ""],
@@ -473,16 +473,16 @@ var SEED_HORARIO = [
   ["AV-VI-2", "AVENTUREROS 1-2", "VIERNES", "10:15", "12:00", "PERSONAL SOCIAL", "Marleny Landeo", ""],
   ["AV-VI-3", "AVENTUREROS 1-2", "VIERNES", "12:15", "13:00", "INGLÉS", "Marleny Landeo", ""],
   ["AV-VI-4", "AVENTUREROS 1-2", "VIERNES", "13:00", "14:00", "EXPRESIÓN ORAL", "Marleny Landeo", ""],
-  ["EX-LU-1", "EXPLORADORES 4-5", "LUNES", "08:00", "13:00", "JORNADA INICIAL", "Ariana Cancino", "Tutora de inicial"],
-  ["EX-MA-1", "EXPLORADORES 4-5", "MARTES", "08:00", "13:00", "JORNADA INICIAL", "Ariana Cancino", "Tutora de inicial"],
-  ["EX-MI-1", "EXPLORADORES 4-5", "MIERCOLES", "08:00", "13:00", "JORNADA INICIAL", "Ariana Cancino", "Tutora de inicial"],
-  ["EX-JU-1", "EXPLORADORES 4-5", "JUEVES", "08:00", "13:00", "JORNADA INICIAL", "Ariana Cancino", "Tutora de inicial"],
-  ["EX-VI-1", "EXPLORADORES 4-5", "VIERNES", "08:00", "13:00", "JORNADA INICIAL", "Ariana Cancino", "Tutora de inicial"],
-  ["PE-LU-1", "PEQUEÑINES 3", "LUNES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
-  ["PE-MA-1", "PEQUEÑINES 3", "MARTES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
-  ["PE-MI-1", "PEQUEÑINES 3", "MIERCOLES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
-  ["PE-JU-1", "PEQUEÑINES 3", "JUEVES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
-  ["PE-VI-1", "PEQUEÑINES 3", "VIERNES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"]
+  ["EX-LU-1", "EXPLORADORES 4-5", "LUNES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
+  ["EX-MA-1", "EXPLORADORES 4-5", "MARTES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
+  ["EX-MI-1", "EXPLORADORES 4-5", "MIERCOLES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
+  ["EX-JU-1", "EXPLORADORES 4-5", "JUEVES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
+  ["EX-VI-1", "EXPLORADORES 4-5", "VIERNES", "08:00", "13:00", "JORNADA INICIAL", "Cherceni Floridas", "Tutora de inicial"],
+  ["PE-LU-1", "PEQUEÑINES 3", "LUNES", "08:00", "13:00", "JORNADA INICIAL", "Dharma", "Tutora de inicial"],
+  ["PE-MA-1", "PEQUEÑINES 3", "MARTES", "08:00", "13:00", "JORNADA INICIAL", "Dharma", "Tutora de inicial"],
+  ["PE-MI-1", "PEQUEÑINES 3", "MIERCOLES", "08:00", "13:00", "JORNADA INICIAL", "Dharma", "Tutora de inicial"],
+  ["PE-JU-1", "PEQUEÑINES 3", "JUEVES", "08:00", "13:00", "JORNADA INICIAL", "Dharma", "Tutora de inicial"],
+  ["PE-VI-1", "PEQUEÑINES 3", "VIERNES", "08:00", "13:00", "JORNADA INICIAL", "Dharma", "Tutora de inicial"]
 ];
 
 var SEED_DOCENTES = [
@@ -501,17 +501,18 @@ var SEED_DOCENTES = [
   ["", "Erika Ramírez", "Erika Beatriz Ramírez Montesinos", "Arte y Computación", "963559152", "erikamontesinos1984@gmail.com", "SI"],
   ["", "Yuli Cucho", "Yuli Cucho", "Matemática", "920005517", "", "SI"],
   ["", "Nicol Vallejos", "Nicol Andrea Vallejos Suárez", "Polidocencia Creadores 3-4", "906608891", "nicolvallejos05@gmail.com", "SI"],
-  ["", "Justin Guillén", "Justin Anthony Guillén López", "Geometría", "987702349", "justinguillenlopez.sjb@gmail.com", "SI"],
+  ["", "Justin Guillén", "Justin Anthony Guillén López", "Geometría", "987702349", "justinguillenlopez.sjb@gmail.com", "NO"],
   ["", "Marleny Landeo", "Marleny Landeo Daniel", "Polidocencia Aventureros 1-2", "931000890", "marlenylandeodaniel@gmail.com", "SI"],
   ["", "Alanis Cárdenas", "Alanis Romina Cárdenas Tambo", "Tutoría Líderes 5-6", "941072934", "alanina.miau@gmail.com", "SI"],
-  ["", "Ariana Cancino", "Ariana Naomi Cancino Guardamino", "Inicial Exploradores 4-5", "982391670", "cancinoariana71@gmail.com", "SI"],
+  ["", "Ariana Cancino", "Ariana Naomi Cancino Guardamino", "Inicial Exploradores 4-5", "982391670", "cancinoariana71@gmail.com", "NO"],
   ["", "Cherceni Floridas", "Cherceni Alexandra Floridas Piña", "Inicial Pequeñines 3", "970414409", "cherceni1234floridas@gmail.com", "SI"],
   ["", "Alexander Yanac", "Alexander Yanac Hurtado", "Física y Trigonometría", "920077386", "alexanderyanachurtado@gmail.com", "NO"],
   ["", "Mitzi Matias", "Mitzi Marjorie Matias Rodriguez", "Comunicación", "941112806", "mitzimatias7@gmail.com", "NO"],
   ["", "María Narciso", "María de Jesús Narciso Quispe", "Ciencias Sociales", "987801210", "esxoterika@gmail.com", "NO"],
   ["", "Jeremy Loarte", "Jeremy Imanol Loarte Fuentes Rivera", "", "978420702", "jeremyloarte3@gmail.com", "NO"],
   ["", "Gladys Rodas", "Gladys Milagros Rodas Zapana", "Inglés", "937589188", "gmilagrosrodas24@gmail.com", "NO"],
-  ["", "Kevin Albán", "Kevin Alexis Albán Becerra", "Educ. Física", "923073349", "kevinalban15@gmail.com", "NO"]
+  ["", "Kevin Albán", "Kevin Alexis Albán Becerra", "Educ. Física", "923073349", "kevinalban15@gmail.com", "NO"],
+  ["", "Dharma", "", "Inicial Pequeñines 3", "904405961", "", "SI"]
 ];
 
 /* Control académico (Anual Integral 2026): generado por tools/construir_temario.py */
@@ -2011,7 +2012,66 @@ function actualizarDatos_() {
   cfg.forEach(function (r, i) {
     if (r[0] === 'PIN_PANEL' && r[1] === '2026') { shC.getRange(i + 2, 2).setValue('91515'); cambios.push('PIN del panel actualizado'); }
   });
+  aplicarMigraciones_(cambios);
   return cambios;
+}
+
+/**
+ * Cambios puntuales de datos, cada uno se aplica UNA sola vez (queda anotado en Config → MIGRACIONES).
+ * horario: [ID bloque, docente anterior, docente nuevo] → solo cambia si el bloque aún tiene al docente anterior.
+ * docentes: filas nuevas (si no existen) · inactivar: docentes que dejan de dictar (Activo = NO).
+ */
+var MIGRACIONES = [{
+  id: '2026-11-16-asignacion-IVB',
+  descripcion: 'Asignación de docentes IV bimestre (examen mensual 16–21 nov 2026)',
+  docentes: [['', 'Dharma', '', 'Inicial Pequeñines 3', '904405961', '', 'SI', 'Ingresa en noviembre 2026']],
+  horario: [
+    ['PE-LU-1', 'Cherceni Floridas', 'Dharma'], ['PE-MA-1', 'Cherceni Floridas', 'Dharma'], ['PE-MI-1', 'Cherceni Floridas', 'Dharma'],
+    ['PE-JU-1', 'Cherceni Floridas', 'Dharma'], ['PE-VI-1', 'Cherceni Floridas', 'Dharma'],
+    ['EX-LU-1', 'Ariana Cancino', 'Cherceni Floridas'], ['EX-MA-1', 'Ariana Cancino', 'Cherceni Floridas'], ['EX-MI-1', 'Ariana Cancino', 'Cherceni Floridas'],
+    ['EX-JU-1', 'Ariana Cancino', 'Cherceni Floridas'], ['EX-VI-1', 'Ariana Cancino', 'Cherceni Floridas'],
+    ['CR-MI-1', 'Justin Guillén', 'Nicol Vallejos'],
+    ['LI-MI-2', 'Susan Adama', 'Yuli Cucho'], ['LI-MI-4', 'Susan Adama', 'Yuli Cucho']
+  ],
+  inactivar: ['Ariana Cancino', 'Justin Guillén']
+}];
+
+function aplicarMigraciones_(cambios) {
+  var shC = hoja_(HOJAS.CONFIG);
+  var cfg = shC.getRange(2, 1, Math.max(shC.getLastRow() - 1, 1), 2).getDisplayValues();
+  var filaMig = -1, hechas = [];
+  cfg.forEach(function (r, i) { if (r[0] === 'MIGRACIONES') { filaMig = i + 2; hechas = String(r[1]).split(',').filter(String); } });
+  MIGRACIONES.forEach(function (mig) {
+    if (hechas.indexOf(mig.id) >= 0) return;
+    var esqD = ESQUEMAS.Docentes.map(function (c) { return c[0]; });
+    var colDoc = esqD.indexOf('docente'), colAct = esqD.indexOf('activo');
+    var shD = hoja_(HOJAS.DOCENTES), n = Math.max(shD.getLastRow() - 1, 0);
+    var datos = n ? shD.getRange(2, 1, n, esqD.length).getDisplayValues() : [];
+    var nuevos = 0, inact = 0, bloques = 0;
+    (mig.docentes || []).forEach(function (d) {
+      if (datos.some(function (r) { return norm(r[colDoc]) === norm(d[colDoc]); })) return;
+      var fila = d.slice(); while (fila.length < esqD.length) fila.push('');
+      datos.push(fila); nuevos++;
+    });
+    (mig.inactivar || []).forEach(function (nom) {
+      datos.forEach(function (r) { if (norm(r[colDoc]) === norm(nom) && norm(r[colAct]) !== 'no') { r[colAct] = 'NO'; inact++; } });
+    });
+    if (datos.length) shD.getRange(2, 1, datos.length, esqD.length).setValues(datos);
+    var shH = hoja_(HOJAS.HORARIO), nh = shH.getLastRow() - 1;
+    if (nh > 0) {
+      var hv = shH.getRange(2, 1, nh, 7).getDisplayValues();
+      var cambio = false;
+      (mig.horario || []).forEach(function (h) {
+        hv.forEach(function (r) { if (r[0] === h[0] && norm(r[6]) === norm(h[1])) { r[6] = h[2]; bloques++; cambio = true; } });
+      });
+      if (cambio) shH.getRange(2, 7, nh, 1).setValues(hv.map(function (r) { return [r[6]]; }));
+    }
+    hechas.push(mig.id);
+    cambios.push(mig.descripcion + ': ' + bloques + ' bloque(s) reasignados, ' + nuevos + ' docente(s) nuevo(s), ' + inact + ' inactivado(s)');
+  });
+  var valor = hechas.join(',');
+  if (filaMig > 0) shC.getRange(filaMig, 2).setValue(valor);
+  else shC.getRange(shC.getLastRow() + 1, 1, 1, 3).setValues([['MIGRACIONES', valor, 'Actualizaciones de datos ya aplicadas (no editar)']]);
 }
 
 /* ========================= Pantallas (HTML) ========================= */
