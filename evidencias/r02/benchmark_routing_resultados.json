@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-10-30T23:09:29.110Z",
+    "generatedAt": "2026-11-21T03:10:45.259Z",
     "sampleSize": 60,
     "description": "Benchmark comparativo de políticas de asignación sobre carga sintética demostrativa (UPC SAI-GC R02)"
   },
@@ -76,7 +76,7 @@
         },
         {
           "id": "SYNTH-002",
-          "level": "C",
+          "level": "B",
           "agent": "AG-01",
           "weight": 5,
           "status": "ASIGNADO"
@@ -111,7 +111,7 @@
         },
         {
           "id": "SYNTH-007",
-          "level": "C",
+          "level": "B",
           "agent": "AG-04",
           "weight": 5,
           "status": "ASIGNADO"
@@ -146,7 +146,7 @@
         },
         {
           "id": "SYNTH-012",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -202,7 +202,7 @@
         },
         {
           "id": "SYNTH-020",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -237,7 +237,7 @@
         },
         {
           "id": "SYNTH-025",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -258,7 +258,7 @@
         },
         {
           "id": "SYNTH-028",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -342,7 +342,7 @@
         },
         {
           "id": "SYNTH-040",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -363,7 +363,7 @@
         },
         {
           "id": "SYNTH-043",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -384,7 +384,7 @@
         },
         {
           "id": "SYNTH-046",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -468,7 +468,7 @@
         },
         {
           "id": "SYNTH-058",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -538,7 +538,7 @@
         },
         {
           "id": "SYNTH-002",
-          "level": "C",
+          "level": "B",
           "agent": "AG-02",
           "weight": 5,
           "status": "ASIGNADO"
@@ -573,7 +573,7 @@
         },
         {
           "id": "SYNTH-007",
-          "level": "C",
+          "level": "B",
           "agent": "AG-03",
           "weight": 5,
           "status": "ASIGNADO"
@@ -608,7 +608,7 @@
         },
         {
           "id": "SYNTH-012",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -664,7 +664,7 @@
         },
         {
           "id": "SYNTH-020",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -699,7 +699,7 @@
         },
         {
           "id": "SYNTH-025",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -720,7 +720,7 @@
         },
         {
           "id": "SYNTH-028",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -804,7 +804,7 @@
         },
         {
           "id": "SYNTH-040",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -825,7 +825,7 @@
         },
         {
           "id": "SYNTH-043",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -846,7 +846,7 @@
         },
         {
           "id": "SYNTH-046",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -930,7 +930,7 @@
         },
         {
           "id": "SYNTH-058",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1000,7 +1000,7 @@
         },
         {
           "id": "SYNTH-002",
-          "level": "C",
+          "level": "B",
           "agent": "AG-02",
           "weight": 5,
           "status": "ASIGNADO"
@@ -1035,7 +1035,7 @@
         },
         {
           "id": "SYNTH-007",
-          "level": "C",
+          "level": "B",
           "agent": "AG-03",
           "weight": 5,
           "status": "ASIGNADO"
@@ -1070,7 +1070,7 @@
         },
         {
           "id": "SYNTH-012",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1126,7 +1126,7 @@
         },
         {
           "id": "SYNTH-020",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1161,7 +1161,7 @@
         },
         {
           "id": "SYNTH-025",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1182,7 +1182,7 @@
         },
         {
           "id": "SYNTH-028",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1266,7 +1266,7 @@
         },
         {
           "id": "SYNTH-040",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1287,7 +1287,7 @@
         },
         {
           "id": "SYNTH-043",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1308,7 +1308,7 @@
         },
         {
           "id": "SYNTH-046",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1392,7 +1392,7 @@
         },
         {
           "id": "SYNTH-058",
-          "level": "C",
+          "level": "B",
           "agent": null,
           "weight": 5,
           "status": "EN_COLA"
@@ -1426,9 +1426,9 @@
     "SAI-GC R02": {
       "policy": "SAI-GC R02",
       "totalCases": 60,
-      "assigned": 8,
-      "queued": 31,
-      "escalated": 21,
+      "assigned": 10,
+      "queued": 39,
+      "escalated": 11,
       "blockedSecurity": 0,
       "agentUtilization": {
         "AG-01": {
@@ -1437,9 +1437,9 @@
           "utilizationPct": 80
         },
         "AG-02": {
-          "finalLoad": 8,
+          "finalLoad": 10,
           "maxCapacity": 10,
-          "utilizationPct": 80
+          "utilizationPct": 100
         },
         "AG-03": {
           "finalLoad": 9,
@@ -1447,9 +1447,9 @@
           "utilizationPct": 90
         },
         "AG-04": {
-          "finalLoad": 8,
+          "finalLoad": 9,
           "maxCapacity": 10,
-          "utilizationPct": 80
+          "utilizationPct": 90
         }
       },
       "casesLog": [
@@ -1457,28 +1457,28 @@
           "id": "SYNTH-001",
           "level": "A",
           "agent": "AG-01",
-          "weight": 4,
+          "weight": 3,
           "status": "ASIGNADO"
         },
         {
           "id": "SYNTH-002",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": "AG-02",
+          "weight": 5,
+          "status": "ASIGNADO"
         },
         {
           "id": "SYNTH-003",
           "level": "A",
           "agent": "AG-03",
-          "weight": 4,
+          "weight": 3,
           "status": "ASIGNADO"
         },
         {
           "id": "SYNTH-004",
           "level": "A",
-          "agent": "AG-02",
-          "weight": 4,
+          "agent": "AG-04",
+          "weight": 3,
           "status": "ASIGNADO"
         },
         {
@@ -1497,10 +1497,10 @@
         },
         {
           "id": "SYNTH-007",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": "AG-01",
+          "weight": 5,
+          "status": "ASIGNADO"
         },
         {
           "id": "SYNTH-008",
@@ -1512,8 +1512,8 @@
         {
           "id": "SYNTH-009",
           "level": "A",
-          "agent": "AG-04",
-          "weight": 4,
+          "agent": "AG-03",
+          "weight": 3,
           "status": "ASIGNADO"
         },
         {
@@ -1526,57 +1526,57 @@
         {
           "id": "SYNTH-011",
           "level": "A",
-          "agent": "AG-02",
-          "weight": 4,
+          "agent": "AG-04",
+          "weight": 3,
           "status": "ASIGNADO"
         },
         {
           "id": "SYNTH-012",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
-        },
-        {
-          "id": "SYNTH-013",
           "level": "B",
-          "agent": "AG-03",
+          "agent": "AG-02",
           "weight": 5,
           "status": "ASIGNADO"
         },
         {
+          "id": "SYNTH-013",
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
+        },
+        {
           "id": "SYNTH-014",
           "level": "A",
-          "agent": "AG-01",
-          "weight": 4,
+          "agent": "AG-03",
+          "weight": 3,
           "status": "ASIGNADO"
         },
         {
           "id": "SYNTH-015",
           "level": "A",
           "agent": "AG-04",
-          "weight": 4,
+          "weight": 3,
           "status": "ASIGNADO"
         },
         {
           "id": "SYNTH-016",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-017",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-018",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
@@ -1588,51 +1588,51 @@
         },
         {
           "id": "SYNTH-020",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
         },
         {
           "id": "SYNTH-021",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-022",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-023",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-024",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-025",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
         },
         {
           "id": "SYNTH-026",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
@@ -1644,16 +1644,16 @@
         },
         {
           "id": "SYNTH-028",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
         },
         {
           "id": "SYNTH-029",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
@@ -1681,14 +1681,14 @@
           "id": "SYNTH-033",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-034",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
@@ -1702,42 +1702,42 @@
           "id": "SYNTH-036",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-037",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-038",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-039",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-040",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
         },
         {
           "id": "SYNTH-041",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
@@ -1749,10 +1749,10 @@
         },
         {
           "id": "SYNTH-043",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
         },
         {
           "id": "SYNTH-044",
@@ -1765,49 +1765,49 @@
           "id": "SYNTH-045",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-046",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
         },
         {
           "id": "SYNTH-047",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-048",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-049",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-050",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-051",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
@@ -1821,68 +1821,68 @@
           "id": "SYNTH-053",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-054",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-055",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-056",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-057",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-058",
-          "level": "C",
-          "agent": "SUPERVISION",
-          "weight": 0,
-          "status": "ESCALADO_SUPERVISOR"
+          "level": "B",
+          "agent": null,
+          "weight": 5,
+          "status": "EN_COLA"
         },
         {
           "id": "SYNTH-059",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         },
         {
           "id": "SYNTH-060",
           "level": "A",
           "agent": null,
-          "weight": 4,
+          "weight": 3,
           "status": "EN_COLA"
         }
       ],
       "metrics": {
-        "avgLoad": 8.25,
-        "stdDev": 0.43,
-        "maxLoad": 9,
+        "avgLoad": 9,
+        "stdDev": 0.71,
+        "maxLoad": 10,
         "minLoad": 8,
-        "loadSpread": 1,
-        "assignedRatePct": 13,
-        "queuedRatePct": 52,
-        "escalatedRatePct": 35
+        "loadSpread": 2,
+        "assignedRatePct": 17,
+        "queuedRatePct": 65,
+        "escalatedRatePct": 18
       }
     }
   }

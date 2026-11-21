@@ -2,8 +2,12 @@ import {
   VERSION,
   CAPACITY,
   CASES,
+  V08_DATASET,
   AGENTS,
+  classify,
+  buildAgentsFromCaseState,
   processCase,
+  evaluateDatasetV08,
   route,
   weightFor,
   computeCaseRevision,
@@ -22,6 +26,26 @@ const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({
   '"': '&quot;',
   "'": '&#39;'
 }[c]));
+
+function inferBranch(text = '') {
+  if (/soat|vehicular|veh[ií]culo|inspecci[oó]n|repuesto|taller/i.test(text)) return 'Vehicular';
+  if (/salud|cl[ií]nica|afiliaci[oó]n|carta de garant[ií]a|atenci[oó]n especializada|reembolso/i.test(text)) return 'Salud';
+  return 'Vida';
+}
+
+const V08_MAPPED_CASES = (V08_DATASET.cases || []).map(c => {
+  const cl = classify(c.query_text);
+  return {
+    id: c.case_id,
+    name: `Lote v0.8 (Clase ${cl.level}) · ${c.query_text.slice(0, 44)}...`,
+    text: c.query_text,
+    topic: `Lote v0.8 (${c.case_id})`,
+    branch: inferBranch(c.query_text),
+    validated: true,
+    scenario: 'v08',
+    v08Raw: c
+  };
+});
 
 const INITIAL_WIP = [
   {
@@ -54,22 +78,24 @@ const INITIAL_WIP = [
 
 const state = {
   agents: structuredClone(AGENTS),
-  cases: structuredClone(CASES),
+  cases: [...structuredClone(CASES), ...structuredClone(V08_MAPPED_CASES)],
   selected: CASES[0],
   output: null,
   policy: 'actual',
   logs: [],
   caseStatus: 'PENDIENTE_REVISION',
-  decisions: {},           // { [caseId]: 'Aceptar' | 'Editar' | 'Rechazar' | 'Escalar' }
-  approvedRevisions: {},   // { [caseId]: 'rev-xxxx' }
+  decisions: {},
+  approvedRevisions: {},
   isEditing: false,
   editApproved: false,
   ivrManualVerified: false,
-  chatMessages: {},        // { [caseId]: Array<{ type, sender, decision, time, text }> }
+  chatMessages: {},
   assignments: structuredClone(INITIAL_WIP),
   heldCases: [],
   escalatedCases: [],
   logFilterClass: 'ALL',
+  v08Dataset: structuredClone(V08_DATASET),
+  v08Filter: 'ALL',
   counter: 0
 };
 
@@ -81,14 +107,29 @@ function navigate(name) {
 
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => navigate(b.dataset.tab)));
 
-// Inicializar selector de casos
+// Inicializar selector de casos con optgroups (DEMO y V08)
 const select = $('case-select');
-for (const c of state.cases) {
-  const o = document.createElement('option');
-  o.value = c.id;
-  o.textContent = `${c.id} · ${c.name}`;
-  select.append(o);
+function populateCaseSelect() {
+  select.innerHTML = '';
+  const grpDemo = document.createElement('optgroup');
+  grpDemo.label = 'Casos Demostrativos Base (DEMO-001 a DEMO-008)';
+  for (const c of state.cases.filter(x => x.scenario !== 'v08')) {
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = `${c.id} · ${c.name}`;
+    grpDemo.append(o);
+  }
+  const grpV08 = document.createElement('optgroup');
+  grpV08.label = 'Lote Operación Aprobada v0.8 (CASO-001 a CASO-030)';
+  for (const c of state.cases.filter(x => x.scenario === 'v08')) {
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = `${c.id} · ${c.name}`;
+    grpV08.append(o);
+  }
+  select.append(grpDemo, grpV08);
 }
+populateCaseSelect();
 select.addEventListener('change', () => setCase(select.value));
 
 function updateContextBar() {
@@ -140,8 +181,9 @@ function setCase(id) {
   state.ivrManualVerified = false;
   invalidateCurrentApproval('Cambio de caso activo');
 
-  // Ajustes especiales de simulación según el escenario
-  if (c.scenario === 'all_busy') {
+  if (c.scenario === 'v08' && c.v08Raw) {
+    state.agents = buildAgentsFromCaseState(c.v08Raw, state.policy);
+  } else if (c.scenario === 'all_busy') {
     state.agents = AGENTS.map(a => ({ ...a, status: 'Ocupado', load: 10 }));
   } else if (c.scenario === 'agent_paused') {
     state.agents = [
@@ -150,12 +192,8 @@ function setCase(id) {
       { id: 'AG-03', display: 'Asesor Demo 03', status: 'Ocupado', load: 10, skills: ['Vehicular'] },
       { id: 'AG-04', display: 'Asesor Demo 04', status: 'Refrigerio', load: 0, skills: ['Vida', 'Salud'] }
     ];
-  } else if (c.scenario === 'policy_compare') {
-    state.agents = structuredClone(AGENTS);
   } else {
-    if (state.agents.every(a => a.load === 10)) {
-      state.agents = structuredClone(AGENTS);
-    }
+    state.agents = structuredClone(AGENTS);
   }
 
   $('question').value = c.text;
@@ -273,10 +311,10 @@ function resetOutput() {
     b.classList.remove('active-choice');
   });
   $('send-chat-btn').disabled = true;
-  $('weight').textContent = state.policy === 'experimental' ? 'Depende de clase' : '5 unidades';
+  $('weight').textContent = state.policy === 'experimental' ? 'A=3 / B=5 / C=8' : '5 unidades';
   $('recommended').textContent = 'Pendiente';
   $('projected').textContent = '—';
-  $('route-reason').textContent = 'Se recomienda el asesor disponible con menor carga y skill compatible.';
+  $('route-reason').textContent = 'Se recomienda el asesor disponible con menor carga ponderada y mayor antigüedad desde última asignación.';
   $('progress-fill').style.width = '0%';
   $('cmp-actual').textContent = '—';
   $('cmp-exp').textContent = '—';
@@ -348,7 +386,6 @@ function getCurrentAuthCheck() {
 
 function updateAuthUI() {
   if (!state.output) return;
-  const cid = state.selected.id;
   const level = state.output.classification.level;
   const auth = getCurrentAuthCheck();
 
@@ -356,13 +393,15 @@ function updateAuthUI() {
   updateStatusChip(state.caseStatus);
 
   if (level === 'C') {
-    // Clase C: bloqueo estricto de asignación ordinaria (R02-02)
     $('assign-btn').style.display = 'none';
     $('assign-btn').disabled = true;
     $('escalate-action-btn').style.display = 'inline-block';
     $('escalate-action-btn').disabled = (state.caseStatus === 'DERIVADO_SUPERVISOR');
-    $('route-reason').textContent = '🔒 Regla de seguridad R02: Clase C exige derivación obligatoria a supervisor. Asignación directa bloqueada.';
-    $('btn-accept').disabled = true; // Bloqueado aceptar directo en Clase C
+    const recAgent = state.output.recommendation?.agent;
+    $('route-reason').textContent = recAgent
+      ? `🔒 Regla de seguridad R02/v0.8: Clase C (peso ${state.output.recommendation.weight}u, candidato libre: ${recAgent.id} → ${state.output.recommendation.projected}/10) exige derivación/control reforzado.`
+      : '🔒 Regla de seguridad R02/v0.8: Clase C sin capacidad disponible para peso 8u; retener y derivar obligatoriamente a supervisor.';
+    $('btn-accept').disabled = true;
     $('btn-accept').title = 'No permitido en Clase C por salvaguarda de seguridad operacional';
   } else {
     $('assign-btn').style.display = 'inline-block';
@@ -381,7 +420,12 @@ function updateAuthUI() {
 }
 
 function runCase() {
+  if (state.selected.scenario === 'v08' && state.selected.v08Raw) {
+    state.agents = buildAgentsFromCaseState(state.selected.v08Raw, state.policy);
+  }
+
   const c = {
+    ...(state.selected.v08Raw || {}),
     ...state.selected,
     text: $('question').value,
     validated: $('validation').value === 'true',
@@ -391,7 +435,6 @@ function runCase() {
   state.output = processCase(c, state.agents, state.policy);
   const o = state.output;
 
-  // Si se reprocesa, la aprobación previa se invalida
   delete state.approvedRevisions[c.id];
   delete state.decisions[c.id];
   state.isEditing = false;
@@ -425,8 +468,8 @@ function runCase() {
   if (o.policyComparison) {
     const act = o.policyComparison.actual;
     const exp = o.policyComparison.experimental;
-    $('cmp-actual').textContent = `${act.weight}u → ${act.agent ? `${act.agent.display} (${act.projected}/10)` : 'En cola'}`;
-    $('cmp-exp').textContent = `${exp.weight}u → ${exp.agent ? `${exp.agent.display} (${exp.projected}/10)` : 'En cola'}`;
+    $('cmp-actual').textContent = `${act.weight}u → ${act.agent ? `${act.agent.id} (${act.projected}/10)` : 'En cola'}`;
+    $('cmp-exp').textContent = `${exp.weight}u → ${exp.agent ? `${exp.agent.id} (${exp.projected}/10)` : 'En cola'}`;
   }
 
   $('enqueue-btn').disabled = Boolean(o.recommendation.agent);
@@ -515,7 +558,7 @@ $('btn-edit').addEventListener('click', () => {
   $('btn-edit').classList.add('active-choice');
 
   state.decisions[cid] = 'Editar';
-  delete state.approvedRevisions[cid]; // Editar invalida aprobación hasta pulsar Guardar y Aprobar
+  delete state.approvedRevisions[cid];
   state.isEditing = true;
   state.editApproved = false;
   state.caseStatus = 'EDITANDO';
@@ -525,7 +568,7 @@ $('btn-edit').addEventListener('click', () => {
   $('suggestion').style.outline = '2px solid #0176d3';
   $('suggestion').focus();
   $('save-edit-btn').style.display = 'block';
-  $('send-chat-btn').disabled = true; // No se puede enviar hasta guardar
+  $('send-chat-btn').disabled = true;
 
   $('action-result').textContent = 'Modo edición activo: modifique el texto y pulse “✓ Guardar y aprobar texto editado” para validar.';
   $('action-result').className = 'result done';
@@ -751,16 +794,20 @@ $('enqueue-btn').addEventListener('click', () => {
 // Sincronizar cambio de política
 function setPolicy(newPolicy) {
   state.policy = newPolicy;
-  $('header-policy-label').textContent = newPolicy === 'experimental' ? 'Experimental (A4/B5/C7)' : 'Actual (5u)';
+  $('header-policy-label').textContent = newPolicy === 'experimental' ? 'Experimental (A3/B5/C8)' : 'Actual (5u)';
   document.querySelectorAll('input[name="policy"]').forEach(r => {
     r.checked = (r.value === newPolicy);
   });
+  if (state.selected.scenario === 'v08' && state.selected.v08Raw) {
+    state.agents = buildAgentsFromCaseState(state.selected.v08Raw, state.policy);
+  }
   invalidateCurrentApproval('Cambio de política operativa');
   if (state.output) {
     runCase();
   } else {
     resetOutput();
     renderChat();
+    renderTables();
   }
 }
 
@@ -796,6 +843,126 @@ function updateCalculator() {
 $('calc-vol').addEventListener('input', updateCalculator);
 $('calc-delta').addEventListener('input', updateCalculator);
 
+// --- EVALUACIÓN LOTE V0.8 (PESTAÑA 7) ---
+$('v08-filter')?.addEventListener('change', e => {
+  state.v08Filter = e.target.value;
+  renderTables();
+});
+
+$('v08-file-input')?.addEventListener('change', e => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(String(ev.target?.result || '{}'));
+      if (!Array.isArray(parsed.cases)) {
+        alert('El archivo JSON no contiene un arreglo "cases" válido.');
+        return;
+      }
+      state.v08Dataset = parsed;
+      addLog('Carga dataset v0.8', `Archivo cargado (${parsed.cases.length} casos)`, 'Evaluador', parsed.dataset_version || 'V08-JSON', '—', 'P7-V08', 'PERMITIDO');
+      renderTables();
+    } catch (err) {
+      alert(`Error al leer JSON: ${err.message}`);
+    }
+  };
+  reader.readAsText(file);
+});
+
+$('v08-export-json-btn')?.addEventListener('click', () => {
+  const report = evaluateDatasetV08(state.v08Dataset);
+  downloadFile(JSON.stringify(report, null, 2), 'SAIGC_evaluacion_v0_8_resultados.json', 'application/json');
+});
+
+$('v08-export-csv-btn')?.addEventListener('click', () => {
+  const report = evaluateDatasetV08(state.v08Dataset);
+  const headers = [
+    'Case_ID',
+    'Predicted_Class',
+    'Rule_ID',
+    'Weight_Actual',
+    'Assigned_Actual',
+    'Projected_Actual',
+    'Weight_Experimental',
+    'Assigned_Experimental',
+    'Projected_Experimental',
+    'Escalation_Required',
+    'Operational_Action',
+    'Query_Text'
+  ];
+  const rows = report.results.map(r => [
+    r.case_id,
+    r.predicted_class,
+    r.rule_id,
+    r.weight_actual,
+    r.assigned_agent_actual,
+    r.projected_load_actual ?? 'COLA',
+    r.weight_experimental,
+    r.assigned_agent_experimental,
+    r.projected_load_experimental ?? 'COLA',
+    r.escalation_required ? 'SI' : 'NO',
+    r.operational_action,
+    r.query_text
+  ].map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(','));
+  downloadFile([headers.join(','), ...rows].join('\r\n'), 'SAIGC_evaluacion_v0_8_resultados.csv', 'text/csv;charset=utf-8;');
+});
+
+function renderV08Table() {
+  if (!$('v08-table-body')) return;
+  const report = evaluateDatasetV08(state.v08Dataset);
+  const s = report.summary;
+
+  $('badge-v08').textContent = `${s.total_cases} casos`;
+  $('v08-version-label').textContent = `${s.dataset_version} · ${s.weight_scheme_version}`;
+  $('v08-kpi-total').textContent = `${s.total_cases} casos`;
+  $('v08-kpi-dist').textContent = `${s.class_distribution.A} Clase A · ${s.class_distribution.B} Clase B · ${s.class_distribution.C} Clase C`;
+  $('v08-kpi-act').textContent = `${s.routing_comparison.actual_assigned} asig. / ${s.routing_comparison.actual_queued} cola`;
+  $('v08-kpi-exp').textContent = `${s.routing_comparison.experimental_assigned} asig. / ${s.routing_comparison.experimental_queued} cola`;
+  $('v08-kpi-diff').textContent = `${s.routing_comparison.routing_differences} casos`;
+
+  let list = report.results;
+  if (state.v08Filter === 'DIFF') {
+    list = list.filter(r => r.assigned_agent_actual !== r.assigned_agent_experimental);
+  } else if (['A', 'B', 'C'].includes(state.v08Filter)) {
+    list = list.filter(r => r.predicted_class === state.v08Filter);
+  }
+
+  $('v08-table-body').innerHTML = list.map(r => {
+    const isDiff = r.assigned_agent_actual !== r.assigned_agent_experimental;
+    const classesStr = Object.entries(r.active_classes || {})
+      .map(([k, arr]) => `${k.replace('AGT-0', 'A')}:[${arr.join(',') || '∅'}]`)
+      .join(' ');
+    const actLoadsStr = Object.values(r.loads_actual || {}).join(' / ');
+    const expLoadsStr = Object.values(r.loads_experimental || {}).join(' / ');
+
+    return `
+      <tr style="${isDiff ? 'background:#fff9eb;' : ''}">
+        <td><strong>${escapeHTML(r.case_id)}</strong></td>
+        <td style="max-width:340px;">${escapeHTML(r.query_text)}</td>
+        <td><span class="classchip ${escapeHTML(r.predicted_class)}" style="min-width:26px;min-height:22px;font-size:12px;">${escapeHTML(r.predicted_class)}</span></td>
+        <td><code style="font-size:11px;">${escapeHTML(classesStr)}</code></td>
+        <td><small>${escapeHTML(actLoadsStr)}</small></td>
+        <td><strong>${escapeHTML(r.assigned_agent_actual)}</strong> ${r.projected_load_actual ? `<small>(${r.projected_load_actual}/10)</small>` : ''}</td>
+        <td><small>${escapeHTML(expLoadsStr)}</small></td>
+        <td><strong style="color:${isDiff ? '#0176d3' : 'inherit'}">${escapeHTML(r.assigned_agent_experimental)}</strong> ${r.projected_load_experimental ? `<small>(${r.projected_load_experimental}/10)</small>` : ''}</td>
+        <td><small>${escapeHTML(r.operational_action)}</small></td>
+        <td><button class="btn-mini" data-sim-v08="${escapeHTML(r.case_id)}">▶ Simular en P1</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.querySelectorAll('[data-sim-v08]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cid = btn.dataset.simV08;
+      select.value = cid;
+      setCase(cid);
+      navigate('atencion');
+      runCase();
+    });
+  });
+}
+
 function renderTables() {
   const availCount = state.agents.filter(a => a.status === 'Disponible' && a.load < CAPACITY).length;
   const totalUsedUnits = state.agents.reduce((acc, a) => acc + a.load, 0);
@@ -813,29 +980,36 @@ function renderTables() {
   $('kpi-util-pct').innerHTML = `${utilPct}<em>%</em>`;
 
   // 1. Representantes (P2)
-  $('agents-body').innerHTML = state.agents.map(a => `
-    <tr>
-      <td><span class="link">${escapeHTML(a.display)}</span> <small style="color:#6c7684;">(${escapeHTML(a.id)})</small></td>
-      <td>
-        <span class="status ${a.status === 'Disponible' ? 'ok' : a.status === 'Ocupado' ? 'bad' : 'wait'}"></span>
-        <select class="status-select" data-agent-status="${escapeHTML(a.id)}">
-          <option value="Disponible" ${a.status === 'Disponible' ? 'selected' : ''}>Disponible</option>
-          <option value="Ocupado" ${a.status === 'Ocupado' ? 'selected' : ''}>Ocupado</option>
-          <option value="Refrigerio" ${a.status === 'Refrigerio' ? 'selected' : ''}>Refrigerio</option>
-        </select>
-      </td>
-      <td>${escapeHTML(a.skills.join(', '))}</td>
-      <td>${a.load === 0 ? '0 casos' : `${Math.ceil(a.load / 5)} activo(s)`}</td>
-      <td>WhatsApp</td>
-      <td><div class="meter ${a.load >= 10 ? 'full' : ''}"><span style="width:${Math.min(100, a.load * 10)}%"></span></div><small>${a.load * 10}%</small></td>
-      <td><strong>${a.load} / 10</strong></td>
-      <td>
-        <button class="btn-mini" data-release-agent="${escapeHTML(a.id)}" ${a.load === 0 && a.status === 'Disponible' ? 'disabled' : ''}>
-          ↺ Liberar / Activar
-        </button>
-      </td>
-    </tr>
-  `).join('');
+  $('agents-body').innerHTML = state.agents.map(a => {
+    const classesInfo = Array.isArray(a.activeCaseClasses)
+      ? (a.activeCaseClasses.length ? `Clases: [${a.activeCaseClasses.join(', ')}] (${a.activeSessions} ses.)` : '0 sesiones activas')
+      : (a.load === 0 ? '0 casos' : `${Math.ceil(a.load / 5)} activo(s)`);
+    const lastAgeInfo = typeof a.lastAssignmentAge === 'number' ? `hace ${a.lastAssignmentAge} min` : 'hace 25 min';
+
+    return `
+      <tr>
+        <td><span class="link">${escapeHTML(a.display)}</span> <small style="color:#6c7684;">(${escapeHTML(a.id)})</small></td>
+        <td>
+          <span class="status ${a.status === 'Disponible' ? 'ok' : a.status === 'Ocupado' ? 'bad' : 'wait'}"></span>
+          <select class="status-select" data-agent-status="${escapeHTML(a.id)}">
+            <option value="Disponible" ${a.status === 'Disponible' ? 'selected' : ''}>Disponible</option>
+            <option value="Ocupado" ${a.status === 'Ocupado' ? 'selected' : ''}>Ocupado</option>
+            <option value="Refrigerio" ${a.status === 'Refrigerio' ? 'selected' : ''}>Refrigerio</option>
+          </select>
+        </td>
+        <td>${escapeHTML(a.skills.join(', '))}</td>
+        <td>${escapeHTML(classesInfo)}</td>
+        <td>${escapeHTML(lastAgeInfo)}</td>
+        <td><div class="meter ${a.load >= 10 ? 'full' : ''}"><span style="width:${Math.min(100, a.load * 10)}%"></span></div><small>${a.load * 10}%</small></td>
+        <td><strong>${a.load} / 10</strong></td>
+        <td>
+          <button class="btn-mini" data-release-agent="${escapeHTML(a.id)}" ${a.load === 0 && a.status === 'Disponible' ? 'disabled' : ''}>
+            ↺ Liberar / Activar
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 
   document.querySelectorAll('[data-agent-status]').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -884,7 +1058,7 @@ function renderTables() {
           <td><button class="btn-mini" data-retry-held="${escapeHTML(h.uid)}">↪ Reintentar routing</button></td>
         </tr>
       `).join('')
-    : '<tr><td colspan="7">No hay casos retenidos por saturación en este momento. Puede simular saturación con DEMO-006 o DEMO-007 en “Atención asistida”.</td></tr>';
+    : '<tr><td colspan="7">No hay casos retenidos por saturación en este momento. Puede simular saturación con DEMO-006, CASO-010 o CASO-019 en “Atención asistida”.</td></tr>';
 
   document.querySelectorAll('[data-retry-held]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -985,6 +1159,9 @@ function renderTables() {
         </tr>
       `).join('')
     : '<tr><td colspan="11">No hay eventos para el filtro seleccionado. Procese consultas en “Atención asistida”.</td></tr>';
+
+  // 5. Evaluación v0.8 (P7)
+  renderV08Table();
 }
 
 function downloadFile(content, fileName, mimeType) {
@@ -999,12 +1176,12 @@ function downloadFile(content, fileName, mimeType) {
 
 $('export-json-btn').addEventListener('click', () => {
   const jsonContent = export_evidence(state.logs, 'json');
-  downloadFile(jsonContent, 'SAI_GC_BITACORA_R02.json', 'application/json');
+  downloadFile(jsonContent, 'SAI_GC_BITACORA_V08.json', 'application/json');
 });
 
 $('export-csv-btn').addEventListener('click', () => {
   const csvContent = export_evidence(state.logs, 'csv');
-  downloadFile(csvContent, 'SAI_GC_BITACORA_R02.csv', 'text/csv;charset=utf-8;');
+  downloadFile(csvContent, 'SAI_GC_BITACORA_V08.csv', 'text/csv;charset=utf-8;');
 });
 
 $('clear-btn').addEventListener('click', () => {

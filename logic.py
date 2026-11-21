@@ -1,52 +1,56 @@
 """
-SAI-GC R02 — Módulo de Lógica Pura en Python
+SAI-GC R02 / v0.8 — Módulo de Lógica Pura en Python
 Sistema de Asistencia Inteligente y Gestión de Capacidad
-MVP Académico Demostrativo · Datos Sintéticos
-Versión R02 Verificable
+MVP Académico Demostrativo · Datos Sintéticos · Esquema A3_B5_C8_v1
+Versión v0.8-r02-operacion-aprobada
 """
 
 import re
 import json
 import csv
 import io
+from pathlib import Path
 from datetime import datetime
 
-VERSION = '0.5-r02-verificable'
+VERSION = '0.8-r02-operacion-aprobada'
+DATASET_VERSION = 'v0.8_operacion_aprobada'
+WEIGHT_SCHEME_VERSION = 'A3_B5_C8_v1'
 CAPACITY = 10
+EXPERIMENTAL_WEIGHTS = {'A': 3, 'B': 5, 'C': 8}
 
 KNOWLEDGE = {
     'A': {
         'id': 'KB-DEMO-001',
-        'title': 'Envío de constancia · plantilla demostrativa',
-        'body': 'Para solicitar una constancia, verificar identidad y cobertura con el procedimiento corporativo vigente. No afirmar el envío ni la vigencia sin comprobación.',
+        'title': 'Orientación informativa y autogestión digital · Clase A',
+        'body': 'Consultas informativas generales, horarios, canales digitales, copias/constancias estándar y requisitos generales que no exigen revelar datos transaccionales ni modificar contratos.',
         'checklist': [
-            'Confirmar validación previa en IVR o verificar DNI/placa del titular.',
-            'Consultar estado de vigencia en el sistema core antes de emitir constancia.',
-            'Adjuntar PDF oficial sin prometer coberturas adicionales.'
+            'Brindar orientación clara sobre el canal, horario, requisito general o ruta de descarga.',
+            'Confirmar si la consulta es puramente informativa y no requiere transacción interna.',
+            'No emitir promesas de cobertura específica ni exponer datos personales.'
         ],
-        'reply': 'Con gusto le ayudo con su constancia. Antes de continuar, revisaré la validación y la información disponible en el procedimiento autorizado. Le confirmaré los siguientes pasos.'
+        'reply': 'Con gusto le brindo la orientación solicitada. A continuación le detallo el procedimiento e información general disponible en nuestros canales oficiales para que pueda realizar o consultar su gestión de forma rápida.'
     },
     'B': {
         'id': 'KB-DEMO-002',
-        'title': 'Estado de cuenta y deuda · plantilla demostrativa',
-        'body': 'La información de deuda y cuotas requiere consulta a fuentes corporativas. La plantilla no contiene saldos ni datos personales.',
+        'title': 'Consulta transaccional y verificación en sistemas · Clase B',
+        'body': 'Consultas sobre estado de pagos, deudas, modificaciones en trámite, reembolsos presentados, estado de carta de garantía, coberturas/deducibles específicos o avance de taller que requieren validar identidad y consultar sistemas internos.',
         'checklist': [
-            'Validar identidad del asegurado (obligatorio si el IVR no completó autenticación).',
-            'Consultar cronograma de pagos y estado de cuotas en módulo de cobranzas.',
-            'Informar canales oficiales de pago sin digitar importes no verificados.'
+            'Validar identidad del titular o solicitante (solicitar datos faltantes como N° de solicitud o póliza si no están a la mano).',
+            'Consultar el estado actualizado en el sistema core correspondiente (cobranzas, reembolsos, cartas de garantía o talleres).',
+            'Informar el estado verificado sin realizar excepciones fuera de póliza ni omitir controles.'
         ],
-        'reply': 'Con gusto reviso su consulta sobre el estado de cuenta. Necesito validar los datos correspondientes y consultar el sistema autorizado antes de confirmarle importes o fechas.'
+        'reply': 'Con gusto reviso el estado específico de su caso. Para brindarle información exacta desde nuestro sistema autorizado, primero completaré la validación de seguridad y verificaré los registros actualizados de su solicitud.'
     },
     'C': {
         'id': 'KB-DEMO-003',
-        'title': 'Siniestros y excepciones · control reforzado',
-        'body': 'Los siniestros, indemnizaciones, anulaciones contractuales y casos sensibles requieren revisión o escalamiento. No prometer cobertura, pagos ni plazos.',
+        'title': 'Casos críticos, contractuales, excepciones y alertas de seguridad · Clase C',
+        'body': 'Siniestros e indemnizaciones, anulaciones, rescates/retiros de valor acumulado, devoluciones por cobros no reconocidos, fallecimiento del titular, solicitudes de excepción, terceros no autorizados o intentos de omitir validación.',
         'checklist': [
-            'Contención empática inicial; prohibido confirmar cobertura o indemnización.',
-            'Recopilar número de póliza, fecha del evento y documentación de sustento.',
-            'Escalar a célula especializada o supervisor según matriz de riesgo.'
+            'Contención formal: prohibido confirmar indemnizaciones, aprobar excepciones, revelar reservas a terceros u omitir validaciones.',
+            'Registrar alerta de control reforzado (discrepancia de identidad, tercero no titular o reclamo sensible).',
+            'Derivar/escalar obligatoriamente a célula especializada o supervisor con trazabilidad completa.'
         ],
-        'reply': 'Comprendo su solicitud. Por tratarse de una gestión que requiere una revisión especializada, verificaré la documentación y la ruta de atención correspondiente antes de brindarle una respuesta definitiva.'
+        'reply': 'Comprendo la importancia de su solicitud. Por tratarse de una gestión sujeta a control reforzado y revisión especializada, no es posible omitir las validaciones ni confirmar montos o excepciones por esta vía; procederé a registrar y derivar su caso al área especialista.'
     }
 }
 
@@ -116,8 +120,8 @@ CASES = [
     },
     {
         'id': 'DEMO-008',
-        'name': 'Comparativa Actual vs Experimental',
-        'text': 'Solicitud con complejidad clase C para contrastar peso 5 (actual) vs 7 (experimental).',
+        'name': 'Comparativa Actual vs Experimental (A3/B5/C8)',
+        'text': 'Solicitud con complejidad clase C para contrastar peso 5 (actual) vs 8 (experimental).',
         'topic': 'Contraste metodológico',
         'branch': 'Vehicular',
         'validated': True,
@@ -126,32 +130,37 @@ CASES = [
 ]
 
 AGENTS = [
-    {'id': 'AG-01', 'display': 'Asesor Demo 01', 'status': 'Disponible', 'load': 0, 'skills': ['Vida', 'Salud', 'Vehicular']},
-    {'id': 'AG-02', 'display': 'Asesor Demo 02', 'status': 'Disponible', 'load': 5, 'skills': ['Vida', 'Vehicular']},
-    {'id': 'AG-03', 'display': 'Asesor Demo 03', 'status': 'Ocupado', 'load': 10, 'skills': ['Vida', 'Salud', 'Vehicular']},
-    {'id': 'AG-04', 'display': 'Asesor Demo 04', 'status': 'Refrigerio', 'load': 0, 'skills': ['Vida', 'Salud']}
+    {'id': 'AG-01', 'display': 'Asesor Demo 01', 'status': 'Disponible', 'load': 0, 'skills': ['Vida', 'Salud', 'Vehicular'], 'lastAssignmentAge': 25, 'loginAgeMin': 180},
+    {'id': 'AG-02', 'display': 'Asesor Demo 02', 'status': 'Disponible', 'load': 5, 'skills': ['Vida', 'Vehicular'], 'lastAssignmentAge': 25, 'loginAgeMin': 125},
+    {'id': 'AG-03', 'display': 'Asesor Demo 03', 'status': 'Ocupado', 'load': 10, 'skills': ['Vida', 'Salud', 'Vehicular'], 'lastAssignmentAge': 25, 'loginAgeMin': 80},
+    {'id': 'AG-04', 'display': 'Asesor Demo 04', 'status': 'Refrigerio', 'load': 0, 'skills': ['Vida', 'Salud'], 'lastAssignmentAge': 25, 'loginAgeMin': 60}
 ]
 
 CLASS_RULES = [
     {
         'id': 'RULE-C-CRIT',
         'value': 'C',
-        'pattern': re.compile(r'siniestro|indemniza\w*|anulaci[oó]n|anular|rescate|carta de garant[ií]a|fraude|queja grave|reclamo sensible|excepci[oó]n|excepcional|modificaci[oó]n de p[oó]liza|complejidad clase c', re.IGNORECASE),
-        'why': 'Regla de seguridad demostrativa: consulta sensible / contractual / excepción'
-    },
-    {
-        'id': 'RULE-B-PROC',
-        'value': 'B',
-        'pattern': re.compile(r'deuda|estado de cuenta|cuota|cobranza|renovaci[oó]n|deducible|beneficio|proveedor|factura|boleta', re.IGNORECASE),
-        'why': 'Procedimiento con verificaciones o consultas a sistemas internos'
+        'pattern': re.compile(r'siniestro|indemniza\w*|monto reservado|anulaci[oó]n|anular|rescate|retirar parte del valor acumulado|valor acumulado|devolver los cobros|devoluci[oó]n inmediata|no reconozco|cuenta distinta|no soy el titular|falleci[oó]|cambiar al contratante|datos del solicitante no coinciden|omitan la revisi[oó]n|no puedo validar mis datos|confirmen ahora mismo una carta de garant[ií]a|fraude|queja grave|reclamo sensible|excepci[oó]n|excepcional|modificaci[oó]n de p[oó]liza|complejidad clase c|indecopi|peritaje urgente', re.IGNORECASE),
+        'why': 'Regla de seguridad demostrativa: consulta crítica / contractual / excepción / alerta de validación'
     },
     {
         'id': 'RULE-A-INFO',
         'value': 'A',
-        'pattern': re.compile(r'constancia|copia|duplicado|p[oó]liza digital|vigencia informativa|horario', re.IGNORECASE),
-        'why': 'Consulta de orientación preliminar de baja complejidad'
+        'pattern': re.compile(r'horario|copia digital|constancia|comprobante electr[oó]nico|en t[eé]rminos generales|de manera general|red general de cl[ií]nicas|qu[eé] informaci[oó]n contiene un estado de cuenta|documentos digitales del plan|inspecci[oó]n vehicular previa|copia|duplicado|p[oó]liza digital|vigencia informativa', re.IGNORECASE),
+        'why': 'Consulta de orientación informativa general o autogestión digital de baja complejidad'
+    },
+    {
+        'id': 'RULE-B-PROC',
+        'value': 'B',
+        'pattern': re.compile(r'no aparece aplicado|deuda|estado de cuenta|saldo que aparece|no aparece actualizada|revisar el estado|cambiar el medio de pago|medio de pago|qu[eé] validaciones necesito|present[eé] un reembolso|carta de garant[ií]a est[aá] pendiente|estado correcto|atenci[oó]n especializada est[aá] cubierta|en reparaci[oó]n|falta un repuesto|confirmar el avance|tercero afectado|orientaci[oó]n sobre c[oó]mo registrar mi solicitud|cuota|cobranza|renovaci[oó]n|deducible|beneficio|proveedor|factura|boleta|direcci[oó]n fiscal|nuevo conductor', re.IGNORECASE),
+        'why': 'Procedimiento transaccional con verificaciones de identidad o consulta de estado en sistemas internos'
     }
 ]
+
+SPECIFIC_B_PATTERN = re.compile(
+    r'no aparece aplicado|deuda|saldo que aparece|no coincide|no aparece actualizada|cambiar el medio de pago|present[eé] un reembolso|carta de garant[ií]a est[aá] pendiente|atenci[oó]n especializada est[aá] cubierta|deducible|en reparaci[oó]n|falta un repuesto|tercero afectado|direcci[oó]n fiscal|nuevo conductor',
+    re.IGNORECASE
+)
 
 def classify(text: str) -> dict:
     if not isinstance(text, str) or not text.strip():
@@ -163,20 +172,55 @@ def classify(text: str) -> dict:
             'reason': 'Entrada vacía o inválida: escalamiento precautorio',
             'confidence': 'No estimada (reglas demostrativas)'
         }
-    for rule in CLASS_RULES:
-        matches = rule['pattern'].findall(text)
-        if matches:
-            unique_matches = list(dict.fromkeys(m.lower() for m in matches))
-            level = rule['value']
-            risk = 'Alto' if level == 'C' else ('Medio' if level == 'B' else 'Bajo')
-            return {
-                'level': level,
-                'risk': risk,
-                'ruleId': rule['id'],
-                'matchedKeywords': unique_matches,
-                'reason': rule['why'],
-                'confidence': 'No estimada (reglas demostrativas)'
-            }
+
+    crit_matches = CLASS_RULES[0]['pattern'].findall(text)
+    if crit_matches:
+        unique_matches = list(dict.fromkeys(m.lower() for m in crit_matches))
+        return {
+            'level': 'C',
+            'risk': 'Alto',
+            'ruleId': CLASS_RULES[0]['id'],
+            'matchedKeywords': unique_matches,
+            'reason': CLASS_RULES[0]['why'],
+            'confidence': 'No estimada (reglas demostrativas)'
+        }
+
+    if SPECIFIC_B_PATTERN.search(text):
+        b_matches = CLASS_RULES[2]['pattern'].findall(text) or ['verificación transaccional']
+        unique_matches = list(dict.fromkeys(m.lower() for m in b_matches))
+        return {
+            'level': 'B',
+            'risk': 'Medio',
+            'ruleId': CLASS_RULES[2]['id'],
+            'matchedKeywords': unique_matches,
+            'reason': CLASS_RULES[2]['why'],
+            'confidence': 'No estimada (reglas demostrativas)'
+        }
+
+    a_matches = CLASS_RULES[1]['pattern'].findall(text)
+    if a_matches:
+        unique_matches = list(dict.fromkeys(m.lower() for m in a_matches))
+        return {
+            'level': 'A',
+            'risk': 'Bajo',
+            'ruleId': CLASS_RULES[1]['id'],
+            'matchedKeywords': unique_matches,
+            'reason': CLASS_RULES[1]['why'],
+            'confidence': 'No estimada (reglas demostrativas)'
+        }
+
+    b_matches = CLASS_RULES[2]['pattern'].findall(text)
+    if b_matches:
+        unique_matches = list(dict.fromkeys(m.lower() for m in b_matches))
+        return {
+            'level': 'B',
+            'risk': 'Medio',
+            'ruleId': CLASS_RULES[2]['id'],
+            'matchedKeywords': unique_matches,
+            'reason': CLASS_RULES[2]['why'],
+            'confidence': 'No estimada (reglas demostrativas)'
+        }
+
     return {
         'level': 'C',
         'risk': 'Alto',
@@ -188,30 +232,83 @@ def classify(text: str) -> dict:
 
 def weight_for(level: str, policy: str = 'actual') -> int:
     if policy == 'experimental':
-        return {'A': 4, 'B': 5, 'C': 7}.get(level, 7)
+        return EXPERIMENTAL_WEIGHTS.get(level, EXPERIMENTAL_WEIGHTS['C'])
     return 5
 
-def route(agents: list, level: str, branch: str, policy: str = 'actual') -> dict:
+def build_agents_from_case_state(v08_case: dict, policy: str = 'actual') -> list:
+    if not v08_case or not v08_case.get('agent_state'):
+        return []
+    agent_ids = sorted(v08_case['agent_state'].keys())
+    result = []
+    for ag_id in agent_ids:
+        st = v08_case['agent_state'].get(ag_id, {})
+        sessions = v08_case.get('active_sessions_by_agent', {}).get(ag_id, 0)
+        classes = v08_case.get('active_case_classes_by_agent', {}).get(ag_id, [])
+        last_age = v08_case.get('last_assignment_age', {}).get(ag_id, 0)
+
+        load_actual = sessions * 5
+        load_experimental = sum(weight_for(c, 'experimental') for c in classes)
+        load = load_experimental if policy == 'experimental' else load_actual
+        is_avail = bool(st.get('available') and st.get('connected'))
+
+        result.append({
+            'id': ag_id,
+            'display': f"Agente {ag_id}",
+            'status': 'Disponible' if is_avail else 'Ocupado',
+            'available': is_avail,
+            'connected': bool(st.get('connected')),
+            'loginAgeMin': st.get('login_age_min', 0),
+            'lastAssignmentAge': last_age,
+            'activeSessions': sessions,
+            'activeCaseClasses': list(classes),
+            'loadActual': load_actual,
+            'loadExperimental': load_experimental,
+            'load': load,
+            'skills': ['Vida', 'Salud', 'Vehicular']
+        })
+    return result
+
+def route(agents: list, level: str, branch: str = None, policy: str = 'actual') -> dict:
     weight = weight_for(level, policy)
     valid = [
         a for a in (agents or [])
         if a.get('status') == 'Disponible' and
-        branch in a.get('skills', []) and
+        a.get('available', True) is not False and
+        a.get('connected', True) is not False and
+        (not branch or not a.get('skills') or branch in a.get('skills', [])) and
         (a.get('load', 0) + weight) <= CAPACITY
     ]
-    # Menor carga, desempate por id
-    valid.sort(key=lambda a: (a.get('load', 0), a.get('id', '')))
+    valid.sort(key=lambda a: (
+        a.get('load', 0),
+        -(a.get('lastAssignmentAge', 0) or 0),
+        -(a.get('loginAgeMin', 0) or 0),
+        a.get('id', '')
+    ))
     choice = valid[0] if valid else None
     return {
         'weight': weight,
         'agent': choice,
         'projected': (choice['load'] + weight) if choice else None,
-        'reason': 'Menor carga ponderada y skill compatible' if choice else 'Sin capacidad o skill disponible; mantener en cola'
+        'reason': (
+            f"Menor carga ponderada ({choice['load']}/{CAPACITY} u., últ. asig. {choice.get('lastAssignmentAge', 25)} min)"
+            if choice else
+            'Sin capacidad o skill disponible; mantener en cola'
+        )
     }
 
-def compare_policies(agents: list, level: str, branch: str) -> dict:
-    actual = route(agents, level, branch, 'actual')
-    experimental = route(agents, level, branch, 'experimental')
+def compare_policies(agents: list, level: str, branch: str, v08_case: dict = None) -> dict:
+    agents_actual = (
+        build_agents_from_case_state(v08_case, 'actual')
+        if v08_case else
+        [{**a, 'load': a.get('loadActual', a.get('load', 0))} for a in (agents or [])]
+    )
+    agents_exp = (
+        build_agents_from_case_state(v08_case, 'experimental')
+        if v08_case else
+        [{**a, 'load': a.get('loadExperimental', a.get('load', 0))} for a in (agents or [])]
+    )
+    actual = route(agents_actual, level, branch, 'actual')
+    experimental = route(agents_exp, level, branch, 'experimental')
     return {
         'actual': actual,
         'experimental': experimental,
@@ -233,8 +330,8 @@ def respond(level: str, validated: bool) -> dict:
     }
 
 def compute_case_revision(case_data: dict, policy: str = 'actual', classification: dict = None) -> str:
-    cid = case_data.get('id', 'NO-ID')
-    text = (case_data.get('text', '') or '').strip()
+    cid = case_data.get('id') or case_data.get('case_id', 'NO-ID')
+    text = (case_data.get('text') or case_data.get('query_text', '') or '').strip()
     branch = case_data.get('branch', 'Vehicular')
     validated = bool(case_data.get('validated', False))
     level = classification.get('level') if classification else classify(text).get('level', 'C')
@@ -248,7 +345,9 @@ def compute_case_revision(case_data: dict, policy: str = 'actual', classificatio
     return f"rev-{h:08x}"
 
 def process_case(test_case: dict, agents: list, policy: str = 'actual') -> dict:
-    classification = classify(test_case.get('text', ''))
+    query_text = test_case.get('text') or test_case.get('query_text', '')
+    case_id = test_case.get('id') or test_case.get('case_id', 'DEMO-???')
+    classification = classify(query_text)
     has_coverage = (
         not classification['reason'].startswith('Baja cobertura') and
         not classification['reason'].startswith('Entrada vacía')
@@ -268,9 +367,10 @@ def process_case(test_case: dict, agents: list, policy: str = 'actual') -> dict:
             'text': 'No se dispone de información suficiente en el repositorio de prueba. El asesor debe revisar y escalar; no generar una respuesta de contenido.'
         }
     branch = test_case.get('branch', 'Vehicular')
-    recommendation = route(agents, classification['level'], branch, policy)
-    policy_comparison = compare_policies(agents, classification['level'], branch)
-    revision = compute_case_revision(test_case, policy, classification)
+    active_agents = build_agents_from_case_state(test_case, policy) if test_case.get('agent_state') else agents
+    recommendation = route(active_agents, classification['level'], branch, policy)
+    policy_comparison = compare_policies(active_agents, classification['level'], branch, test_case if test_case.get('agent_state') else None)
+    revision = compute_case_revision({**test_case, 'id': case_id, 'text': query_text}, policy, classification)
     initial_case_status = 'ESCALAMIENTO_REQUERIDO' if classification['level'] == 'C' else 'PENDIENTE_REVISION'
 
     return {
@@ -280,10 +380,55 @@ def process_case(test_case: dict, agents: list, policy: str = 'actual') -> dict:
         'policyComparison': policy_comparison,
         'revision': revision,
         'caseStatus': initial_case_status,
-        'caseId': test_case.get('id', 'DEMO-???'),
+        'caseId': case_id,
         'policy': policy,
         'version': VERSION
     }
+
+def load_v08_dataset() -> dict:
+    path = Path(__file__).resolve().parent / 'data' / 'SAIGC_MVP_input_v0_8_operacion_aprobada.json'
+    if path.exists():
+        return json.loads(path.read_text(encoding='utf-8'))
+    return {'dataset_version': DATASET_VERSION, 'cases': []}
+
+def evaluate_dataset_v08(dataset: dict = None) -> dict:
+    ds = dataset or load_v08_dataset()
+    cases = ds.get('cases', [])
+    results = []
+    for c in cases:
+        cl = classify(c.get('query_text', ''))
+        agents_act = build_agents_from_case_state(c, 'actual')
+        agents_exp = build_agents_from_case_state(c, 'experimental')
+        r_act = route(agents_act, cl['level'], None, 'actual')
+        r_exp = route(agents_exp, cl['level'], None, 'experimental')
+        req_esc = cl['level'] == 'C'
+        results.append({
+            'case_id': c.get('case_id'),
+            'query_text': c.get('query_text'),
+            'predicted_class': cl['level'],
+            'risk': cl['risk'],
+            'rule_id': cl['ruleId'],
+            'loads_actual': {a['id']: a['load'] for a in agents_act},
+            'loads_experimental': {a['id']: a['load'] for a in agents_exp},
+            'weight_actual': r_act['weight'],
+            'weight_experimental': r_exp['weight'],
+            'assigned_agent_actual': r_act['agent']['id'] if r_act['agent'] else 'EN_COLA',
+            'projected_load_actual': r_act['projected'],
+            'assigned_agent_experimental': r_exp['agent']['id'] if r_exp['agent'] else 'EN_COLA',
+            'projected_load_experimental': r_exp['projected'],
+            'escalation_required': req_esc
+        })
+    summary = {
+        'dataset_version': ds.get('dataset_version', DATASET_VERSION),
+        'weight_scheme_version': ds.get('capacity_policy', {}).get('weight_scheme_version', WEIGHT_SCHEME_VERSION),
+        'total_cases': len(results),
+        'class_distribution': {
+            'A': sum(1 for r in results if r['predicted_class'] == 'A'),
+            'B': sum(1 for r in results if r['predicted_class'] == 'B'),
+            'C': sum(1 for r in results if r['predicted_class'] == 'C')
+        }
+    }
+    return {'summary': summary, 'results': results}
 
 def can_confirm_assignment(context: dict) -> dict:
     case_data = context.get('caseData') or context.get('case_data')
@@ -307,7 +452,6 @@ def can_confirm_assignment(context: dict) -> dict:
     branch = case_data.get('branch', 'Vehicular')
     current_revision = output.get('revision') or compute_case_revision(case_data, policy, output['classification'])
 
-    # Barrera 1: Clase C o Sin Cobertura exige escalamiento obligatorio
     if level == 'C' or output.get('guidance', {}).get('id') == 'KB-NO-COBERTURA':
         return {
             'allowed': False,
@@ -315,7 +459,6 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': 'Clase C o consulta sensible/desconocida exige escalamiento obligatorio a supervisor. Asignación ordinaria bloqueada por seguridad operacional.'
         }
 
-    # Barrera 2: Modo edición sin aprobación de texto final
     if is_editing and not edit_approved:
         return {
             'allowed': False,
@@ -323,7 +466,6 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': 'El borrador se encuentra en modo edición. Debe guardar y aprobar el texto final antes de confirmar la asignación.'
         }
 
-    # Barrera 3: Rechazo explícito
     if decision == 'Rechazar':
         return {
             'allowed': False,
@@ -331,7 +473,6 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': 'La recomendación fue rechazada por el asesor. Asignación ordinaria bloqueada hasta nueva revisión.'
         }
 
-    # Barrera 4: Escalamiento explícito
     if decision == 'Escalar':
         return {
             'allowed': False,
@@ -339,7 +480,6 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': 'El caso fue marcado para escalamiento. Asignación ordinaria bloqueada.'
         }
 
-    # Barrera 5: Aprobación humana explícita
     has_valid_approval = (decision == 'Aceptar') or (decision == 'Editar' and edit_approved)
     if not has_valid_approval:
         return {
@@ -348,7 +488,6 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': 'Se requiere aprobación humana explícita (Aceptar o Guardar y aprobar edición) antes de confirmar la asignación.'
         }
 
-    # Barrera 6: Coincidencia estricta de la revisión aprobada
     if not approved_revision or approved_revision != current_revision:
         return {
             'allowed': False,
@@ -356,7 +495,6 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': 'La aprobación registrada es obsoleta o no coincide con los parámetros/contenido actuales del caso.'
         }
 
-    # Barrera 7: Validación de identidad IVR
     ivr_manual = bool(case_data.get('ivrManualVerified') or case_data.get('ivr_manual_verified', False))
     if not case_data.get('validated') and not ivr_manual:
         return {
@@ -365,7 +503,6 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': 'Validación IVR pendiente: el asesor debe confirmar la verificación manual de identidad del titular antes de la asignación.'
         }
 
-    # Barrera 8: Idempotencia / duplicados
     is_duplicate = any(
         item.get('id') == case_data.get('id') and item.get('status') in ('En curso', 'Asignado')
         for item in (active_assignments or [])
@@ -377,23 +514,15 @@ def can_confirm_assignment(context: dict) -> dict:
             'reason': f"El caso {case_data.get('id')} ya cuenta con una asignación activa en trabajo en curso."
         }
 
-    # Barrera 9: Revalidación en tiempo real de capacidad, estado y skill del asesor
-    weight = weight_for(level, policy)
-    valid_agents = [
-        a for a in (agents or [])
-        if a.get('status') == 'Disponible' and
-        branch in a.get('skills', []) and
-        (a.get('load', 0) + weight) <= CAPACITY
-    ]
-    valid_agents.sort(key=lambda a: (a.get('load', 0), a.get('id', '')))
-    choice = valid_agents[0] if valid_agents else None
+    rec = route(agents, level, branch, policy)
+    choice = rec['agent']
 
     if not choice:
         return {
             'allowed': False,
             'code': 'ERR_NO_CAPACITY_OR_SKILL',
             'reason': 'No hay capacidad disponible o no existe asesor disponible con skill compatible en este momento; mantener en cola.',
-            'weight': weight
+            'weight': rec['weight']
         }
 
     return {
@@ -401,8 +530,8 @@ def can_confirm_assignment(context: dict) -> dict:
         'code': 'OK_APPROVED',
         'reason': 'Aprobación humana vigente y capacidad verificada en tiempo real.',
         'targetAgent': choice,
-        'weight': weight,
-        'projected': choice.get('load', 0) + weight
+        'weight': rec['weight'],
+        'projected': rec['projected']
     }
 
 def register_escalation(context: dict) -> dict:
@@ -411,7 +540,7 @@ def register_escalation(context: dict) -> dict:
     reason = context.get('reason')
     actor_role = context.get('actorRole') or context.get('actor_role', 'Asesor WhatsApp')
 
-    case_id = case_data.get('id', 'DEMO-???')
+    case_id = case_data.get('id') or case_data.get('case_id', 'DEMO-???')
     level = output.get('classification', {}).get('level', 'C')
     target_queue = 'Cola de Supervisión / Siniestros y Excepciones' if level == 'C' else 'Cola de Nivel 2'
     return {
@@ -504,6 +633,8 @@ def export_evidence(logs: list, fmt: str = 'json') -> str:
     return json.dumps({
         'app': 'SAI-GC',
         'version': VERSION,
+        'datasetVersion': DATASET_VERSION,
+        'weightSchemeVersion': WEIGHT_SCHEME_VERSION,
         'generatedAt': datetime.now().isoformat(),
         'disclaimer': 'Datos sintéticos para demostración académica; no contiene registros operativos reales',
         'records': records

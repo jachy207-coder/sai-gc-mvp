@@ -1,0 +1,1353 @@
+{
+  "summary": {
+    "dataset_version": "v0.8_operacion_aprobada",
+    "weight_scheme_version": "A3_B5_C8_v1",
+    "total_cases": 30,
+    "class_distribution": {
+      "A": 10,
+      "B": 10,
+      "C": 10
+    },
+    "routing_comparison": {
+      "actual_assigned": 26,
+      "actual_queued": 4,
+      "experimental_assigned": 23,
+      "experimental_queued": 7,
+      "routing_differences": 8
+    },
+    "escalation_count": 10
+  },
+  "results": [
+    {
+      "case_id": "CASO-001",
+      "query_text": "¿Cuál es el horario de atención del canal y qué opciones tengo fuera de ese horario?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "horario"
+      ],
+      "loads_actual": {
+        "AGT-01": 0,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 0,
+        "AGT-02": 5,
+        "AGT-03": 8
+      },
+      "active_classes": {
+        "AGT-01": [],
+        "AGT-02": [
+          "B"
+        ],
+        "AGT-03": [
+          "C"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-01",
+      "projected_load_experimental": 3,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-01 (3/10 u.)"
+    },
+    {
+      "case_id": "CASO-002",
+      "query_text": "Compré un SOAT y necesito saber cómo obtener una copia digital.",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "copia digital"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 0,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 0,
+        "AGT-03": 3
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [],
+        "AGT-03": [
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 3,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-02 (3/10 u.)"
+    },
+    {
+      "case_id": "CASO-003",
+      "query_text": "¿Cómo puedo solicitar una constancia de afiliación de mi plan de salud?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "constancia"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 0
+      },
+      "loads_experimental": {
+        "AGT-01": 8,
+        "AGT-02": 3,
+        "AGT-03": 0
+      },
+      "active_classes": {
+        "AGT-01": [
+          "C"
+        ],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": []
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 3,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-03 (3/10 u.)"
+    },
+    {
+      "case_id": "CASO-004",
+      "query_text": "¿Dónde puedo consultar o descargar el comprobante electrónico de mi seguro vehicular?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "comprobante electrónico"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 3,
+        "AGT-02": 5,
+        "AGT-03": 8
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A"
+        ],
+        "AGT-02": [
+          "B"
+        ],
+        "AGT-03": [
+          "C"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 55,
+        "AGT-02": 20,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-01",
+      "projected_load_experimental": 6,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-01 (6/10 u.)"
+    },
+    {
+      "case_id": "CASO-005",
+      "query_text": "En términos generales, ¿qué documentos suelen solicitar para presentar un reembolso?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "en términos generales"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 8,
+        "AGT-03": 3
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [
+          "C"
+        ],
+        "AGT-03": [
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 20,
+        "AGT-02": 55,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 6,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-03 (6/10 u.)"
+    },
+    {
+      "case_id": "CASO-006",
+      "query_text": "¿Dónde puedo revisar la red general de clínicas y proveedores disponible para mi plan?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "red general de clínicas"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 8,
+        "AGT-02": 3,
+        "AGT-03": 5
+      },
+      "active_classes": {
+        "AGT-01": [
+          "C"
+        ],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": [
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 20,
+        "AGT-02": 20,
+        "AGT-03": 55
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 6,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-02 (6/10 u.)"
+    },
+    {
+      "case_id": "CASO-007",
+      "query_text": "¿Para qué sirve la inspección vehicular previa y qué se revisa de manera general?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "inspección vehicular previa",
+        "de manera general"
+      ],
+      "loads_actual": {
+        "AGT-01": 0,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 0,
+        "AGT-02": 5,
+        "AGT-03": 8
+      },
+      "active_classes": {
+        "AGT-01": [],
+        "AGT-02": [
+          "B"
+        ],
+        "AGT-03": [
+          "C"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-01",
+      "projected_load_experimental": 3,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-01 (3/10 u.)"
+    },
+    {
+      "case_id": "CASO-008",
+      "query_text": "Necesito conocer qué información contiene un estado de cuenta de un seguro de vida con componente de ahorro.",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "qué información contiene un estado de cuenta"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 0,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 0,
+        "AGT-03": 3
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [],
+        "AGT-03": [
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 3,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-02 (3/10 u.)"
+    },
+    {
+      "case_id": "CASO-009",
+      "query_text": "¿Cómo accedo a mis documentos digitales del plan si el canal está recibiendo muchas consultas?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "documentos digitales del plan"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 0
+      },
+      "loads_experimental": {
+        "AGT-01": 8,
+        "AGT-02": 3,
+        "AGT-03": 0
+      },
+      "active_classes": {
+        "AGT-01": [
+          "C"
+        ],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": []
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 3,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-03 (3/10 u.)"
+    },
+    {
+      "case_id": "CASO-010",
+      "query_text": "¿Horario?",
+      "predicted_class": "A",
+      "risk": "Bajo",
+      "rule_id": "RULE-A-INFO",
+      "matched_keywords": [
+        "horario"
+      ],
+      "loads_actual": {
+        "AGT-01": 15,
+        "AGT-02": 15,
+        "AGT-03": 15
+      },
+      "loads_experimental": {
+        "AGT-01": 9,
+        "AGT-02": 9,
+        "AGT-03": 9
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A",
+          "A",
+          "A"
+        ],
+        "AGT-02": [
+          "A",
+          "A",
+          "A"
+        ],
+        "AGT-03": [
+          "A",
+          "A",
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 70,
+        "AGT-02": 45,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 3,
+      "assigned_agent_actual": "EN_COLA",
+      "projected_load_actual": null,
+      "assigned_agent_experimental": "EN_COLA",
+      "projected_load_experimental": null,
+      "escalation_required": false,
+      "operational_action": "Retener en Cola (Capacidad Agotada)"
+    },
+    {
+      "case_id": "CASO-011",
+      "query_text": "Realicé un pago de mi seguro vehicular, pero todavía no aparece aplicado. ¿Pueden revisarlo?",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "no aparece aplicado"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 8,
+        "AGT-03": 3
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [
+          "C"
+        ],
+        "AGT-03": [
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 55,
+        "AGT-02": 20,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 8,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-03 (8/10 u.)"
+    },
+    {
+      "case_id": "CASO-012",
+      "query_text": "Veo una deuda pendiente en mi seguro de vida y quiero saber a qué corresponde.",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "deuda"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 8,
+        "AGT-02": 3,
+        "AGT-03": 5
+      },
+      "active_classes": {
+        "AGT-01": [
+          "C"
+        ],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": [
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 20,
+        "AGT-02": 55,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 8,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-02 (8/10 u.)"
+    },
+    {
+      "case_id": "CASO-013",
+      "query_text": "Solicité una modificación en mi póliza vehicular, pero todavía no aparece actualizada. ¿Podrían revisar el estado?",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "no aparece actualizada",
+        "revisar el estado"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 3,
+        "AGT-02": 5,
+        "AGT-03": 8
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A"
+        ],
+        "AGT-02": [
+          "B"
+        ],
+        "AGT-03": [
+          "C"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 20,
+        "AGT-02": 20,
+        "AGT-03": 55
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-01",
+      "projected_load_experimental": 8,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-01 (8/10 u.)"
+    },
+    {
+      "case_id": "CASO-014",
+      "query_text": "Quiero cambiar el medio de pago de mi seguro, pero no sé qué validaciones necesito completar.",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "cambiar el medio de pago",
+        "qué validaciones necesito"
+      ],
+      "loads_actual": {
+        "AGT-01": 0,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 0,
+        "AGT-02": 8,
+        "AGT-03": 3
+      },
+      "active_classes": {
+        "AGT-01": [],
+        "AGT-02": [
+          "C"
+        ],
+        "AGT-03": [
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-01",
+      "projected_load_experimental": 5,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-01 (5/10 u.)"
+    },
+    {
+      "case_id": "CASO-015",
+      "query_text": "Presenté un reembolso y necesito saber si ya fue revisado, pero no tengo el número de solicitud a la mano.",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "presenté un reembolso"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 0,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 8,
+        "AGT-02": 0,
+        "AGT-03": 5
+      },
+      "active_classes": {
+        "AGT-01": [
+          "C"
+        ],
+        "AGT-02": [],
+        "AGT-03": [
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 5,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-02 (5/10 u.)"
+    },
+    {
+      "case_id": "CASO-016",
+      "query_text": "La clínica indica que mi carta de garantía está pendiente, pero yo recibí un mensaje que decía que estaba en evaluación. ¿Cuál es el estado correcto?",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "carta de garantía está pendiente",
+        "estado correcto"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 0
+      },
+      "loads_experimental": {
+        "AGT-01": 3,
+        "AGT-02": 5,
+        "AGT-03": 0
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A"
+        ],
+        "AGT-02": [
+          "B"
+        ],
+        "AGT-03": []
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 5,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-03 (5/10 u.)"
+    },
+    {
+      "case_id": "CASO-017",
+      "query_text": "Necesito confirmar si una atención especializada está cubierta, qué deducible aplica y en qué proveedor puedo atenderme.",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "atención especializada está cubierta",
+        "deducible",
+        "proveedor"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 8,
+        "AGT-03": 3
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [
+          "C"
+        ],
+        "AGT-03": [
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 55,
+        "AGT-02": 20,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 8,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-03 (8/10 u.)"
+    },
+    {
+      "case_id": "CASO-018",
+      "query_text": "Mi vehículo está en reparación y me informaron que falta un repuesto. ¿Pueden confirmar el avance y el plazo estimado?",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "en reparación",
+        "falta un repuesto",
+        "confirmar el avance"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 8,
+        "AGT-02": 3,
+        "AGT-03": 5
+      },
+      "active_classes": {
+        "AGT-01": [
+          "C"
+        ],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": [
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 20,
+        "AGT-02": 55,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 8,
+      "escalation_required": false,
+      "operational_action": "Asignar a AGT-02 (8/10 u.)"
+    },
+    {
+      "case_id": "CASO-019",
+      "query_text": "El saldo que aparece en mi estado de cuenta no coincide con lo que esperaba y necesito que lo revisen.",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "saldo que aparece",
+        "estado de cuenta"
+      ],
+      "loads_actual": {
+        "AGT-01": 10,
+        "AGT-02": 10,
+        "AGT-03": 10
+      },
+      "loads_experimental": {
+        "AGT-01": 6,
+        "AGT-02": 8,
+        "AGT-03": 10
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A",
+          "A"
+        ],
+        "AGT-02": [
+          "A",
+          "B"
+        ],
+        "AGT-03": [
+          "B",
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 70,
+        "AGT-02": 45,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "EN_COLA",
+      "projected_load_actual": null,
+      "assigned_agent_experimental": "EN_COLA",
+      "projected_load_experimental": null,
+      "escalation_required": false,
+      "operational_action": "Retener en Cola (Capacidad Agotada)"
+    },
+    {
+      "case_id": "CASO-020",
+      "query_text": "Soy un tercero afectado y necesito orientación sobre cómo registrar mi solicitud, pero no hay un agente disponible.",
+      "predicted_class": "B",
+      "risk": "Medio",
+      "rule_id": "RULE-B-PROC",
+      "matched_keywords": [
+        "tercero afectado",
+        "orientación sobre cómo registrar mi solicitud"
+      ],
+      "loads_actual": {
+        "AGT-01": 15,
+        "AGT-02": 15,
+        "AGT-03": 15
+      },
+      "loads_experimental": {
+        "AGT-01": 9,
+        "AGT-02": 9,
+        "AGT-03": 9
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A",
+          "A",
+          "A"
+        ],
+        "AGT-02": [
+          "A",
+          "A",
+          "A"
+        ],
+        "AGT-03": [
+          "A",
+          "A",
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 70,
+        "AGT-02": 45,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 5,
+      "assigned_agent_actual": "EN_COLA",
+      "projected_load_actual": null,
+      "assigned_agent_experimental": "EN_COLA",
+      "projected_load_experimental": null,
+      "escalation_required": false,
+      "operational_action": "Retener en Cola (Capacidad Agotada)"
+    },
+    {
+      "case_id": "CASO-021",
+      "query_text": "Solicito anular mi seguro de salud y devolver los cobros realizados porque no reconozco el cambio aplicado.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "anular",
+        "devolver los cobros",
+        "no reconozco"
+      ],
+      "loads_actual": {
+        "AGT-01": 0,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 0,
+        "AGT-02": 3,
+        "AGT-03": 5
+      },
+      "active_classes": {
+        "AGT-01": [],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": [
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-01",
+      "projected_load_experimental": 8,
+      "escalation_required": true,
+      "operational_action": "Control Reforzado / Escalar (AGT-01 disp. 8u)"
+    },
+    {
+      "case_id": "CASO-022",
+      "query_text": "Quiero retirar parte del valor acumulado de mi seguro y saber cuánto recibiría.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "retirar parte del valor acumulado"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 0,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 3,
+        "AGT-02": 0,
+        "AGT-03": 8
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A"
+        ],
+        "AGT-02": [],
+        "AGT-03": [
+          "C"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 8,
+      "escalation_required": true,
+      "operational_action": "Control Reforzado / Escalar (AGT-02 disp. 8u)"
+    },
+    {
+      "case_id": "CASO-023",
+      "query_text": "Tuve un siniestro y necesito confirmar si corresponde una indemnización y cuál sería el monto.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "siniestro",
+        "indemnizaci"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 0
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 8,
+        "AGT-03": 0
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [
+          "C"
+        ],
+        "AGT-03": []
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 8,
+      "escalation_required": true,
+      "operational_action": "Control Reforzado / Escalar (AGT-03 disp. 8u)"
+    },
+    {
+      "case_id": "CASO-024",
+      "query_text": "Necesito que el pago de una devolución se deposite en una cuenta distinta, pero no soy el titular de la póliza.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "cuenta distinta",
+        "no soy el titular"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 8,
+        "AGT-02": 3,
+        "AGT-03": 5
+      },
+      "active_classes": {
+        "AGT-01": [
+          "C"
+        ],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": [
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 55,
+        "AGT-02": 20,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "EN_COLA",
+      "projected_load_experimental": null,
+      "escalation_required": true,
+      "operational_action": "Retener y Escalar a Supervisor (Sin cap. 8u)"
+    },
+    {
+      "case_id": "CASO-025",
+      "query_text": "Me indican que una atención no está incluida en mi plan, pero necesito que hagan una excepción.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "excepción"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 3,
+        "AGT-02": 5,
+        "AGT-03": 8
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A"
+        ],
+        "AGT-02": [
+          "B"
+        ],
+        "AGT-03": [
+          "C"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 20,
+        "AGT-02": 55,
+        "AGT-03": 20
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "EN_COLA",
+      "projected_load_experimental": null,
+      "escalation_required": true,
+      "operational_action": "Retener y Escalar a Supervisor (Sin cap. 8u)"
+    },
+    {
+      "case_id": "CASO-026",
+      "query_text": "Me cobraron un importe que no reconozco y me indican que corresponde a una modificación que no solicité. Exijo la devolución inmediata.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "no reconozco",
+        "devolución inmediata"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 8,
+        "AGT-03": 3
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [
+          "C"
+        ],
+        "AGT-03": [
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 20,
+        "AGT-02": 20,
+        "AGT-03": 55
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 10,
+      "assigned_agent_experimental": "EN_COLA",
+      "projected_load_experimental": null,
+      "escalation_required": true,
+      "operational_action": "Retener y Escalar a Supervisor (Sin cap. 8u)"
+    },
+    {
+      "case_id": "CASO-027",
+      "query_text": "El titular de la póliza falleció y necesito saber si puedo cambiar al contratante y continuar con el seguro.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "falleció",
+        "cambiar al contratante"
+      ],
+      "loads_actual": {
+        "AGT-01": 0,
+        "AGT-02": 5,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 0,
+        "AGT-02": 3,
+        "AGT-03": 5
+      },
+      "active_classes": {
+        "AGT-01": [],
+        "AGT-02": [
+          "A"
+        ],
+        "AGT-03": [
+          "B"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-01",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-01",
+      "projected_load_experimental": 8,
+      "escalation_required": true,
+      "operational_action": "Control Reforzado / Escalar (AGT-01 disp. 8u)"
+    },
+    {
+      "case_id": "CASO-028",
+      "query_text": "Quiero anular el seguro, pero los datos del solicitante no coinciden con los del contratante y no puedo explicar la diferencia.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "anular",
+        "datos del solicitante no coinciden"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 0,
+        "AGT-03": 5
+      },
+      "loads_experimental": {
+        "AGT-01": 3,
+        "AGT-02": 0,
+        "AGT-03": 8
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A"
+        ],
+        "AGT-02": [],
+        "AGT-03": [
+          "C"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-02",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-02",
+      "projected_load_experimental": 8,
+      "escalation_required": true,
+      "operational_action": "Control Reforzado / Escalar (AGT-02 disp. 8u)"
+    },
+    {
+      "case_id": "CASO-029",
+      "query_text": "Soy un tercero y quiero conocer todos los detalles y el monto reservado de un siniestro ajeno.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "monto reservado",
+        "siniestro"
+      ],
+      "loads_actual": {
+        "AGT-01": 5,
+        "AGT-02": 5,
+        "AGT-03": 0
+      },
+      "loads_experimental": {
+        "AGT-01": 5,
+        "AGT-02": 8,
+        "AGT-03": 0
+      },
+      "active_classes": {
+        "AGT-01": [
+          "B"
+        ],
+        "AGT-02": [
+          "C"
+        ],
+        "AGT-03": []
+      },
+      "last_assignment_age": {
+        "AGT-01": 25,
+        "AGT-02": 25,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "AGT-03",
+      "projected_load_actual": 5,
+      "assigned_agent_experimental": "AGT-03",
+      "projected_load_experimental": 8,
+      "escalation_required": true,
+      "operational_action": "Control Reforzado / Escalar (AGT-03 disp. 8u)"
+    },
+    {
+      "case_id": "CASO-030",
+      "query_text": "Necesito que confirmen ahora mismo una carta de garantía; no puedo validar mis datos y pido que omitan la revisión.",
+      "predicted_class": "C",
+      "risk": "Alto",
+      "rule_id": "RULE-C-CRIT",
+      "matched_keywords": [
+        "confirmen ahora mismo una carta de garantía",
+        "no puedo validar mis datos",
+        "omitan la revisión"
+      ],
+      "loads_actual": {
+        "AGT-01": 15,
+        "AGT-02": 15,
+        "AGT-03": 15
+      },
+      "loads_experimental": {
+        "AGT-01": 9,
+        "AGT-02": 9,
+        "AGT-03": 9
+      },
+      "active_classes": {
+        "AGT-01": [
+          "A",
+          "A",
+          "A"
+        ],
+        "AGT-02": [
+          "A",
+          "A",
+          "A"
+        ],
+        "AGT-03": [
+          "A",
+          "A",
+          "A"
+        ]
+      },
+      "last_assignment_age": {
+        "AGT-01": 70,
+        "AGT-02": 45,
+        "AGT-03": 25
+      },
+      "weight_actual": 5,
+      "weight_experimental": 8,
+      "assigned_agent_actual": "EN_COLA",
+      "projected_load_actual": null,
+      "assigned_agent_experimental": "EN_COLA",
+      "projected_load_experimental": null,
+      "escalation_required": true,
+      "operational_action": "Retener y Escalar a Supervisor (Sin cap. 8u)"
+    }
+  ]
+}

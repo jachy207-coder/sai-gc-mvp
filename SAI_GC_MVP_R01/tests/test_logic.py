@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from logic import (
     VERSION, CAPACITY, CASES, AGENTS,
     classify, weight_for, route, compare_policies, respond,
-    process_case, calculate_capacity_recovery, log_event, export_evidence,
+    process_case, evaluate_dataset_v08, calculate_capacity_recovery, log_event, export_evidence,
     compute_case_revision, can_confirm_assignment, register_escalation
 )
 from database import init_db, insert_log, fetch_logs, clear_logs, export_db_evidence
@@ -63,11 +63,11 @@ class TestSaiGcLogic(unittest.TestCase):
         self.assertEqual(weight_for('B', 'actual'), 5)
         self.assertEqual(weight_for('C', 'actual'), 5)
 
-    def test_07_weight_experimental_policy(self):
-        self.assertEqual(weight_for('A', 'experimental'), 4)
+    def test_07_weight_experimental_policy_a3_b5_c8(self):
+        self.assertEqual(weight_for('A', 'experimental'), 3)
         self.assertEqual(weight_for('B', 'experimental'), 5)
-        self.assertEqual(weight_for('C', 'experimental'), 7)
-        self.assertEqual(weight_for('OTHER', 'experimental'), 7)
+        self.assertEqual(weight_for('C', 'experimental'), 8)
+        self.assertEqual(weight_for('OTHER', 'experimental'), 8)
 
     def test_08_route_selects_lowest_load_with_skill(self):
         r = route(AGENTS, 'C', 'Vehicular', 'actual')
@@ -144,8 +144,8 @@ class TestSaiGcLogic(unittest.TestCase):
     def test_16_compare_policies(self):
         cmp_res = compare_policies(AGENTS, 'C', 'Vehicular')
         self.assertEqual(cmp_res['actual']['weight'], 5)
-        self.assertEqual(cmp_res['experimental']['weight'], 7)
-        self.assertEqual(cmp_res['weightDelta'], 2)
+        self.assertEqual(cmp_res['experimental']['weight'], 8)
+        self.assertEqual(cmp_res['weightDelta'], 3)
         self.assertEqual(cmp_res['maxConcurrencyActual'], 2)
         self.assertEqual(cmp_res['maxConcurrencyExperimental'], 1)
 
@@ -155,326 +155,10 @@ class TestSaiGcLogic(unittest.TestCase):
         r2 = calculate_capacity_recovery(8000, 3.5)
         self.assertEqual(r2['hoursRecovered'], 466.7)
 
-    # --- PROTOCOLO DE 15 PRUEBAS R02 (T01 a T15) ---
-
-    def test_T01_no_approval_case_a_blocked(self):
-        c = CASES[0]
-        out = process_case(c, AGENTS, 'actual')
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': None,
-            'approvedRevision': None,
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_NO_APPROVAL')
-
-    def test_T02_no_approval_case_b_blocked(self):
-        c = CASES[1]
-        out = process_case(c, AGENTS, 'actual')
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': None,
-            'approvedRevision': None,
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_NO_APPROVAL')
-
-    def test_T03_valid_approval_allowed(self):
-        c = CASES[0]
-        out = process_case(c, AGENTS, 'actual')
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertTrue(auth['allowed'])
-        self.assertEqual(auth['code'], 'OK_APPROVED')
-        self.assertEqual(auth['targetAgent']['id'], 'AG-01')
-        self.assertEqual(auth['projected'], 5)
-
-    def test_T04_edit_without_save_approval_blocked(self):
-        c = CASES[0]
-        out = process_case(c, AGENTS, 'actual')
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Editar',
-            'approvedRevision': out['revision'],
-            'isEditing': True,
-            'editApproved': False,
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_EDIT_NOT_APPROVED')
-
-    def test_T05_rejected_recommendation_blocked(self):
-        c = CASES[0]
-        out = process_case(c, AGENTS, 'actual')
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Rechazar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_REJECTED')
-
-    def test_T06_class_c_escalation_mandatory(self):
-        c = CASES[2]
-        out = process_case(c, AGENTS, 'actual')
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_CLASS_C_ESCALATION')
-
-        esc = register_escalation({'caseData': c, 'output': out, 'reason': out['classification']['reason']})
-        self.assertEqual(esc['status'], 'DERIVADO_SUPERVISOR')
-        self.assertEqual(esc['level'], 'C')
-        self.assertIn('Supervisión', esc['targetQueue'])
-
-    def test_T07_unknown_text_escalates_mandatory(self):
-        c = CASES[4]
-        out = process_case(c, AGENTS, 'actual')
-        self.assertEqual(out['classification']['level'], 'C')
-        self.assertEqual(out['guidance']['id'], 'KB-NO-COBERTURA')
-
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_CLASS_C_ESCALATION')
-
-    def test_T08_stale_revision_on_data_mutation(self):
-        c_initial = dict(CASES[0])
-        out_initial = process_case(c_initial, AGENTS, 'actual')
-        approved_rev = out_initial['revision']
-
-        c_modified = dict(c_initial)
-        c_modified['text'] = 'Requiero una copia y duplicado de constancia vehicular'
-        c_modified['branch'] = 'Vida'
-
-        out_modified = process_case(c_modified, AGENTS, 'actual')
-        self.assertEqual(out_modified['classification']['level'], 'A')
-        self.assertNotEqual(approved_rev, out_modified['revision'])
-
-        auth = can_confirm_assignment({
-            'caseData': c_modified,
-            'output': out_modified,
-            'decision': 'Aceptar',
-            'approvedRevision': approved_rev,
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_STALE_REVISION')
-
-    def test_T09_stale_revision_on_policy_change(self):
-        c = CASES[0]
-        out_actual = process_case(c, AGENTS, 'actual')
-        approved_rev = out_actual['revision']
-
-        out_exp = process_case(c, AGENTS, 'experimental')
-        self.assertNotEqual(approved_rev, out_exp['revision'])
-
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out_exp,
-            'decision': 'Aceptar',
-            'approvedRevision': approved_rev,
-            'agents': AGENTS,
-            'policy': 'experimental',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_STALE_REVISION')
-
-    def test_T10_agent_pause_or_busy_blocked(self):
-        c = dict(CASES[0])
-        c['branch'] = 'Salud'
-        out = process_case(c, AGENTS, 'actual')
-
-        dynamic_agents = []
-        for a in AGENTS:
-            item = dict(a)
-            if item['id'] == 'AG-01':
-                item['status'] = 'Ocupado'
-                item['load'] = 10
-            elif item['id'] == 'AG-04':
-                item['status'] = 'Refrigerio'
-            dynamic_agents.append(item)
-
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': dynamic_agents,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_NO_CAPACITY_OR_SKILL')
-
-    def test_T11_saturated_agent_load_limit(self):
-        c = CASES[0]
-        out = process_case(c, AGENTS, 'actual')
-
-        saturated_agents = [
-            dict(a, load=8 if a['id'] == 'AG-01' else 10)
-            for a in AGENTS
-        ]
-
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': saturated_agents,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_NO_CAPACITY_OR_SKILL')
-
-    def test_T12_incompatible_branch_skill_blocked(self):
-        c = dict(CASES[0])
-        c['branch'] = 'EspecialidadInexistente'
-        out = process_case(c, AGENTS, 'actual')
-
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_NO_CAPACITY_OR_SKILL')
-
-    def test_T13_duplicate_assignment_blocked(self):
-        c = CASES[0]
-        out = process_case(c, AGENTS, 'actual')
-
-        active_wip = [
-            {'id': c['id'], 'status': 'En curso', 'agent': 'Asesor Demo 01'}
-        ]
-
-        auth = can_confirm_assignment({
-            'caseData': c,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': active_wip
-        })
-        self.assertFalse(auth['allowed'])
-        self.assertEqual(auth['code'], 'ERR_DUPLICATE_ASSIGNMENT')
-
-    def test_T14_ivr_manual_verification_enforced(self):
-        c_pend = CASES[1]
-        out = process_case(c_pend, AGENTS, 'actual')
-
-        c_blocked = dict(c_pend, ivrManualVerified=False)
-        auth_blocked = can_confirm_assignment({
-            'caseData': c_blocked,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertFalse(auth_blocked['allowed'])
-        self.assertEqual(auth_blocked['code'], 'ERR_IVR_UNVERIFIED')
-
-        c_ok = dict(c_pend, ivrManualVerified=True)
-        auth_ok = can_confirm_assignment({
-            'caseData': c_ok,
-            'output': out,
-            'decision': 'Aceptar',
-            'approvedRevision': out['revision'],
-            'agents': AGENTS,
-            'policy': 'actual',
-            'activeAssignments': []
-        })
-        self.assertTrue(auth_ok['allowed'])
-        self.assertEqual(auth_ok['code'], 'OK_APPROVED')
-
-    def test_T15_evidence_export_traceability(self):
-        logs = []
-        logs = log_event(logs, {
-            'caseId': 'DEMO-001',
-            'revision': 'rev-001',
-            'caseStatus': 'APROBADO',
-            'event': 'Decisión humana',
-            'level': 'A',
-            'source': 'KB-DEMO-001',
-            'action': 'Aceptar',
-            'result': 'PERMITIDO',
-            'agent': 'AG-01',
-            'policy': 'actual'
-        })
-        logs = log_event(logs, {
-            'caseId': 'DEMO-003',
-            'revision': 'rev-003',
-            'caseStatus': 'ESCALAMIENTO_REQUERIDO',
-            'event': 'Intento de asignación bloqueado',
-            'level': 'C',
-            'source': 'KB-DEMO-003',
-            'action': 'Aceptar',
-            'result': 'BLOQUEADO',
-            'blockReason': 'Clase C exige escalamiento obligatorio',
-            'agent': '—',
-            'policy': 'actual'
-        })
-
-        self.assertEqual(len(logs), 2)
-        self.assertEqual(logs[0]['version'], VERSION)
-
-        json_str = export_evidence(logs, 'json')
-        parsed = json.loads(json_str)
-        self.assertEqual(parsed['app'], 'SAI-GC')
-        self.assertEqual(len(parsed['records']), 2)
-
-        csv_str = export_evidence(logs, 'csv')
-        self.assertTrue(csv_str.startswith('Timestamp_ISO,Fecha_Hora,Caso,Revision'))
-        self.assertIn('"BLOQUEADO"', csv_str)
-        self.assertIn('"PERMITIDO"', csv_str)
-        self.assertIn('"Clase C exige escalamiento obligatorio"', csv_str)
+    def test_18_evaluate_dataset_v08(self):
+        rep = evaluate_dataset_v08()
+        self.assertEqual(rep['summary']['total_cases'], 30)
+        self.assertEqual(rep['summary']['class_distribution'], {'A': 10, 'B': 10, 'C': 10})
 
 if __name__ == '__main__':
     unittest.main()

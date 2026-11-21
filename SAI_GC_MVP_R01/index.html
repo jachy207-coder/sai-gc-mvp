@@ -17,11 +17,11 @@
     </div>
   </div>
   <div class="global-meta">
-    <button type="button" class="policy-pill" id="quick-policy-btn" title="Clic para alternar entre Regla Actual y Política Experimental">
+    <button type="button" class="policy-pill" id="quick-policy-btn" title="Clic para alternar entre Regla Actual (5u) y Política Experimental v0.8 (A3/B5/C8)">
       Política activa: <strong id="header-policy-label">Actual (5u)</strong> ⇄
     </button>
-    <span class="env">DEMO · DATOS SINTÉTICOS</span>
-    <span>Prototipo Académico · v0.5-r02-verificable</span>
+    <span class="env">DEMO · DATOS SINTÉTICOS · A3_B5_C8_v1</span>
+    <span>Prototipo Académico · v0.8-r02-operacion-aprobada</span>
     <span class="avatar" title="Usuario Demostrativo">VD</span>
   </div>
 </header>
@@ -33,6 +33,7 @@
   <button class="tab" data-tab="curso">4. Trabajo en curso <span class="tab-badge" id="badge-wip">2</span></button>
   <button class="tab" data-tab="bitacora">5. Bitácora <span class="tab-badge" id="badge-logs">0</span></button>
   <button class="tab" data-tab="config">6. Configuración y Cap. V</button>
+  <button class="tab" data-tab="v08">7. Evaluación v0.8 <span class="tab-badge" id="badge-v08">30 casos</span></button>
 </div>
 
 <main>
@@ -40,9 +41,9 @@
   <section class="page active" id="page-atencion">
     <div class="heading">
       <div>
-        <span class="eyebrow">SAI-GC / Experimento Funcional</span>
+        <span class="eyebrow">SAI-GC / Experimento Funcional · Esquema A3_B5_C8_v1</span>
         <h1>Atención asistida del canal WhatsApp Postventa</h1>
-        <p>Flujo propuesto: IVR existente → captura motivo → triaje A/B/C → routing por capacidad → asistencia KB → decisión humana (HITL)</p>
+        <p>Flujo propuesto: IVR existente → captura motivo → triaje A/B/C → routing por capacidad (A=3, B=5, C=8) → asistencia KB → decisión humana (HITL)</p>
       </div>
       <span class="label-demo">NO CONECTADO A SALESFORCE</span>
     </div>
@@ -77,13 +78,13 @@
           <div>
             <span class="wa-mark">◉</span>
             <b>Conversación WhatsApp</b>
-            <span class="light-text">/ Casos sintéticos controlados</span>
+            <span class="light-text">/ Casos DEMO y Lote v0.8 (30 casos)</span>
           </div>
           <span class="tiny-status" id="chat-stage-badge">Estado: En espera de triaje</span>
         </div>
 
         <div class="case-tools">
-          <label for="case-select">Caso demo</label>
+          <label for="case-select">Caso / Lote</label>
           <select id="case-select"></select>
 
           <label for="validation">Validación IVR</label>
@@ -205,7 +206,7 @@
           <div class="panelbar">
             <div>
               <span class="panel-icon purple">↪</span>
-              <b>Capacidad y routing dinámico</b>
+              <b>Capacidad y routing dinámico (A3_B5_C8_v1)</b>
             </div>
             <span class="soft">M6 · Recomendación</span>
           </div>
@@ -229,14 +230,14 @@
               </div>
             </div>
             <div class="progress"><div id="progress-fill"></div></div>
-            <p id="route-reason" class="faint">Se recomienda el asesor disponible con menor carga y skill compatible sin exceder 10 unidades.</p>
+            <p id="route-reason" class="faint">Se recomienda el asesor disponible con menor carga ponderada, mayor antigüedad desde última asignación y skill compatible.</p>
 
             <!-- Contraste en vivo Actual vs Experimental -->
             <div class="policy-compare-mini" id="policy-compare-box">
-              <div class="small-heading">Contraste de Políticas en Vivo (Actual vs Experimental)</div>
+              <div class="small-heading">Contraste de Políticas en Vivo (Actual 5u vs Experimental A3/B5/C8)</div>
               <div class="compare-row">
                 <span><strong>Actual (Fijo 5u):</strong> <span id="cmp-actual">—</span></span>
-                <span><strong>Experimental (A4/B5/C7):</strong> <span id="cmp-exp">—</span></span>
+                <span><strong>Experimental (A3/B5/C8):</strong> <span id="cmp-exp">—</span></span>
               </div>
             </div>
 
@@ -251,7 +252,7 @@
     </div>
 
     <div class="footnote">
-      SAI-GC · Prototipo académico local autónomo. Sin integración a APIs corporativas ni datos personales. Los indicadores históricos provienen del diagnóstico ene–jul 2026; la operación en pantalla utiliza datos sintéticos.
+      SAI-GC · Prototipo académico local autónomo (v0.8_operacion_aprobada). Sin integración a APIs corporativas ni datos personales. Los indicadores históricos provienen del diagnóstico ene–jul 2026; la operación en pantalla utiliza datos sintéticos.
     </div>
   </section>
 
@@ -261,7 +262,7 @@
       <div>
         <span class="eyebrow">Vista de supervisión · Interactivo</span>
         <h1>Representantes de atención al cliente</h1>
-        <p>Monitoreo y control interactivo de estado, utilización de capacidad y canales asignados.</p>
+        <p>Monitoreo y control interactivo de estado, utilización de capacidad, sesiones activas, clases en curso y antigüedad de asignación.</p>
       </div>
       <div class="btn-group">
         <button class="secondary" id="reset-agents-btn">↺ Restablecer asesores por defecto</button>
@@ -304,8 +305,8 @@
               <th>AGENTE</th>
               <th>ESTADO OPERATIVO</th>
               <th>SKILLS / RAMOS</th>
-              <th>RESUMEN DE TRABAJO</th>
-              <th>CANAL</th>
+              <th>RESUMEN DE TRABAJO / CLASES</th>
+              <th>ÚLT. ASIG.</th>
               <th>CAPACIDAD UTILIZADA</th>
               <th>CARGA</th>
               <th>ACCIÓN INTERACTIVA</th>
@@ -318,20 +319,20 @@
 
     <div class="twocol">
       <div class="panel">
-        <div class="panelbar"><b>Regla operativa confirmada</b></div>
+        <div class="panelbar"><b>Regla operativa confirmada (As-Is)</b></div>
         <div class="inner">
           <p>• Capacidad máxima nominal: <strong>10 unidades</strong> por asesor.</p>
           <p>• Caso de correo electrónico: <strong>10 unidades</strong>.</p>
-          <p>• Conversación WhatsApp: <strong>5 unidades</strong> (permite hasta 2 chats concurrentes).</p>
-          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes AG-* son sintéticos e interactivos para fines demostrativos.</p>
+          <p>• Conversación WhatsApp: <strong>5 unidades fijas</strong> (permite hasta 2 chats concurrentes sin distinguir complejidad).</p>
+          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes son sintéticos e interactivos para fines demostrativos.</p>
         </div>
       </div>
       <div class="panel">
-        <div class="panelbar"><b>Oportunidad del SAI-GC</b></div>
+        <div class="panelbar"><b>Esquema Experimental A3_B5_C8_v1 (SAI-GC v0.8)</b></div>
         <div class="inner">
-          <p>• Recomendar asignaciones considerando <strong>complejidad, disponibilidad, ramo/skill y carga proyectada</strong>.</p>
-          <p>• Evitar sobrecargas y retener en cola cuando se agota la capacidad disponible.</p>
-          <p class="disclosure">La política experimental A/B/C es configurable en la pestaña Configuración o desde el botón superior.</p>
+          <p>• <strong>Clase A = 3 unidades:</strong> Permite hasta <strong>3 consultas simples en paralelo</strong> (9/10 u.).</p>
+          <p>• <strong>Clase B = 5 unidades:</strong> Permite hasta 2 consultas intermedias o 1 B + 1 A (8/10 u.).</p>
+          <p>• <strong>Clase C = 8 unidades:</strong> Garantiza <strong>dedicación exclusiva</strong> en casos críticos (8+3=11 > 10, impidiendo interrupciones).</p>
         </div>
       </div>
     </div>
@@ -521,7 +522,7 @@
       <div>
         <span class="eyebrow">Parámetros del escenario · Control de hipótesis y Cap. V</span>
         <h1>Configuración de políticas y calculadora de sensibilidad</h1>
-        <p>Separación estricta entre la regla operativa real, las hipótesis de experimentación y la proyección de capacidad.</p>
+        <p>Separación estricta entre la regla operativa real, las hipótesis de experimentación (A3_B5_C8_v1) y la proyección de capacidad.</p>
       </div>
       <span class="label-demo">SIN CALIBRACIÓN EMPÍRICA</span>
     </div>
@@ -531,14 +532,14 @@
         <div class="inner">
           <label class="radio-line">
             <input type="radio" name="policy" value="actual" checked>
-            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades, Capacidad nominal = 10 unidades (máx. 2 chats simultáneos).</span>
+            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades fijas, Capacidad nominal = 10 unidades (máx. 2 chats simultáneos).</span>
           </label>
           <label class="radio-line">
             <input type="radio" name="policy" value="experimental">
-            <span><b>Política experimental A/B/C</b> · A = 4, B = 5, C = 7 (valores puramente hipotéticos para proteger casos complejos).</span>
+            <span><b>Política experimental A/B/C (A3_B5_C8_v1)</b> · A = 3, B = 5, C = 8 (hasta 3 chats A; dedicación exclusiva en clase C).</span>
           </label>
           <p class="disclosure">
-            Advertencia de integridad metodológica: Los pesos 4, 5 y 7 son valores ilustrativos de prueba académica. No corresponden a pesos calibrados de la aseguradora y su impacto en TMO está pendiente de validación mediante simulación en el Capítulo V.
+            Advertencia de integridad metodológica: Los pesos 3, 5 y 8 del esquema <code>A3_B5_C8_v1</code> (dataset <code>v0.8_operacion_aprobada</code>) son valores de prueba técnica académica. Su impacto en TMO está pendiente de validación mediante simulación en el Capítulo V.
           </p>
         </div>
       </div>
@@ -581,7 +582,7 @@
           <p>✓ <strong>Reglas de triaje interpretables:</strong> lógica determinista auditable y precautoria con resaltado de términos.</p>
           <p>✓ <strong>Repositorio demostrativo:</strong> KB con identificadores, versión explícita y checklist de verificación.</p>
           <p>✓ <strong>Revisión humana mandatoria:</strong> el sistema nunca envía mensajes sin confirmación HITL del asesor.</p>
-          <p>✓ <strong>Gestión de capacidad reactiva:</strong> ruteo respetando umbrales de 10 unidades, encolamiento y liberación WIP.</p>
+          <p>✓ <strong>Gestión de capacidad reactiva:</strong> ruteo respetando umbrales de 10 unidades, desempate por antigüedad y liberación WIP.</p>
         </div>
         <div>
           <p>✓ <strong>Trazabilidad completa:</strong> bitácora filtrable y descargable en JSON y CSV.</p>
@@ -592,10 +593,91 @@
       </div>
     </div>
   </section>
+
+  <!-- P7. EVALUACIÓN LOTE V0.8 (30 CASOS) -->
+  <section class="page" id="page-v08">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Prueba Técnica sin Data Leakage · Esquema A3_B5_C8_v1</span>
+        <h1>Evaluación Operativa del Lote v0.8 (30 Casos Aprobados)</h1>
+        <p>Procesamiento íntegro de <code>SAIGC_MVP_input_v0_8_operacion_aprobada.json</code>: contraste línea por línea entre Regla Actual (5u) y Política Experimental (A=3, B=5, C=8) con desempate por antigüedad de asignación.</p>
+      </div>
+      <div class="btn-group">
+        <label class="secondary" style="display:inline-flex;align-items:center;cursor:pointer;margin:0;">
+          📂 Cargar JSON v0.8
+          <input type="file" id="v08-file-input" accept=".json" style="display:none;">
+        </label>
+        <button class="secondary" id="v08-export-json-btn">⬇ Exportar Evaluación JSON</button>
+        <button class="secondary" id="v08-export-csv-btn">⬇ Exportar Evaluación CSV</button>
+      </div>
+    </div>
+
+    <div class="metricstrip compact-strip">
+      <div class="metric compact">
+        <small>Lote Evaluado (<span id="v08-version-label">v0.8_operacion_aprobada</span>)</small>
+        <b id="v08-kpi-total">30 casos</b>
+        <span id="v08-kpi-dist">10 Clase A · 10 Clase B · 10 Clase C</span>
+      </div>
+      <div class="metric compact">
+        <small>Ruteo Regla Actual (Peso Fijo 5u)</small>
+        <b id="v08-kpi-act">26 asig. / 4 cola</b>
+        <span>No distingue complejidad activa</span>
+      </div>
+      <div class="metric compact">
+        <small>Ruteo Experimental (A=3, B=5, C=8)</small>
+        <b id="v08-kpi-exp">23 asig. / 7 cola</b>
+        <span>Protege asesores con casos C (8u)</span>
+      </div>
+      <div class="metric compact">
+        <small>Decisiones Optimales Diferentes</small>
+        <b id="v08-kpi-diff">8 casos</b>
+        <span>Evita sobrecarga e interrupción C</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panelbar">
+        <b>Matriz de Resultados de Triaje, Cargas Operativas y Ruteo Comparado (CASO-001 a CASO-030)</b>
+        <div class="filter-bar">
+          <label for="v08-filter">Filtrar vista:</label>
+          <select id="v08-filter">
+            <option value="ALL">Todos los casos (30)</option>
+            <option value="DIFF">Solo diferencias Actual ≠ Experimental (8)</option>
+            <option value="A">Solo Clase A (10)</option>
+            <option value="B">Solo Clase B (10)</option>
+            <option value="C">Solo Clase C (10)</option>
+          </select>
+        </div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>CASO</th>
+              <th>CONSULTA DEL CLIENTE (SIN ETIQUETAS FILTRADAS)</th>
+              <th>CLASE</th>
+              <th>CLASES ACTIVAS (AGT 1/2/3)</th>
+              <th>CARGA ACTUAL (5u)</th>
+              <th>ASIG. ACTUAL</th>
+              <th>CARGA EXP. (3/5/8)</th>
+              <th>ASIG. EXP.</th>
+              <th>ACCIÓN OPERATIVA SUGERIDA</th>
+              <th>SIMULAR</th>
+            </tr>
+          </thead>
+          <tbody id="v08-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="explain">
+      <strong>Control de Privacidad y No-Leakage verificado:</strong> El motor procesa únicamente <code>query_text</code>, <code>agent_state</code>, <code>active_sessions_by_agent</code>, <code>active_case_classes_by_agent</code> y <code>last_assignment_age</code>. Los 10 campos del Gold Standard (<code>expected_class</code>, <code>expected_routing</code>, etc.) están excluidos.
+    </div>
+  </section>
 </main>
 
 <footer>
-  SAI-GC R02 (v0.5-r02-verificable) · Prototipo Académico Demostrativo Local · Inspirado en la estructura funcional de supervisión de aseguradora · Proyecto de Grado UPC
+  SAI-GC v0.8-r02-operacion-aprobada (Esquema A3_B5_C8_v1) · Prototipo Académico Demostrativo Local · Proyecto de Grado UPC
 </footer>
 
 <script type="module" src="script.mjs"></script>

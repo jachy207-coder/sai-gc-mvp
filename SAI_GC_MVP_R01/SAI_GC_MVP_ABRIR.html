@@ -1208,11 +1208,11 @@ footer {
     </div>
   </div>
   <div class="global-meta">
-    <button type="button" class="policy-pill" id="quick-policy-btn" title="Clic para alternar entre Regla Actual y Política Experimental">
+    <button type="button" class="policy-pill" id="quick-policy-btn" title="Clic para alternar entre Regla Actual (5u) y Política Experimental v0.8 (A3/B5/C8)">
       Política activa: <strong id="header-policy-label">Actual (5u)</strong> ⇄
     </button>
-    <span class="env">DEMO · DATOS SINTÉTICOS</span>
-    <span>Prototipo Académico · v0.5-r02-verificable</span>
+    <span class="env">DEMO · DATOS SINTÉTICOS · A3_B5_C8_v1</span>
+    <span>Prototipo Académico · v0.8-r02-operacion-aprobada</span>
     <span class="avatar" title="Usuario Demostrativo">VD</span>
   </div>
 </header>
@@ -1224,6 +1224,7 @@ footer {
   <button class="tab" data-tab="curso">4. Trabajo en curso <span class="tab-badge" id="badge-wip">2</span></button>
   <button class="tab" data-tab="bitacora">5. Bitácora <span class="tab-badge" id="badge-logs">0</span></button>
   <button class="tab" data-tab="config">6. Configuración y Cap. V</button>
+  <button class="tab" data-tab="v08">7. Evaluación v0.8 <span class="tab-badge" id="badge-v08">30 casos</span></button>
 </div>
 
 <main>
@@ -1231,9 +1232,9 @@ footer {
   <section class="page active" id="page-atencion">
     <div class="heading">
       <div>
-        <span class="eyebrow">SAI-GC / Experimento Funcional</span>
+        <span class="eyebrow">SAI-GC / Experimento Funcional · Esquema A3_B5_C8_v1</span>
         <h1>Atención asistida del canal WhatsApp Postventa</h1>
-        <p>Flujo propuesto: IVR existente → captura motivo → triaje A/B/C → routing por capacidad → asistencia KB → decisión humana (HITL)</p>
+        <p>Flujo propuesto: IVR existente → captura motivo → triaje A/B/C → routing por capacidad (A=3, B=5, C=8) → asistencia KB → decisión humana (HITL)</p>
       </div>
       <span class="label-demo">NO CONECTADO A SALESFORCE</span>
     </div>
@@ -1268,13 +1269,13 @@ footer {
           <div>
             <span class="wa-mark">◉</span>
             <b>Conversación WhatsApp</b>
-            <span class="light-text">/ Casos sintéticos controlados</span>
+            <span class="light-text">/ Casos DEMO y Lote v0.8 (30 casos)</span>
           </div>
           <span class="tiny-status" id="chat-stage-badge">Estado: En espera de triaje</span>
         </div>
 
         <div class="case-tools">
-          <label for="case-select">Caso demo</label>
+          <label for="case-select">Caso / Lote</label>
           <select id="case-select"></select>
 
           <label for="validation">Validación IVR</label>
@@ -1396,7 +1397,7 @@ footer {
           <div class="panelbar">
             <div>
               <span class="panel-icon purple">↪</span>
-              <b>Capacidad y routing dinámico</b>
+              <b>Capacidad y routing dinámico (A3_B5_C8_v1)</b>
             </div>
             <span class="soft">M6 · Recomendación</span>
           </div>
@@ -1420,14 +1421,14 @@ footer {
               </div>
             </div>
             <div class="progress"><div id="progress-fill"></div></div>
-            <p id="route-reason" class="faint">Se recomienda el asesor disponible con menor carga y skill compatible sin exceder 10 unidades.</p>
+            <p id="route-reason" class="faint">Se recomienda el asesor disponible con menor carga ponderada, mayor antigüedad desde última asignación y skill compatible.</p>
 
             <!-- Contraste en vivo Actual vs Experimental -->
             <div class="policy-compare-mini" id="policy-compare-box">
-              <div class="small-heading">Contraste de Políticas en Vivo (Actual vs Experimental)</div>
+              <div class="small-heading">Contraste de Políticas en Vivo (Actual 5u vs Experimental A3/B5/C8)</div>
               <div class="compare-row">
                 <span><strong>Actual (Fijo 5u):</strong> <span id="cmp-actual">—</span></span>
-                <span><strong>Experimental (A4/B5/C7):</strong> <span id="cmp-exp">—</span></span>
+                <span><strong>Experimental (A3/B5/C8):</strong> <span id="cmp-exp">—</span></span>
               </div>
             </div>
 
@@ -1442,7 +1443,7 @@ footer {
     </div>
 
     <div class="footnote">
-      SAI-GC · Prototipo académico local autónomo. Sin integración a APIs corporativas ni datos personales. Los indicadores históricos provienen del diagnóstico ene–jul 2026; la operación en pantalla utiliza datos sintéticos.
+      SAI-GC · Prototipo académico local autónomo (v0.8_operacion_aprobada). Sin integración a APIs corporativas ni datos personales. Los indicadores históricos provienen del diagnóstico ene–jul 2026; la operación en pantalla utiliza datos sintéticos.
     </div>
   </section>
 
@@ -1452,7 +1453,7 @@ footer {
       <div>
         <span class="eyebrow">Vista de supervisión · Interactivo</span>
         <h1>Representantes de atención al cliente</h1>
-        <p>Monitoreo y control interactivo de estado, utilización de capacidad y canales asignados.</p>
+        <p>Monitoreo y control interactivo de estado, utilización de capacidad, sesiones activas, clases en curso y antigüedad de asignación.</p>
       </div>
       <div class="btn-group">
         <button class="secondary" id="reset-agents-btn">↺ Restablecer asesores por defecto</button>
@@ -1495,8 +1496,8 @@ footer {
               <th>AGENTE</th>
               <th>ESTADO OPERATIVO</th>
               <th>SKILLS / RAMOS</th>
-              <th>RESUMEN DE TRABAJO</th>
-              <th>CANAL</th>
+              <th>RESUMEN DE TRABAJO / CLASES</th>
+              <th>ÚLT. ASIG.</th>
               <th>CAPACIDAD UTILIZADA</th>
               <th>CARGA</th>
               <th>ACCIÓN INTERACTIVA</th>
@@ -1509,20 +1510,20 @@ footer {
 
     <div class="twocol">
       <div class="panel">
-        <div class="panelbar"><b>Regla operativa confirmada</b></div>
+        <div class="panelbar"><b>Regla operativa confirmada (As-Is)</b></div>
         <div class="inner">
           <p>• Capacidad máxima nominal: <strong>10 unidades</strong> por asesor.</p>
           <p>• Caso de correo electrónico: <strong>10 unidades</strong>.</p>
-          <p>• Conversación WhatsApp: <strong>5 unidades</strong> (permite hasta 2 chats concurrentes).</p>
-          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes AG-* son sintéticos e interactivos para fines demostrativos.</p>
+          <p>• Conversación WhatsApp: <strong>5 unidades fijas</strong> (permite hasta 2 chats concurrentes sin distinguir complejidad).</p>
+          <p class="disclosure">Regla real reportada por la operación. Los estados de los agentes son sintéticos e interactivos para fines demostrativos.</p>
         </div>
       </div>
       <div class="panel">
-        <div class="panelbar"><b>Oportunidad del SAI-GC</b></div>
+        <div class="panelbar"><b>Esquema Experimental A3_B5_C8_v1 (SAI-GC v0.8)</b></div>
         <div class="inner">
-          <p>• Recomendar asignaciones considerando <strong>complejidad, disponibilidad, ramo/skill y carga proyectada</strong>.</p>
-          <p>• Evitar sobrecargas y retener en cola cuando se agota la capacidad disponible.</p>
-          <p class="disclosure">La política experimental A/B/C es configurable en la pestaña Configuración o desde el botón superior.</p>
+          <p>• <strong>Clase A = 3 unidades:</strong> Permite hasta <strong>3 consultas simples en paralelo</strong> (9/10 u.).</p>
+          <p>• <strong>Clase B = 5 unidades:</strong> Permite hasta 2 consultas intermedias o 1 B + 1 A (8/10 u.).</p>
+          <p>• <strong>Clase C = 8 unidades:</strong> Garantiza <strong>dedicación exclusiva</strong> en casos críticos (8+3=11 > 10, impidiendo interrupciones).</p>
         </div>
       </div>
     </div>
@@ -1712,7 +1713,7 @@ footer {
       <div>
         <span class="eyebrow">Parámetros del escenario · Control de hipótesis y Cap. V</span>
         <h1>Configuración de políticas y calculadora de sensibilidad</h1>
-        <p>Separación estricta entre la regla operativa real, las hipótesis de experimentación y la proyección de capacidad.</p>
+        <p>Separación estricta entre la regla operativa real, las hipótesis de experimentación (A3_B5_C8_v1) y la proyección de capacidad.</p>
       </div>
       <span class="label-demo">SIN CALIBRACIÓN EMPÍRICA</span>
     </div>
@@ -1722,14 +1723,14 @@ footer {
         <div class="inner">
           <label class="radio-line">
             <input type="radio" name="policy" value="actual" checked>
-            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades, Capacidad nominal = 10 unidades (máx. 2 chats simultáneos).</span>
+            <span><b>Regla actual confirmada</b> · WhatsApp = 5 unidades fijas, Capacidad nominal = 10 unidades (máx. 2 chats simultáneos).</span>
           </label>
           <label class="radio-line">
             <input type="radio" name="policy" value="experimental">
-            <span><b>Política experimental A/B/C</b> · A = 4, B = 5, C = 7 (valores puramente hipotéticos para proteger casos complejos).</span>
+            <span><b>Política experimental A/B/C (A3_B5_C8_v1)</b> · A = 3, B = 5, C = 8 (hasta 3 chats A; dedicación exclusiva en clase C).</span>
           </label>
           <p class="disclosure">
-            Advertencia de integridad metodológica: Los pesos 4, 5 y 7 son valores ilustrativos de prueba académica. No corresponden a pesos calibrados de la aseguradora y su impacto en TMO está pendiente de validación mediante simulación en el Capítulo V.
+            Advertencia de integridad metodológica: Los pesos 3, 5 y 8 del esquema <code>A3_B5_C8_v1</code> (dataset <code>v0.8_operacion_aprobada</code>) son valores de prueba técnica académica. Su impacto en TMO está pendiente de validación mediante simulación en el Capítulo V.
           </p>
         </div>
       </div>
@@ -1772,7 +1773,7 @@ footer {
           <p>✓ <strong>Reglas de triaje interpretables:</strong> lógica determinista auditable y precautoria con resaltado de términos.</p>
           <p>✓ <strong>Repositorio demostrativo:</strong> KB con identificadores, versión explícita y checklist de verificación.</p>
           <p>✓ <strong>Revisión humana mandatoria:</strong> el sistema nunca envía mensajes sin confirmación HITL del asesor.</p>
-          <p>✓ <strong>Gestión de capacidad reactiva:</strong> ruteo respetando umbrales de 10 unidades, encolamiento y liberación WIP.</p>
+          <p>✓ <strong>Gestión de capacidad reactiva:</strong> ruteo respetando umbrales de 10 unidades, desempate por antigüedad y liberación WIP.</p>
         </div>
         <div>
           <p>✓ <strong>Trazabilidad completa:</strong> bitácora filtrable y descargable en JSON y CSV.</p>
@@ -1783,56 +1784,140 @@ footer {
       </div>
     </div>
   </section>
+
+  <!-- P7. EVALUACIÓN LOTE V0.8 (30 CASOS) -->
+  <section class="page" id="page-v08">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">Prueba Técnica sin Data Leakage · Esquema A3_B5_C8_v1</span>
+        <h1>Evaluación Operativa del Lote v0.8 (30 Casos Aprobados)</h1>
+        <p>Procesamiento íntegro de <code>SAIGC_MVP_input_v0_8_operacion_aprobada.json</code>: contraste línea por línea entre Regla Actual (5u) y Política Experimental (A=3, B=5, C=8) con desempate por antigüedad de asignación.</p>
+      </div>
+      <div class="btn-group">
+        <label class="secondary" style="display:inline-flex;align-items:center;cursor:pointer;margin:0;">
+          📂 Cargar JSON v0.8
+          <input type="file" id="v08-file-input" accept=".json" style="display:none;">
+        </label>
+        <button class="secondary" id="v08-export-json-btn">⬇ Exportar Evaluación JSON</button>
+        <button class="secondary" id="v08-export-csv-btn">⬇ Exportar Evaluación CSV</button>
+      </div>
+    </div>
+
+    <div class="metricstrip compact-strip">
+      <div class="metric compact">
+        <small>Lote Evaluado (<span id="v08-version-label">v0.8_operacion_aprobada</span>)</small>
+        <b id="v08-kpi-total">30 casos</b>
+        <span id="v08-kpi-dist">10 Clase A · 10 Clase B · 10 Clase C</span>
+      </div>
+      <div class="metric compact">
+        <small>Ruteo Regla Actual (Peso Fijo 5u)</small>
+        <b id="v08-kpi-act">26 asig. / 4 cola</b>
+        <span>No distingue complejidad activa</span>
+      </div>
+      <div class="metric compact">
+        <small>Ruteo Experimental (A=3, B=5, C=8)</small>
+        <b id="v08-kpi-exp">23 asig. / 7 cola</b>
+        <span>Protege asesores con casos C (8u)</span>
+      </div>
+      <div class="metric compact">
+        <small>Decisiones Optimales Diferentes</small>
+        <b id="v08-kpi-diff">8 casos</b>
+        <span>Evita sobrecarga e interrupción C</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panelbar">
+        <b>Matriz de Resultados de Triaje, Cargas Operativas y Ruteo Comparado (CASO-001 a CASO-030)</b>
+        <div class="filter-bar">
+          <label for="v08-filter">Filtrar vista:</label>
+          <select id="v08-filter">
+            <option value="ALL">Todos los casos (30)</option>
+            <option value="DIFF">Solo diferencias Actual ≠ Experimental (8)</option>
+            <option value="A">Solo Clase A (10)</option>
+            <option value="B">Solo Clase B (10)</option>
+            <option value="C">Solo Clase C (10)</option>
+          </select>
+        </div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>CASO</th>
+              <th>CONSULTA DEL CLIENTE (SIN ETIQUETAS FILTRADAS)</th>
+              <th>CLASE</th>
+              <th>CLASES ACTIVAS (AGT 1/2/3)</th>
+              <th>CARGA ACTUAL (5u)</th>
+              <th>ASIG. ACTUAL</th>
+              <th>CARGA EXP. (3/5/8)</th>
+              <th>ASIG. EXP.</th>
+              <th>ACCIÓN OPERATIVA SUGERIDA</th>
+              <th>SIMULAR</th>
+            </tr>
+          </thead>
+          <tbody id="v08-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="explain">
+      <strong>Control de Privacidad y No-Leakage verificado:</strong> El motor procesa únicamente <code>query_text</code>, <code>agent_state</code>, <code>active_sessions_by_agent</code>, <code>active_case_classes_by_agent</code> y <code>last_assignment_age</code>. Los 10 campos del Gold Standard (<code>expected_class</code>, <code>expected_routing</code>, etc.) están excluidos.
+    </div>
+  </section>
 </main>
 
 <footer>
-  SAI-GC R02 (v0.5-r02-verificable) · Prototipo Académico Demostrativo Local · Inspirado en la estructura funcional de supervisión de aseguradora · Proyecto de Grado UPC
+  SAI-GC v0.8-r02-operacion-aprobada (Esquema A3_B5_C8_v1) · Prototipo Académico Demostrativo Local · Proyecto de Grado UPC
 </footer>
 
 <script>
 /** 
- * SAI-GC R02 — Módulo de Lógica Pura
+ * SAI-GC R02 / v0.8 — Módulo de Lógica Pura
  * Sistema de Asistencia Inteligente y Gestión de Capacidad
- * MVP Académico Demostrativo · Datos Sintéticos
- * Versión R02 Verificable
+ * MVP Académico Demostrativo · Datos Sintéticos · Esquema A3_B5_C8_v1
+ * Versión v0.8-r02-operacion-aprobada
  */
 
-const VERSION = '0.5-r02-verificable';
+const VERSION = '0.8-r02-operacion-aprobada';
+const DATASET_VERSION = 'v0.8_operacion_aprobada';
+const WEIGHT_SCHEME_VERSION = 'A3_B5_C8_v1';
 const CAPACITY = 10;
+const EXPERIMENTAL_WEIGHTS = { A: 3, B: 5, C: 8 };
 
 const KNOWLEDGE = {
   A: {
     id: 'KB-DEMO-001',
-    title: 'Envío de constancia · plantilla demostrativa',
-    body: 'Para solicitar una constancia, verificar identidad y cobertura con el procedimiento corporativo vigente. No afirmar el envío ni la vigencia sin comprobación.',
+    title: 'Orientación informativa y autogestión digital · Clase A',
+    body: 'Consultas informativas generales, horarios, canales digitales, copias/constancias estándar y requisitos generales que no exigen revelar datos transaccionales ni modificar contratos.',
     checklist: [
-      'Confirmar validación previa en IVR o verificar DNI/placa del titular.',
-      'Consultar estado de vigencia en el sistema core antes de emitir constancia.',
-      'Adjuntar PDF oficial sin prometer coberturas adicionales.'
+      'Brindar orientación clara sobre el canal, horario, requisito general o ruta de descarga.',
+      'Confirmar si la consulta es puramente informativa y no requiere transacción interna.',
+      'No emitir promesas de cobertura específica ni exponer datos personales.'
     ],
-    reply: 'Con gusto le ayudo con su constancia. Antes de continuar, revisaré la validación y la información disponible en el procedimiento autorizado. Le confirmaré los siguientes pasos.'
+    reply: 'Con gusto le brindo la orientación solicitada. A continuación le detallo el procedimiento e información general disponible en nuestros canales oficiales para que pueda realizar o consultar su gestión de forma rápida.'
   },
   B: {
     id: 'KB-DEMO-002',
-    title: 'Estado de cuenta y deuda · plantilla demostrativa',
-    body: 'La información de deuda y cuotas requiere consulta a fuentes corporativas. La plantilla no contiene saldos ni datos personales.',
+    title: 'Consulta transaccional y verificación en sistemas · Clase B',
+    body: 'Consultas sobre estado de pagos, deudas, modificaciones en trámite, reembolsos presentados, estado de carta de garantía, coberturas/deducibles específicos o avance de taller que requieren validar identidad y consultar sistemas internos.',
     checklist: [
-      'Validar identidad del asegurado (obligatorio si el IVR no completó autenticación).',
-      'Consultar cronograma de pagos y estado de cuotas en módulo de cobranzas.',
-      'Informar canales oficiales de pago sin digitar importes no verificados.'
+      'Validar identidad del titular o solicitante (solicitar datos faltantes como N° de solicitud o póliza si no están a la mano).',
+      'Consultar el estado actualizado en el sistema core correspondiente (cobranzas, reembolsos, cartas de garantía o talleres).',
+      'Informar el estado verificado sin realizar excepciones fuera de póliza ni omitir controles.'
     ],
-    reply: 'Con gusto reviso su consulta sobre el estado de cuenta. Necesito validar los datos correspondientes y consultar el sistema autorizado antes de confirmarle importes o fechas.'
+    reply: 'Con gusto reviso el estado específico de su caso. Para brindarle información exacta desde nuestro sistema autorizado, primero completaré la validación de seguridad y verificaré los registros actualizados de su solicitud.'
   },
   C: {
     id: 'KB-DEMO-003',
-    title: 'Siniestros y excepciones · control reforzado',
-    body: 'Los siniestros, indemnizaciones, anulaciones contractuales y casos sensibles requieren revisión o escalamiento. No prometer cobertura, pagos ni plazos.',
+    title: 'Casos críticos, contractuales, excepciones y alertas de seguridad · Clase C',
+    body: 'Siniestros e indemnizaciones, anulaciones, rescates/retiros de valor acumulado, devoluciones por cobros no reconocidos, fallecimiento del titular, solicitudes de excepción, terceros no autorizados o intentos de omitir validación.',
     checklist: [
-      'Contención empática inicial; prohibido confirmar cobertura o indemnización.',
-      'Recopilar número de póliza, fecha del evento y documentación de sustento.',
-      'Escalar a célula especializada o supervisor según matriz de riesgo.'
+      'Contención formal: prohibido confirmar indemnizaciones, aprobar excepciones, revelar reservas a terceros u omitir validaciones.',
+      'Registrar alerta de control reforzado (discrepancia de identidad, tercero no titular o reclamo sensible).',
+      'Derivar/escalar obligatoriamente a célula especializada o supervisor con trazabilidad completa.'
     ],
-    reply: 'Comprendo su solicitud. Por tratarse de una gestión que requiere una revisión especializada, verificaré la documentación y la ruta de atención correspondiente antes de brindarle una respuesta definitiva.'
+    reply: 'Comprendo la importancia de su solicitud. Por tratarse de una gestión sujeta a control reforzado y revisión especializada, no es posible omitir las validaciones ni confirmar montos o excepciones por esta vía; procederé a registrar y derivar su caso al área especialista.'
   }
 };
 
@@ -1902,8 +1987,8 @@ const CASES = [
   },
   {
     id: 'DEMO-008',
-    name: 'Comparativa Actual vs Experimental',
-    text: 'Solicitud con complejidad clase C para contrastar peso 5 (actual) vs 7 (experimental).',
+    name: 'Comparativa Actual vs Experimental (A3/B5/C8)',
+    text: 'Solicitud con complejidad clase C para contrastar peso 5 (actual) vs 8 (experimental).',
     topic: 'Contraste metodológico',
     branch: 'Vehicular',
     validated: true,
@@ -1911,31 +1996,300 @@ const CASES = [
   }
 ];
 
+const V08_DATASET = {
+  dataset_version: 'v0.8_operacion_aprobada',
+  status: 'APTO_PARA_PRUEBA_TECNICA_NO_V5',
+  capacity_policy: {
+    nominal_capacity_units: 10,
+    current_policy_fixed_weight_units: 5,
+    experimental_weights: { A: 3, B: 5, C: 8 },
+    weight_scheme_version: 'A3_B5_C8_v1'
+  },
+  privacy_and_leakage_controls: {
+    opaque_case_ids: true,
+    excluded_fields: [
+      'expected_class',
+      'scenario_type',
+      'typology',
+      'risk_condition',
+      'available_information',
+      'missing_information',
+      'expected_routing',
+      'expected_response',
+      'escalation_expected',
+      'critical_error'
+    ],
+    note: 'El MVP recibe la consulta y el estado operativo. La correspondencia con el gold standard se conserva en un archivo restringido separado.'
+  },
+  cases: [
+    {
+      case_id: 'CASO-001',
+      query_text: '¿Cuál es el horario de atención del canal y qué opciones tengo fuera de ese horario?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 0, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': [], 'AGT-02': ['B'], 'AGT-03': ['C'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-002',
+      query_text: 'Compré un SOAT y necesito saber cómo obtener una copia digital.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 0, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': [], 'AGT-03': ['A'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-003',
+      query_text: '¿Cómo puedo solicitar una constancia de afiliación de mi plan de salud?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 0 },
+      active_case_classes_by_agent: { 'AGT-01': ['C'], 'AGT-02': ['A'], 'AGT-03': [] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-004',
+      query_text: '¿Dónde puedo consultar o descargar el comprobante electrónico de mi seguro vehicular?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['A'], 'AGT-02': ['B'], 'AGT-03': ['C'] },
+      last_assignment_age: { 'AGT-01': 55, 'AGT-02': 20, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-005',
+      query_text: 'En términos generales, ¿qué documentos suelen solicitar para presentar un reembolso?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': ['C'], 'AGT-03': ['A'] },
+      last_assignment_age: { 'AGT-01': 20, 'AGT-02': 55, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-006',
+      query_text: '¿Dónde puedo revisar la red general de clínicas y proveedores disponible para mi plan?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['C'], 'AGT-02': ['A'], 'AGT-03': ['B'] },
+      last_assignment_age: { 'AGT-01': 20, 'AGT-02': 20, 'AGT-03': 55 }
+    },
+    {
+      case_id: 'CASO-007',
+      query_text: '¿Para qué sirve la inspección vehicular previa y qué se revisa de manera general?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 0, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': [], 'AGT-02': ['B'], 'AGT-03': ['C'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-008',
+      query_text: 'Necesito conocer qué información contiene un estado de cuenta de un seguro de vida con componente de ahorro.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 0, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': [], 'AGT-03': ['A'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-009',
+      query_text: '¿Cómo accedo a mis documentos digitales del plan si el canal está recibiendo muchas consultas?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 0 },
+      active_case_classes_by_agent: { 'AGT-01': ['C'], 'AGT-02': ['A'], 'AGT-03': [] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-010',
+      query_text: '¿Horario?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 3, 'AGT-02': 3, 'AGT-03': 3 },
+      active_case_classes_by_agent: { 'AGT-01': ['A', 'A', 'A'], 'AGT-02': ['A', 'A', 'A'], 'AGT-03': ['A', 'A', 'A'] },
+      last_assignment_age: { 'AGT-01': 70, 'AGT-02': 45, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-011',
+      query_text: 'Realicé un pago de mi seguro vehicular, pero todavía no aparece aplicado. ¿Pueden revisarlo?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': ['C'], 'AGT-03': ['A'] },
+      last_assignment_age: { 'AGT-01': 55, 'AGT-02': 20, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-012',
+      query_text: 'Veo una deuda pendiente en mi seguro de vida y quiero saber a qué corresponde.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['C'], 'AGT-02': ['A'], 'AGT-03': ['B'] },
+      last_assignment_age: { 'AGT-01': 20, 'AGT-02': 55, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-013',
+      query_text: 'Solicité una modificación en mi póliza vehicular, pero todavía no aparece actualizada. ¿Podrían revisar el estado?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['A'], 'AGT-02': ['B'], 'AGT-03': ['C'] },
+      last_assignment_age: { 'AGT-01': 20, 'AGT-02': 20, 'AGT-03': 55 }
+    },
+    {
+      case_id: 'CASO-014',
+      query_text: 'Quiero cambiar el medio de pago de mi seguro, pero no sé qué validaciones necesito completar.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 0, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': [], 'AGT-02': ['C'], 'AGT-03': ['A'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-015',
+      query_text: 'Presenté un reembolso y necesito saber si ya fue revisado, pero no tengo el número de solicitud a la mano.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 0, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['C'], 'AGT-02': [], 'AGT-03': ['B'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-016',
+      query_text: 'La clínica indica que mi carta de garantía está pendiente, pero yo recibí un mensaje que decía que estaba en evaluación. ¿Cuál es el estado correcto?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 0 },
+      active_case_classes_by_agent: { 'AGT-01': ['A'], 'AGT-02': ['B'], 'AGT-03': [] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-017',
+      query_text: 'Necesito confirmar si una atención especializada está cubierta, qué deducible aplica y en qué proveedor puedo atenderme.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': ['C'], 'AGT-03': ['A'] },
+      last_assignment_age: { 'AGT-01': 55, 'AGT-02': 20, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-018',
+      query_text: 'Mi vehículo está en reparación y me informaron que falta un repuesto. ¿Pueden confirmar el avance y el plazo estimado?',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['C'], 'AGT-02': ['A'], 'AGT-03': ['B'] },
+      last_assignment_age: { 'AGT-01': 20, 'AGT-02': 55, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-019',
+      query_text: 'El saldo que aparece en mi estado de cuenta no coincide con lo que esperaba y necesito que lo revisen.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 2, 'AGT-02': 2, 'AGT-03': 2 },
+      active_case_classes_by_agent: { 'AGT-01': ['A', 'A'], 'AGT-02': ['A', 'B'], 'AGT-03': ['B', 'B'] },
+      last_assignment_age: { 'AGT-01': 70, 'AGT-02': 45, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-020',
+      query_text: 'Soy un tercero afectado y necesito orientación sobre cómo registrar mi solicitud, pero no hay un agente disponible.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 3, 'AGT-02': 3, 'AGT-03': 3 },
+      active_case_classes_by_agent: { 'AGT-01': ['A', 'A', 'A'], 'AGT-02': ['A', 'A', 'A'], 'AGT-03': ['A', 'A', 'A'] },
+      last_assignment_age: { 'AGT-01': 70, 'AGT-02': 45, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-021',
+      query_text: 'Solicito anular mi seguro de salud y devolver los cobros realizados porque no reconozco el cambio aplicado.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 0, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': [], 'AGT-02': ['A'], 'AGT-03': ['B'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-022',
+      query_text: 'Quiero retirar parte del valor acumulado de mi seguro y saber cuánto recibiría.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 0, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['A'], 'AGT-02': [], 'AGT-03': ['C'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-023',
+      query_text: 'Tuve un siniestro y necesito confirmar si corresponde una indemnización y cuál sería el monto.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 0 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': ['C'], 'AGT-03': [] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-024',
+      query_text: 'Necesito que el pago de una devolución se deposite en una cuenta distinta, pero no soy el titular de la póliza.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['C'], 'AGT-02': ['A'], 'AGT-03': ['B'] },
+      last_assignment_age: { 'AGT-01': 55, 'AGT-02': 20, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-025',
+      query_text: 'Me indican que una atención no está incluida en mi plan, pero necesito que hagan una excepción.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['A'], 'AGT-02': ['B'], 'AGT-03': ['C'] },
+      last_assignment_age: { 'AGT-01': 20, 'AGT-02': 55, 'AGT-03': 20 }
+    },
+    {
+      case_id: 'CASO-026',
+      query_text: 'Me cobraron un importe que no reconozco y me indican que corresponde a una modificación que no solicité. Exijo la devolución inmediata.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': ['C'], 'AGT-03': ['A'] },
+      last_assignment_age: { 'AGT-01': 20, 'AGT-02': 20, 'AGT-03': 55 }
+    },
+    {
+      case_id: 'CASO-027',
+      query_text: 'El titular de la póliza falleció y necesito saber si puedo cambiar al contratante y continuar con el seguro.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 0, 'AGT-02': 1, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': [], 'AGT-02': ['A'], 'AGT-03': ['B'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-028',
+      query_text: 'Quiero anular el seguro, pero los datos del solicitante no coinciden con los del contratante y no puedo explicar la diferencia.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 0, 'AGT-03': 1 },
+      active_case_classes_by_agent: { 'AGT-01': ['A'], 'AGT-02': [], 'AGT-03': ['C'] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-029',
+      query_text: 'Soy un tercero y quiero conocer todos los detalles y el monto reservado de un siniestro ajeno.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 1, 'AGT-02': 1, 'AGT-03': 0 },
+      active_case_classes_by_agent: { 'AGT-01': ['B'], 'AGT-02': ['C'], 'AGT-03': [] },
+      last_assignment_age: { 'AGT-01': 25, 'AGT-02': 25, 'AGT-03': 25 }
+    },
+    {
+      case_id: 'CASO-030',
+      query_text: 'Necesito que confirmen ahora mismo una carta de garantía; no puedo validar mis datos y pido que omitan la revisión.',
+      agent_state: { 'AGT-01': { available: true, connected: true, login_age_min: 180 }, 'AGT-02': { available: true, connected: true, login_age_min: 125 }, 'AGT-03': { available: true, connected: true, login_age_min: 80 } },
+      active_sessions_by_agent: { 'AGT-01': 3, 'AGT-02': 3, 'AGT-03': 3 },
+      active_case_classes_by_agent: { 'AGT-01': ['A', 'A', 'A'], 'AGT-02': ['A', 'A', 'A'], 'AGT-03': ['A', 'A', 'A'] },
+      last_assignment_age: { 'AGT-01': 70, 'AGT-02': 45, 'AGT-03': 25 }
+    }
+  ]
+};
+
 const AGENTS = [
-  { id: 'AG-01', display: 'Asesor Demo 01', status: 'Disponible', load: 0, skills: ['Vida', 'Salud', 'Vehicular'] },
-  { id: 'AG-02', display: 'Asesor Demo 02', status: 'Disponible', load: 5, skills: ['Vida', 'Vehicular'] },
-  { id: 'AG-03', display: 'Asesor Demo 03', status: 'Ocupado', load: 10, skills: ['Vida', 'Salud', 'Vehicular'] },
-  { id: 'AG-04', display: 'Asesor Demo 04', status: 'Refrigerio', load: 0, skills: ['Vida', 'Salud'] }
+  { id: 'AG-01', display: 'Asesor Demo 01', status: 'Disponible', load: 0, skills: ['Vida', 'Salud', 'Vehicular'], lastAssignmentAge: 25, loginAgeMin: 180 },
+  { id: 'AG-02', display: 'Asesor Demo 02', status: 'Disponible', load: 5, skills: ['Vida', 'Vehicular'], lastAssignmentAge: 25, loginAgeMin: 125 },
+  { id: 'AG-03', display: 'Asesor Demo 03', status: 'Ocupado', load: 10, skills: ['Vida', 'Salud', 'Vehicular'], lastAssignmentAge: 25, loginAgeMin: 80 },
+  { id: 'AG-04', display: 'Asesor Demo 04', status: 'Refrigerio', load: 0, skills: ['Vida', 'Salud'], lastAssignmentAge: 25, loginAgeMin: 60 }
 ];
 
 const CLASS_RULES = [
   {
     id: 'RULE-C-CRIT',
     value: 'C',
-    rx: /siniestro|indemniza\w*|anulaci[oó]n|anular|rescate|carta de garant[ií]a|fraude|queja grave|reclamo sensible|excepci[oó]n|excepcional|modificaci[oó]n de p[oó]liza|complejidad clase c/gi,
-    why: 'Regla de seguridad demostrativa: consulta sensible / contractual / excepción'
-  },
-  {
-    id: 'RULE-B-PROC',
-    value: 'B',
-    rx: /deuda|estado de cuenta|cuota|cobranza|renovaci[oó]n|deducible|beneficio|proveedor|factura|boleta/gi,
-    why: 'Procedimiento con verificaciones o consultas a sistemas internos'
+    rx: /siniestro|indemniza\w*|monto reservado|anulaci[oó]n|anular|rescate|retirar parte del valor acumulado|valor acumulado|devolver los cobros|devoluci[oó]n inmediata|no reconozco|cuenta distinta|no soy el titular|falleci[oó]|cambiar al contratante|datos del solicitante no coinciden|omitan la revisi[oó]n|no puedo validar mis datos|confirmen ahora mismo una carta de garant[ií]a|fraude|queja grave|reclamo sensible|excepci[oó]n|excepcional|modificaci[oó]n de p[oó]liza|complejidad clase c|indecopi|peritaje urgente/gi,
+    why: 'Regla de seguridad demostrativa: consulta crítica / contractual / excepción / alerta de validación'
   },
   {
     id: 'RULE-A-INFO',
     value: 'A',
-    rx: /constancia|copia|duplicado|p[oó]liza digital|vigencia informativa|horario/gi,
-    why: 'Consulta de orientación preliminar de baja complejidad'
+    rx: /horario|copia digital|constancia|comprobante electr[oó]nico|en t[eé]rminos generales|de manera general|red general de cl[ií]nicas|qu[eé] informaci[oó]n contiene un estado de cuenta|documentos digitales del plan|inspecci[oó]n vehicular previa|copia|duplicado|p[oó]liza digital|vigencia informativa/gi,
+    why: 'Consulta de orientación informativa general o autogestión digital de baja complejidad'
+  },
+  {
+    id: 'RULE-B-PROC',
+    value: 'B',
+    rx: /no aparece aplicado|deuda|estado de cuenta|saldo que aparece|no aparece actualizada|revisar el estado|cambiar el medio de pago|medio de pago|qu[eé] validaciones necesito|present[eé] un reembolso|carta de garant[ií]a est[aá] pendiente|estado correcto|atenci[oó]n especializada est[aá] cubierta|en reparaci[oó]n|falta un repuesto|confirmar el avance|tercero afectado|orientaci[oó]n sobre c[oó]mo registrar mi solicitud|cuota|cobranza|renovaci[oó]n|deducible|beneficio|proveedor|factura|boleta|direcci[oó]n fiscal|nuevo conductor/gi,
+    why: 'Procedimiento transaccional con verificaciones de identidad o consulta de estado en sistemas internos'
   }
 ];
 
@@ -1950,20 +2304,64 @@ function classify(text) {
       confidence: 'No estimada (reglas demostrativas)'
     };
   }
-  for (const rule of CLASS_RULES) {
-    const matches = text.match(rule.rx);
-    if (matches && matches.length > 0) {
-      const uniqueMatches = [...new Set(matches.map(m => m.toLowerCase()))];
-      return {
-        level: rule.value,
-        risk: rule.value === 'C' ? 'Alto' : rule.value === 'B' ? 'Medio' : 'Bajo',
-        ruleId: rule.id,
-        matchedKeywords: uniqueMatches,
-        reason: rule.why,
-        confidence: 'No estimada (reglas demostrativas)'
-      };
-    }
+
+  // Evaluamos primero RULE-C-CRIT.
+  // Para distinguir orientación general (Clase A, ej. CASO-006/008) de consulta transaccional (Clase B, ej. CASO-017/019):
+  // Si coincide con patrones específicos de transacción/discrepancia personal de Clase B ("saldo que aparece", "atención especializada está cubierta", "deuda", "no aparece aplicado"), priorizamos B sobre menciones generales.
+  const critMatches = text.match(CLASS_RULES[0].rx);
+  if (critMatches && critMatches.length > 0) {
+    const uniqueMatches = [...new Set(critMatches.map(m => m.toLowerCase()))];
+    return {
+      level: 'C',
+      risk: 'Alto',
+      ruleId: CLASS_RULES[0].id,
+      matchedKeywords: uniqueMatches,
+      reason: CLASS_RULES[0].why,
+      confidence: 'No estimada (reglas demostrativas)'
+    };
   }
+
+  const isSpecificTransactionalB = /no aparece aplicado|deuda|saldo que aparece|no coincide|no aparece actualizada|cambiar el medio de pago|present[eé] un reembolso|carta de garant[ií]a est[aá] pendiente|atenci[oó]n especializada est[aá] cubierta|deducible|en reparaci[oó]n|falta un repuesto|tercero afectado|direcci[oó]n fiscal|nuevo conductor/i.test(text);
+
+  if (isSpecificTransactionalB) {
+    const bMatches = text.match(CLASS_RULES[2].rx) || ['verificación transaccional'];
+    const uniqueMatches = [...new Set(bMatches.map(m => m.toLowerCase()))];
+    return {
+      level: 'B',
+      risk: 'Medio',
+      ruleId: CLASS_RULES[2].id,
+      matchedKeywords: uniqueMatches,
+      reason: CLASS_RULES[2].why,
+      confidence: 'No estimada (reglas demostrativas)'
+    };
+  }
+
+  const aMatches = text.match(CLASS_RULES[1].rx);
+  if (aMatches && aMatches.length > 0) {
+    const uniqueMatches = [...new Set(aMatches.map(m => m.toLowerCase()))];
+    return {
+      level: 'A',
+      risk: 'Bajo',
+      ruleId: CLASS_RULES[1].id,
+      matchedKeywords: uniqueMatches,
+      reason: CLASS_RULES[1].why,
+      confidence: 'No estimada (reglas demostrativas)'
+    };
+  }
+
+  const bMatches = text.match(CLASS_RULES[2].rx);
+  if (bMatches && bMatches.length > 0) {
+    const uniqueMatches = [...new Set(bMatches.map(m => m.toLowerCase()))];
+    return {
+      level: 'B',
+      risk: 'Medio',
+      ruleId: CLASS_RULES[2].id,
+      matchedKeywords: uniqueMatches,
+      reason: CLASS_RULES[2].why,
+      confidence: 'No estimada (reglas demostrativas)'
+    };
+  }
+
   return {
     level: 'C',
     risk: 'Alto',
@@ -1976,35 +2374,88 @@ function classify(text) {
 
 function weightFor(level, policy = 'actual') {
   if (policy === 'experimental') {
-    return ({ A: 4, B: 5, C: 7 })[level] ?? 7;
+    return EXPERIMENTAL_WEIGHTS[level] ?? EXPERIMENTAL_WEIGHTS.C;
   }
-  return 5; // Regla actual confirmada: WhatsApp consume 5 unidades
+  return 5; // Regla actual confirmada: WhatsApp consume 5 unidades fijas
+}
+
+/**
+ * Construye la lista normalizada de agentes a partir del estado operativo de un caso v0.8
+ */
+function buildAgentsFromCaseState(v08Case, policy = 'actual') {
+  if (!v08Case || !v08Case.agent_state) return [];
+  const agentIds = Object.keys(v08Case.agent_state).sort();
+  return agentIds.map(id => {
+    const st = v08Case.agent_state[id] || {};
+    const sessions = v08Case.active_sessions_by_agent?.[id] ?? 0;
+    const classes = v08Case.active_case_classes_by_agent?.[id] || [];
+    const lastAge = v08Case.last_assignment_age?.[id] ?? 0;
+
+    const loadActual = sessions * 5;
+    const loadExperimental = classes.reduce((sum, cls) => sum + weightFor(cls, 'experimental'), 0);
+    const load = policy === 'experimental' ? loadExperimental : loadActual;
+    const isAvail = Boolean(st.available && st.connected);
+
+    return {
+      id,
+      display: `Agente ${id}`,
+      status: isAvail ? 'Disponible' : 'Ocupado',
+      available: isAvail,
+      connected: Boolean(st.connected),
+      loginAgeMin: st.login_age_min ?? 0,
+      lastAssignmentAge: lastAge,
+      activeSessions: sessions,
+      activeCaseClasses: [...classes],
+      loadActual,
+      loadExperimental,
+      load,
+      skills: ['Vida', 'Salud', 'Vehicular']
+    };
+  });
 }
 
 function route(agents, level, branch, policy = 'actual') {
   const weight = weightFor(level, policy);
-  const valid = (agents || []).filter(a =>
-    a.status === 'Disponible' &&
-    Array.isArray(a.skills) &&
-    a.skills.includes(branch) &&
-    (a.load + weight) <= CAPACITY
+  const valid = (agents || []).filter(a => {
+    const isAvailable = a.status === 'Disponible' && (a.available !== false) && (a.connected !== false);
+    const hasSkill = !branch || !Array.isArray(a.skills) || a.skills.includes(branch);
+    const currentLoad = typeof a.load === 'number' ? a.load : 0;
+    return isAvailable && hasSkill && (currentLoad + weight) <= CAPACITY;
+  });
+
+  // Ordenar por:
+  // 1. Menor carga actual (a.load - b.load)
+  // 2. Mayor antigüedad desde última asignación (b.lastAssignmentAge - a.lastAssignmentAge)
+  // 3. Mayor antigüedad de login (b.loginAgeMin - a.loginAgeMin)
+  // 4. ID alfabético
+  valid.sort((a, b) =>
+    (a.load - b.load) ||
+    ((b.lastAssignmentAge ?? 0) - (a.lastAssignmentAge ?? 0)) ||
+    ((b.loginAgeMin ?? 0) - (a.loginAgeMin ?? 0)) ||
+    a.id.localeCompare(b.id)
   );
-  // Ordenar por menor carga actual; desempate por identificador
-  valid.sort((a, b) => (a.load - b.load) || a.id.localeCompare(b.id));
-  const choice = valid[0];
+
+  const choice = valid[0] || null;
   return {
     weight,
-    agent: choice || null,
+    agent: choice,
     projected: choice ? choice.load + weight : null,
     reason: choice
-      ? 'Menor carga ponderada y skill compatible'
+      ? `Menor carga ponderada (${choice.load}/${CAPACITY} u., últ. asig. ${choice.lastAssignmentAge ?? 25} min)`
       : 'Sin capacidad o skill disponible; mantener en cola'
   };
 }
 
-function comparePolicies(agents, level, branch) {
-  const actual = route(agents, level, branch, 'actual');
-  const experimental = route(agents, level, branch, 'experimental');
+function comparePolicies(agents, level, branch, v08Case = null) {
+  const agentsActual = v08Case
+    ? buildAgentsFromCaseState(v08Case, 'actual')
+    : (agents || []).map(a => ({ ...a, load: typeof a.loadActual === 'number' ? a.loadActual : a.load }));
+  const agentsExp = v08Case
+    ? buildAgentsFromCaseState(v08Case, 'experimental')
+    : (agents || []).map(a => ({ ...a, load: typeof a.loadExperimental === 'number' ? a.loadExperimental : a.load }));
+
+  const actual = route(agentsActual, level, branch, 'actual');
+  const experimental = route(agentsExp, level, branch, 'experimental');
   return {
     actual,
     experimental,
@@ -2030,8 +2481,8 @@ function respond(level, validated) {
  * Cualquier cambio en texto, ramo, IVR, política o nivel invalida la revisión.
  */
 function computeCaseRevision(caseData, policy = 'actual', classification = null) {
-  const id = caseData?.id || 'NO-ID';
-  const text = (caseData?.text || '').trim();
+  const id = caseData?.id || caseData?.case_id || 'NO-ID';
+  const text = (caseData?.text || caseData?.query_text || '').trim();
   const branch = caseData?.branch || 'Vehicular';
   const validated = Boolean(caseData?.validated);
   const level = classification?.level || classify(text).level;
@@ -2048,7 +2499,9 @@ function computeCaseRevision(caseData, policy = 'actual', classification = null)
 }
 
 function processCase(testCase, agents, policy = 'actual') {
-  const classification = classify(testCase.text);
+  const queryText = testCase.text ?? testCase.query_text ?? '';
+  const caseId = testCase.id ?? testCase.case_id ?? 'DEMO-???';
+  const classification = classify(queryText);
   const hasCoverage = !classification.reason.startsWith('Baja cobertura') &&
                       !classification.reason.startsWith('Entrada vacía');
   const guidance = hasCoverage
@@ -2065,9 +2518,12 @@ function processCase(testCase, agents, policy = 'actual') {
         text: 'No se dispone de información suficiente en el repositorio de prueba. El asesor debe revisar y escalar; no generar una respuesta de contenido.'
       };
   const branch = testCase.branch || 'Vehicular';
-  const recommendation = route(agents, classification.level, branch, policy);
-  const policyComparison = comparePolicies(agents, classification.level, branch);
-  const revision = computeCaseRevision(testCase, policy, classification);
+  const activeAgents = testCase.agent_state
+    ? buildAgentsFromCaseState(testCase, policy)
+    : agents;
+  const recommendation = route(activeAgents, classification.level, branch, policy);
+  const policyComparison = comparePolicies(activeAgents, classification.level, branch, testCase.agent_state ? testCase : null);
+  const revision = computeCaseRevision({ ...testCase, id: caseId, text: queryText }, policy, classification);
   
   const initialCaseStatus = classification.level === 'C' 
     ? 'ESCALAMIENTO_REQUERIDO' 
@@ -2080,10 +2536,70 @@ function processCase(testCase, agents, policy = 'actual') {
     policyComparison,
     revision,
     caseStatus: initialCaseStatus,
-    caseId: testCase.id,
+    caseId,
     policy,
     version: VERSION
   };
+}
+
+/**
+ * Evalúa un dataset completo en formato v0.8_operacion_aprobada (30 casos)
+ * sin utilizar campos excluidos por control de leakage.
+ */
+function evaluateDatasetV08(dataset = V08_DATASET) {
+  const cases = dataset?.cases || [];
+  const results = cases.map(c => {
+    const classification = classify(c.query_text);
+    const agentsActual = buildAgentsFromCaseState(c, 'actual');
+    const agentsExp = buildAgentsFromCaseState(c, 'experimental');
+    const routeActual = route(agentsActual, classification.level, null, 'actual');
+    const routeExp = route(agentsExp, classification.level, null, 'experimental');
+    const requiresEscalation = classification.level === 'C';
+
+    return {
+      case_id: c.case_id,
+      query_text: c.query_text,
+      predicted_class: classification.level,
+      risk: classification.risk,
+      rule_id: classification.ruleId,
+      matched_keywords: classification.matchedKeywords,
+      loads_actual: Object.fromEntries(agentsActual.map(a => [a.id, a.load])),
+      loads_experimental: Object.fromEntries(agentsExp.map(a => [a.id, a.load])),
+      active_classes: c.active_case_classes_by_agent,
+      last_assignment_age: c.last_assignment_age,
+      weight_actual: routeActual.weight,
+      weight_experimental: routeExp.weight,
+      assigned_agent_actual: routeActual.agent ? routeActual.agent.id : 'EN_COLA',
+      projected_load_actual: routeActual.projected,
+      assigned_agent_experimental: routeExp.agent ? routeExp.agent.id : 'EN_COLA',
+      projected_load_experimental: routeExp.projected,
+      escalation_required: requiresEscalation,
+      operational_action: requiresEscalation
+        ? (routeExp.agent ? `Control Reforzado / Escalar (${routeExp.agent.id} disp. 8u)` : 'Retener y Escalar a Supervisor (Sin cap. 8u)')
+        : (routeExp.agent ? `Asignar a ${routeExp.agent.id} (${routeExp.projected}/10 u.)` : 'Retener en Cola (Capacidad Agotada)')
+    };
+  });
+
+  const summary = {
+    dataset_version: dataset?.dataset_version || DATASET_VERSION,
+    weight_scheme_version: dataset?.capacity_policy?.weight_scheme_version || WEIGHT_SCHEME_VERSION,
+    total_cases: results.length,
+    class_distribution: {
+      A: results.filter(r => r.predicted_class === 'A').length,
+      B: results.filter(r => r.predicted_class === 'B').length,
+      C: results.filter(r => r.predicted_class === 'C').length
+    },
+    routing_comparison: {
+      actual_assigned: results.filter(r => r.assigned_agent_actual !== 'EN_COLA').length,
+      actual_queued: results.filter(r => r.assigned_agent_actual === 'EN_COLA').length,
+      experimental_assigned: results.filter(r => r.assigned_agent_experimental !== 'EN_COLA').length,
+      experimental_queued: results.filter(r => r.assigned_agent_experimental === 'EN_COLA').length,
+      routing_differences: results.filter(r => r.assigned_agent_actual !== r.assigned_agent_experimental).length
+    },
+    escalation_count: results.filter(r => r.escalation_required).length
+  };
+
+  return { summary, results };
 }
 
 /**
@@ -2190,22 +2706,15 @@ function canConfirmAssignment({
   }
 
   // Barrera 9: Revalidación en tiempo real de capacidad, estado y skill del asesor (T10, T11, T12)
-  const weight = weightFor(level, policy);
-  const validAgents = (agents || []).filter(a =>
-    a.status === 'Disponible' &&
-    Array.isArray(a.skills) &&
-    a.skills.includes(branch) &&
-    (a.load + weight) <= CAPACITY
-  );
-  validAgents.sort((a, b) => (a.load - b.load) || a.id.localeCompare(b.id));
-  const choice = validAgents[0] || null;
+  const recommendation = route(agents, level, branch, policy);
+  const choice = recommendation.agent;
 
   if (!choice) {
     return {
       allowed: false,
       code: 'ERR_NO_CAPACITY_OR_SKILL',
       reason: 'No hay capacidad disponible o no existe asesor disponible con skill compatible en este momento; mantener en cola.',
-      weight
+      weight: recommendation.weight
     };
   }
 
@@ -2214,8 +2723,8 @@ function canConfirmAssignment({
     code: 'OK_APPROVED',
     reason: 'Aprobación humana vigente y capacidad verificada en tiempo real.',
     targetAgent: choice,
-    weight,
-    projected: choice.load + weight
+    weight: recommendation.weight,
+    projected: recommendation.projected
   };
 }
 
@@ -2223,7 +2732,7 @@ function canConfirmAssignment({
  * Registra y estructura un escalamiento operacional formal.
  */
 function registerEscalation({ caseData, output, reason, actorRole = 'Asesor WhatsApp' }) {
-  const caseId = caseData?.id || 'DEMO-???';
+  const caseId = caseData?.id || caseData?.case_id || 'DEMO-???';
   const level = output?.classification?.level || 'C';
   const targetQueue = level === 'C' ? 'Cola de Supervisión / Siniestros y Excepciones' : 'Cola de Nivel 2';
   return {
@@ -2315,6 +2824,8 @@ function export_evidence(logs, format = 'json') {
   return JSON.stringify({
     app: 'SAI-GC',
     version: VERSION,
+    datasetVersion: DATASET_VERSION,
+    weightSchemeVersion: WEIGHT_SCHEME_VERSION,
     generatedAt: new Date().toISOString(),
     disclaimer: 'Datos sintéticos para demostración académica; no contiene registros operativos reales',
     records
@@ -2329,6 +2840,26 @@ const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({
   '"': '&quot;',
   "'": '&#39;'
 }[c]));
+
+function inferBranch(text = '') {
+  if (/soat|vehicular|veh[ií]culo|inspecci[oó]n|repuesto|taller/i.test(text)) return 'Vehicular';
+  if (/salud|cl[ií]nica|afiliaci[oó]n|carta de garant[ií]a|atenci[oó]n especializada|reembolso/i.test(text)) return 'Salud';
+  return 'Vida';
+}
+
+const V08_MAPPED_CASES = (V08_DATASET.cases || []).map(c => {
+  const cl = classify(c.query_text);
+  return {
+    id: c.case_id,
+    name: `Lote v0.8 (Clase ${cl.level}) · ${c.query_text.slice(0, 44)}...`,
+    text: c.query_text,
+    topic: `Lote v0.8 (${c.case_id})`,
+    branch: inferBranch(c.query_text),
+    validated: true,
+    scenario: 'v08',
+    v08Raw: c
+  };
+});
 
 const INITIAL_WIP = [
   {
@@ -2361,22 +2892,24 @@ const INITIAL_WIP = [
 
 const state = {
   agents: structuredClone(AGENTS),
-  cases: structuredClone(CASES),
+  cases: [...structuredClone(CASES), ...structuredClone(V08_MAPPED_CASES)],
   selected: CASES[0],
   output: null,
   policy: 'actual',
   logs: [],
   caseStatus: 'PENDIENTE_REVISION',
-  decisions: {},           // { [caseId]: 'Aceptar' | 'Editar' | 'Rechazar' | 'Escalar' }
-  approvedRevisions: {},   // { [caseId]: 'rev-xxxx' }
+  decisions: {},
+  approvedRevisions: {},
   isEditing: false,
   editApproved: false,
   ivrManualVerified: false,
-  chatMessages: {},        // { [caseId]: Array<{ type, sender, decision, time, text }> }
+  chatMessages: {},
   assignments: structuredClone(INITIAL_WIP),
   heldCases: [],
   escalatedCases: [],
   logFilterClass: 'ALL',
+  v08Dataset: structuredClone(V08_DATASET),
+  v08Filter: 'ALL',
   counter: 0
 };
 
@@ -2388,14 +2921,29 @@ function navigate(name) {
 
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => navigate(b.dataset.tab)));
 
-// Inicializar selector de casos
+// Inicializar selector de casos con optgroups (DEMO y V08)
 const select = $('case-select');
-for (const c of state.cases) {
-  const o = document.createElement('option');
-  o.value = c.id;
-  o.textContent = `${c.id} · ${c.name}`;
-  select.append(o);
+function populateCaseSelect() {
+  select.innerHTML = '';
+  const grpDemo = document.createElement('optgroup');
+  grpDemo.label = 'Casos Demostrativos Base (DEMO-001 a DEMO-008)';
+  for (const c of state.cases.filter(x => x.scenario !== 'v08')) {
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = `${c.id} · ${c.name}`;
+    grpDemo.append(o);
+  }
+  const grpV08 = document.createElement('optgroup');
+  grpV08.label = 'Lote Operación Aprobada v0.8 (CASO-001 a CASO-030)';
+  for (const c of state.cases.filter(x => x.scenario === 'v08')) {
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = `${c.id} · ${c.name}`;
+    grpV08.append(o);
+  }
+  select.append(grpDemo, grpV08);
 }
+populateCaseSelect();
 select.addEventListener('change', () => setCase(select.value));
 
 function updateContextBar() {
@@ -2447,8 +2995,9 @@ function setCase(id) {
   state.ivrManualVerified = false;
   invalidateCurrentApproval('Cambio de caso activo');
 
-  // Ajustes especiales de simulación según el escenario
-  if (c.scenario === 'all_busy') {
+  if (c.scenario === 'v08' && c.v08Raw) {
+    state.agents = buildAgentsFromCaseState(c.v08Raw, state.policy);
+  } else if (c.scenario === 'all_busy') {
     state.agents = AGENTS.map(a => ({ ...a, status: 'Ocupado', load: 10 }));
   } else if (c.scenario === 'agent_paused') {
     state.agents = [
@@ -2457,12 +3006,8 @@ function setCase(id) {
       { id: 'AG-03', display: 'Asesor Demo 03', status: 'Ocupado', load: 10, skills: ['Vehicular'] },
       { id: 'AG-04', display: 'Asesor Demo 04', status: 'Refrigerio', load: 0, skills: ['Vida', 'Salud'] }
     ];
-  } else if (c.scenario === 'policy_compare') {
-    state.agents = structuredClone(AGENTS);
   } else {
-    if (state.agents.every(a => a.load === 10)) {
-      state.agents = structuredClone(AGENTS);
-    }
+    state.agents = structuredClone(AGENTS);
   }
 
   $('question').value = c.text;
@@ -2580,10 +3125,10 @@ function resetOutput() {
     b.classList.remove('active-choice');
   });
   $('send-chat-btn').disabled = true;
-  $('weight').textContent = state.policy === 'experimental' ? 'Depende de clase' : '5 unidades';
+  $('weight').textContent = state.policy === 'experimental' ? 'A=3 / B=5 / C=8' : '5 unidades';
   $('recommended').textContent = 'Pendiente';
   $('projected').textContent = '—';
-  $('route-reason').textContent = 'Se recomienda el asesor disponible con menor carga y skill compatible.';
+  $('route-reason').textContent = 'Se recomienda el asesor disponible con menor carga ponderada y mayor antigüedad desde última asignación.';
   $('progress-fill').style.width = '0%';
   $('cmp-actual').textContent = '—';
   $('cmp-exp').textContent = '—';
@@ -2655,7 +3200,6 @@ function getCurrentAuthCheck() {
 
 function updateAuthUI() {
   if (!state.output) return;
-  const cid = state.selected.id;
   const level = state.output.classification.level;
   const auth = getCurrentAuthCheck();
 
@@ -2663,13 +3207,15 @@ function updateAuthUI() {
   updateStatusChip(state.caseStatus);
 
   if (level === 'C') {
-    // Clase C: bloqueo estricto de asignación ordinaria (R02-02)
     $('assign-btn').style.display = 'none';
     $('assign-btn').disabled = true;
     $('escalate-action-btn').style.display = 'inline-block';
     $('escalate-action-btn').disabled = (state.caseStatus === 'DERIVADO_SUPERVISOR');
-    $('route-reason').textContent = '🔒 Regla de seguridad R02: Clase C exige derivación obligatoria a supervisor. Asignación directa bloqueada.';
-    $('btn-accept').disabled = true; // Bloqueado aceptar directo en Clase C
+    const recAgent = state.output.recommendation?.agent;
+    $('route-reason').textContent = recAgent
+      ? `🔒 Regla de seguridad R02/v0.8: Clase C (peso ${state.output.recommendation.weight}u, candidato libre: ${recAgent.id} → ${state.output.recommendation.projected}/10) exige derivación/control reforzado.`
+      : '🔒 Regla de seguridad R02/v0.8: Clase C sin capacidad disponible para peso 8u; retener y derivar obligatoriamente a supervisor.';
+    $('btn-accept').disabled = true;
     $('btn-accept').title = 'No permitido en Clase C por salvaguarda de seguridad operacional';
   } else {
     $('assign-btn').style.display = 'inline-block';
@@ -2688,7 +3234,12 @@ function updateAuthUI() {
 }
 
 function runCase() {
+  if (state.selected.scenario === 'v08' && state.selected.v08Raw) {
+    state.agents = buildAgentsFromCaseState(state.selected.v08Raw, state.policy);
+  }
+
   const c = {
+    ...(state.selected.v08Raw || {}),
     ...state.selected,
     text: $('question').value,
     validated: $('validation').value === 'true',
@@ -2698,7 +3249,6 @@ function runCase() {
   state.output = processCase(c, state.agents, state.policy);
   const o = state.output;
 
-  // Si se reprocesa, la aprobación previa se invalida
   delete state.approvedRevisions[c.id];
   delete state.decisions[c.id];
   state.isEditing = false;
@@ -2732,8 +3282,8 @@ function runCase() {
   if (o.policyComparison) {
     const act = o.policyComparison.actual;
     const exp = o.policyComparison.experimental;
-    $('cmp-actual').textContent = `${act.weight}u → ${act.agent ? `${act.agent.display} (${act.projected}/10)` : 'En cola'}`;
-    $('cmp-exp').textContent = `${exp.weight}u → ${exp.agent ? `${exp.agent.display} (${exp.projected}/10)` : 'En cola'}`;
+    $('cmp-actual').textContent = `${act.weight}u → ${act.agent ? `${act.agent.id} (${act.projected}/10)` : 'En cola'}`;
+    $('cmp-exp').textContent = `${exp.weight}u → ${exp.agent ? `${exp.agent.id} (${exp.projected}/10)` : 'En cola'}`;
   }
 
   $('enqueue-btn').disabled = Boolean(o.recommendation.agent);
@@ -2822,7 +3372,7 @@ $('btn-edit').addEventListener('click', () => {
   $('btn-edit').classList.add('active-choice');
 
   state.decisions[cid] = 'Editar';
-  delete state.approvedRevisions[cid]; // Editar invalida aprobación hasta pulsar Guardar y Aprobar
+  delete state.approvedRevisions[cid];
   state.isEditing = true;
   state.editApproved = false;
   state.caseStatus = 'EDITANDO';
@@ -2832,7 +3382,7 @@ $('btn-edit').addEventListener('click', () => {
   $('suggestion').style.outline = '2px solid #0176d3';
   $('suggestion').focus();
   $('save-edit-btn').style.display = 'block';
-  $('send-chat-btn').disabled = true; // No se puede enviar hasta guardar
+  $('send-chat-btn').disabled = true;
 
   $('action-result').textContent = 'Modo edición activo: modifique el texto y pulse “✓ Guardar y aprobar texto editado” para validar.';
   $('action-result').className = 'result done';
@@ -3058,16 +3608,20 @@ $('enqueue-btn').addEventListener('click', () => {
 // Sincronizar cambio de política
 function setPolicy(newPolicy) {
   state.policy = newPolicy;
-  $('header-policy-label').textContent = newPolicy === 'experimental' ? 'Experimental (A4/B5/C7)' : 'Actual (5u)';
+  $('header-policy-label').textContent = newPolicy === 'experimental' ? 'Experimental (A3/B5/C8)' : 'Actual (5u)';
   document.querySelectorAll('input[name="policy"]').forEach(r => {
     r.checked = (r.value === newPolicy);
   });
+  if (state.selected.scenario === 'v08' && state.selected.v08Raw) {
+    state.agents = buildAgentsFromCaseState(state.selected.v08Raw, state.policy);
+  }
   invalidateCurrentApproval('Cambio de política operativa');
   if (state.output) {
     runCase();
   } else {
     resetOutput();
     renderChat();
+    renderTables();
   }
 }
 
@@ -3103,6 +3657,126 @@ function updateCalculator() {
 $('calc-vol').addEventListener('input', updateCalculator);
 $('calc-delta').addEventListener('input', updateCalculator);
 
+// --- EVALUACIÓN LOTE V0.8 (PESTAÑA 7) ---
+$('v08-filter')?.addEventListener('change', e => {
+  state.v08Filter = e.target.value;
+  renderTables();
+});
+
+$('v08-file-input')?.addEventListener('change', e => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(String(ev.target?.result || '{}'));
+      if (!Array.isArray(parsed.cases)) {
+        alert('El archivo JSON no contiene un arreglo "cases" válido.');
+        return;
+      }
+      state.v08Dataset = parsed;
+      addLog('Carga dataset v0.8', `Archivo cargado (${parsed.cases.length} casos)`, 'Evaluador', parsed.dataset_version || 'V08-JSON', '—', 'P7-V08', 'PERMITIDO');
+      renderTables();
+    } catch (err) {
+      alert(`Error al leer JSON: ${err.message}`);
+    }
+  };
+  reader.readAsText(file);
+});
+
+$('v08-export-json-btn')?.addEventListener('click', () => {
+  const report = evaluateDatasetV08(state.v08Dataset);
+  downloadFile(JSON.stringify(report, null, 2), 'SAIGC_evaluacion_v0_8_resultados.json', 'application/json');
+});
+
+$('v08-export-csv-btn')?.addEventListener('click', () => {
+  const report = evaluateDatasetV08(state.v08Dataset);
+  const headers = [
+    'Case_ID',
+    'Predicted_Class',
+    'Rule_ID',
+    'Weight_Actual',
+    'Assigned_Actual',
+    'Projected_Actual',
+    'Weight_Experimental',
+    'Assigned_Experimental',
+    'Projected_Experimental',
+    'Escalation_Required',
+    'Operational_Action',
+    'Query_Text'
+  ];
+  const rows = report.results.map(r => [
+    r.case_id,
+    r.predicted_class,
+    r.rule_id,
+    r.weight_actual,
+    r.assigned_agent_actual,
+    r.projected_load_actual ?? 'COLA',
+    r.weight_experimental,
+    r.assigned_agent_experimental,
+    r.projected_load_experimental ?? 'COLA',
+    r.escalation_required ? 'SI' : 'NO',
+    r.operational_action,
+    r.query_text
+  ].map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(','));
+  downloadFile([headers.join(','), ...rows].join('\r\n'), 'SAIGC_evaluacion_v0_8_resultados.csv', 'text/csv;charset=utf-8;');
+});
+
+function renderV08Table() {
+  if (!$('v08-table-body')) return;
+  const report = evaluateDatasetV08(state.v08Dataset);
+  const s = report.summary;
+
+  $('badge-v08').textContent = `${s.total_cases} casos`;
+  $('v08-version-label').textContent = `${s.dataset_version} · ${s.weight_scheme_version}`;
+  $('v08-kpi-total').textContent = `${s.total_cases} casos`;
+  $('v08-kpi-dist').textContent = `${s.class_distribution.A} Clase A · ${s.class_distribution.B} Clase B · ${s.class_distribution.C} Clase C`;
+  $('v08-kpi-act').textContent = `${s.routing_comparison.actual_assigned} asig. / ${s.routing_comparison.actual_queued} cola`;
+  $('v08-kpi-exp').textContent = `${s.routing_comparison.experimental_assigned} asig. / ${s.routing_comparison.experimental_queued} cola`;
+  $('v08-kpi-diff').textContent = `${s.routing_comparison.routing_differences} casos`;
+
+  let list = report.results;
+  if (state.v08Filter === 'DIFF') {
+    list = list.filter(r => r.assigned_agent_actual !== r.assigned_agent_experimental);
+  } else if (['A', 'B', 'C'].includes(state.v08Filter)) {
+    list = list.filter(r => r.predicted_class === state.v08Filter);
+  }
+
+  $('v08-table-body').innerHTML = list.map(r => {
+    const isDiff = r.assigned_agent_actual !== r.assigned_agent_experimental;
+    const classesStr = Object.entries(r.active_classes || {})
+      .map(([k, arr]) => `${k.replace('AGT-0', 'A')}:[${arr.join(',') || '∅'}]`)
+      .join(' ');
+    const actLoadsStr = Object.values(r.loads_actual || {}).join(' / ');
+    const expLoadsStr = Object.values(r.loads_experimental || {}).join(' / ');
+
+    return `
+      <tr style="${isDiff ? 'background:#fff9eb;' : ''}">
+        <td><strong>${escapeHTML(r.case_id)}</strong></td>
+        <td style="max-width:340px;">${escapeHTML(r.query_text)}</td>
+        <td><span class="classchip ${escapeHTML(r.predicted_class)}" style="min-width:26px;min-height:22px;font-size:12px;">${escapeHTML(r.predicted_class)}</span></td>
+        <td><code style="font-size:11px;">${escapeHTML(classesStr)}</code></td>
+        <td><small>${escapeHTML(actLoadsStr)}</small></td>
+        <td><strong>${escapeHTML(r.assigned_agent_actual)}</strong> ${r.projected_load_actual ? `<small>(${r.projected_load_actual}/10)</small>` : ''}</td>
+        <td><small>${escapeHTML(expLoadsStr)}</small></td>
+        <td><strong style="color:${isDiff ? '#0176d3' : 'inherit'}">${escapeHTML(r.assigned_agent_experimental)}</strong> ${r.projected_load_experimental ? `<small>(${r.projected_load_experimental}/10)</small>` : ''}</td>
+        <td><small>${escapeHTML(r.operational_action)}</small></td>
+        <td><button class="btn-mini" data-sim-v08="${escapeHTML(r.case_id)}">▶ Simular en P1</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.querySelectorAll('[data-sim-v08]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cid = btn.dataset.simV08;
+      select.value = cid;
+      setCase(cid);
+      navigate('atencion');
+      runCase();
+    });
+  });
+}
+
 function renderTables() {
   const availCount = state.agents.filter(a => a.status === 'Disponible' && a.load < CAPACITY).length;
   const totalUsedUnits = state.agents.reduce((acc, a) => acc + a.load, 0);
@@ -3120,29 +3794,36 @@ function renderTables() {
   $('kpi-util-pct').innerHTML = `${utilPct}<em>%</em>`;
 
   // 1. Representantes (P2)
-  $('agents-body').innerHTML = state.agents.map(a => `
-    <tr>
-      <td><span class="link">${escapeHTML(a.display)}</span> <small style="color:#6c7684;">(${escapeHTML(a.id)})</small></td>
-      <td>
-        <span class="status ${a.status === 'Disponible' ? 'ok' : a.status === 'Ocupado' ? 'bad' : 'wait'}"></span>
-        <select class="status-select" data-agent-status="${escapeHTML(a.id)}">
-          <option value="Disponible" ${a.status === 'Disponible' ? 'selected' : ''}>Disponible</option>
-          <option value="Ocupado" ${a.status === 'Ocupado' ? 'selected' : ''}>Ocupado</option>
-          <option value="Refrigerio" ${a.status === 'Refrigerio' ? 'selected' : ''}>Refrigerio</option>
-        </select>
-      </td>
-      <td>${escapeHTML(a.skills.join(', '))}</td>
-      <td>${a.load === 0 ? '0 casos' : `${Math.ceil(a.load / 5)} activo(s)`}</td>
-      <td>WhatsApp</td>
-      <td><div class="meter ${a.load >= 10 ? 'full' : ''}"><span style="width:${Math.min(100, a.load * 10)}%"></span></div><small>${a.load * 10}%</small></td>
-      <td><strong>${a.load} / 10</strong></td>
-      <td>
-        <button class="btn-mini" data-release-agent="${escapeHTML(a.id)}" ${a.load === 0 && a.status === 'Disponible' ? 'disabled' : ''}>
-          ↺ Liberar / Activar
-        </button>
-      </td>
-    </tr>
-  `).join('');
+  $('agents-body').innerHTML = state.agents.map(a => {
+    const classesInfo = Array.isArray(a.activeCaseClasses)
+      ? (a.activeCaseClasses.length ? `Clases: [${a.activeCaseClasses.join(', ')}] (${a.activeSessions} ses.)` : '0 sesiones activas')
+      : (a.load === 0 ? '0 casos' : `${Math.ceil(a.load / 5)} activo(s)`);
+    const lastAgeInfo = typeof a.lastAssignmentAge === 'number' ? `hace ${a.lastAssignmentAge} min` : 'hace 25 min';
+
+    return `
+      <tr>
+        <td><span class="link">${escapeHTML(a.display)}</span> <small style="color:#6c7684;">(${escapeHTML(a.id)})</small></td>
+        <td>
+          <span class="status ${a.status === 'Disponible' ? 'ok' : a.status === 'Ocupado' ? 'bad' : 'wait'}"></span>
+          <select class="status-select" data-agent-status="${escapeHTML(a.id)}">
+            <option value="Disponible" ${a.status === 'Disponible' ? 'selected' : ''}>Disponible</option>
+            <option value="Ocupado" ${a.status === 'Ocupado' ? 'selected' : ''}>Ocupado</option>
+            <option value="Refrigerio" ${a.status === 'Refrigerio' ? 'selected' : ''}>Refrigerio</option>
+          </select>
+        </td>
+        <td>${escapeHTML(a.skills.join(', '))}</td>
+        <td>${escapeHTML(classesInfo)}</td>
+        <td>${escapeHTML(lastAgeInfo)}</td>
+        <td><div class="meter ${a.load >= 10 ? 'full' : ''}"><span style="width:${Math.min(100, a.load * 10)}%"></span></div><small>${a.load * 10}%</small></td>
+        <td><strong>${a.load} / 10</strong></td>
+        <td>
+          <button class="btn-mini" data-release-agent="${escapeHTML(a.id)}" ${a.load === 0 && a.status === 'Disponible' ? 'disabled' : ''}>
+            ↺ Liberar / Activar
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 
   document.querySelectorAll('[data-agent-status]').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -3191,7 +3872,7 @@ function renderTables() {
           <td><button class="btn-mini" data-retry-held="${escapeHTML(h.uid)}">↪ Reintentar routing</button></td>
         </tr>
       `).join('')
-    : '<tr><td colspan="7">No hay casos retenidos por saturación en este momento. Puede simular saturación con DEMO-006 o DEMO-007 en “Atención asistida”.</td></tr>';
+    : '<tr><td colspan="7">No hay casos retenidos por saturación en este momento. Puede simular saturación con DEMO-006, CASO-010 o CASO-019 en “Atención asistida”.</td></tr>';
 
   document.querySelectorAll('[data-retry-held]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3292,6 +3973,9 @@ function renderTables() {
         </tr>
       `).join('')
     : '<tr><td colspan="11">No hay eventos para el filtro seleccionado. Procese consultas en “Atención asistida”.</td></tr>';
+
+  // 5. Evaluación v0.8 (P7)
+  renderV08Table();
 }
 
 function downloadFile(content, fileName, mimeType) {
@@ -3306,12 +3990,12 @@ function downloadFile(content, fileName, mimeType) {
 
 $('export-json-btn').addEventListener('click', () => {
   const jsonContent = export_evidence(state.logs, 'json');
-  downloadFile(jsonContent, 'SAI_GC_BITACORA_R02.json', 'application/json');
+  downloadFile(jsonContent, 'SAI_GC_BITACORA_V08.json', 'application/json');
 });
 
 $('export-csv-btn').addEventListener('click', () => {
   const csvContent = export_evidence(state.logs, 'csv');
-  downloadFile(csvContent, 'SAI_GC_BITACORA_R02.csv', 'text/csv;charset=utf-8;');
+  downloadFile(csvContent, 'SAI_GC_BITACORA_V08.csv', 'text/csv;charset=utf-8;');
 });
 
 $('clear-btn').addEventListener('click', () => {
