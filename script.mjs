@@ -17,6 +17,7 @@ import {
   log_event,
   export_evidence
 } from './logic.mjs';
+import { buildAuditRecord, createAuditRunId, validateV08Input, buildBatchEvidence, buildEventEvidence, exportAuditCSV, exportAuditJSON } from './audit-pre-v5.mjs';
 
 const $ = id => document.getElementById(id);
 const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -34,14 +35,13 @@ function inferBranch(text = '') {
 }
 
 const V08_MAPPED_CASES = (V08_DATASET.cases || []).map(c => {
-  const cl = classify(c.query_text);
   return {
     id: c.case_id,
-    name: `Lote v0.8 (Clase ${cl.level}) · ${c.query_text.slice(0, 44)}...`,
+    name: `${c.query_text.slice(0, 72)}${c.query_text.length > 72 ? '…' : ''}`,
     text: c.query_text,
-    topic: `Lote v0.8 (${c.case_id})`,
+    topic: `Consulta controlada (${c.case_id})`,
     branch: inferBranch(c.query_text),
-    validated: true,
+    validated: false,
     scenario: 'v08',
     v08Raw: c
   };
@@ -96,7 +96,9 @@ const state = {
   logFilterClass: 'ALL',
   v08Dataset: structuredClone(V08_DATASET),
   v08Filter: 'ALL',
-  counter: 0
+  counter: 0,
+  executionId: createAuditRunId(),
+  lastLatencyMs: null
 };
 
 function navigate(name) {
@@ -178,6 +180,7 @@ function setCase(id) {
   if (!c) return;
   state.selected = c;
   state.output = null;
+  state.lastLatencyMs = null;
   state.ivrManualVerified = false;
   invalidateCurrentApproval('Cambio de caso activo');
 
@@ -360,6 +363,23 @@ function addLog(type, action = '—', agent = '—', customCaseId = null, custom
     policy: state.policy,
     version: VERSION
   });
+  state.logs[0].extendedPreV5 = buildAuditRecord({
+    runId: state.executionId,
+    eventId: 'EVT-' + String(state.logs.length).padStart(3,'0'),
+    recordedAt: state.logs[0].timestampIso,
+    testCase: state.selected.v08Raw ? { ...state.selected.v08Raw, dataset_version: state.v08Dataset?.dataset_version } : state.selected,
+    output: state.output,
+    activePolicy: state.policy,
+    decision: state.decisions[state.selected.id] || 'SIN_EJECUTAR',
+    escalationPerformed: state.escalatedCases.some(e => e.caseId === state.selected.id && e.status === 'DERIVADO_SUPERVISOR'),
+    latencyMs: state.lastLatencyMs,
+    finalResponse: $('suggestion')?.textContent || null,
+    status: state.caseStatus,
+    event: type,
+    eventResult: result,
+    actor: state.logs[0].actorRole,
+    blockReason
+  });
   renderTables();
 }
 
@@ -432,7 +452,17 @@ function runCase() {
     branch: $('branch').value
   };
 
-  state.output = processCase(c, state.agents, state.policy);
+  const perfStart = performance.now();
+  try {
+    state.output = processCase(c, state.agents, state.policy);
+    state.lastLatencyMs = performance.now() - perfStart;
+  } catch (err) {
+    state.lastLatencyMs = performance.now() - perfStart;
+    state.caseStatus = 'ERROR_TECNICO_NO_V5';
+    addLog('Error de procesamiento', 'No ejecutado', 'Motor', c.id, '—', 'P1', 'BLOQUEADO', String(err));
+    alert('Error de procesamiento: ' + String(err));
+    return;
+  }
   const o = state.output;
 
   delete state.approvedRevisions[c.id];
@@ -496,6 +526,9 @@ function runCase() {
 $('process-btn').addEventListener('click', runCase);
 
 $('reset-btn').addEventListener('click', () => {
+  if (state.logs.length && !confirm('Las pruebas actuales se perderán del navegador. ¿Ya exportó la bitácora?')) return;
+  state.executionId = createAuditRunId();
+  state.lastLatencyMs = null;
   state.agents = structuredClone(AGENTS);
   state.logs = [];
   state.decisions = {};
@@ -641,6 +674,7 @@ $('btn-reject').addEventListener('click', () => {
 function executeEscalation() {
   if (!state.output) return;
   const cid = state.selected.id;
+  if (state.caseStatus === 'DERIVADO_SUPERVISOR' && state.escalatedCases.some(e => e.caseId === cid)) return;
   const esc = registerEscalation({
     caseData: state.selected,
     output: state.output,
@@ -684,6 +718,12 @@ $('escalate-action-btn').addEventListener('click', executeEscalation);
 // Despacho controlado al hilo del chat
 $('send-chat-btn').addEventListener('click', () => {
   if (!state.output) return;
+  const authorization = getCurrentAuthCheck();
+  if (!authorization.allowed) {
+    addLog('Despacho no autorizado', 'Intento de envío', 'MVP', state.selected.id, state.output.classification.level, 'SEGURIDAD-R02', 'BLOQUEADO', authorization.code);
+    alert('Despacho bloqueado por control humano: ' + authorization.reason);
+    return;
+  }
   const cid = state.selected.id;
   const decision = state.decisions[cid] || 'Aceptar';
   const finalReply = $('suggestion').textContent.trim();
@@ -856,11 +896,24 @@ $('v08-file-input')?.addEventListener('change', e => {
   reader.onload = ev => {
     try {
       const parsed = JSON.parse(String(ev.target?.result || '{}'));
-      if (!Array.isArray(parsed.cases)) {
-        alert('El archivo JSON no contiene un arreglo "cases" válido.');
-        return;
-      }
+      validateV08Input(parsed);
       state.v08Dataset = parsed;
+      state.cases = [
+        ...structuredClone(CASES),
+        ...parsed.cases.map(c => ({
+          id: c.case_id,
+          name: c.query_text.slice(0,72) + (c.query_text.length > 72 ? '…' : ''),
+          text: c.query_text,
+          topic: 'Consulta controlada (' + c.case_id + ')',
+          branch: inferBranch(c.query_text),
+          validated: false,
+          scenario: 'v08',
+          v08Raw: c
+        }))
+      ];
+      populateCaseSelect();
+      select.value = parsed.cases[0].case_id;
+      setCase(select.value);
       addLog('Carga dataset v0.8', `Archivo cargado (${parsed.cases.length} casos)`, 'Evaluador', parsed.dataset_version || 'V08-JSON', '—', 'P7-V08', 'PERMITIDO');
       renderTables();
     } catch (err) {
@@ -871,41 +924,13 @@ $('v08-file-input')?.addEventListener('change', e => {
 });
 
 $('v08-export-json-btn')?.addEventListener('click', () => {
-  const report = evaluateDatasetV08(state.v08Dataset);
-  downloadFile(JSON.stringify(report, null, 2), 'SAIGC_evaluacion_v0_8_resultados.json', 'application/json');
+  const report = buildBatchEvidence(state.v08Dataset, {runId:state.executionId, activePolicy:state.policy});
+  downloadFile(exportAuditJSON(report), 'SAI-GC prevalidacion lote - J.json', 'application/json');
 });
 
 $('v08-export-csv-btn')?.addEventListener('click', () => {
-  const report = evaluateDatasetV08(state.v08Dataset);
-  const headers = [
-    'Case_ID',
-    'Predicted_Class',
-    'Rule_ID',
-    'Weight_Actual',
-    'Assigned_Actual',
-    'Projected_Actual',
-    'Weight_Experimental',
-    'Assigned_Experimental',
-    'Projected_Experimental',
-    'Escalation_Required',
-    'Operational_Action',
-    'Query_Text'
-  ];
-  const rows = report.results.map(r => [
-    r.case_id,
-    r.predicted_class,
-    r.rule_id,
-    r.weight_actual,
-    r.assigned_agent_actual,
-    r.projected_load_actual ?? 'COLA',
-    r.weight_experimental,
-    r.assigned_agent_experimental,
-    r.projected_load_experimental ?? 'COLA',
-    r.escalation_required ? 'SI' : 'NO',
-    r.operational_action,
-    r.query_text
-  ].map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(','));
-  downloadFile([headers.join(','), ...rows].join('\r\n'), 'SAIGC_evaluacion_v0_8_resultados.csv', 'text/csv;charset=utf-8;');
+  const report = buildBatchEvidence(state.v08Dataset, {runId:state.executionId, activePolicy:state.policy});
+  downloadFile(exportAuditCSV(report.records), 'SAI-GC prevalidacion lote - J.csv', 'text/csv;charset=utf-8;');
 });
 
 function renderV08Table() {
@@ -1175,16 +1200,18 @@ function downloadFile(content, fileName, mimeType) {
 }
 
 $('export-json-btn').addEventListener('click', () => {
-  const jsonContent = export_evidence(state.logs, 'json');
-  downloadFile(jsonContent, 'SAI_GC_BITACORA_V08.json', 'application/json');
+  const evidence = buildEventEvidence(state.logs, state.executionId);
+  downloadFile(exportAuditJSON(evidence), 'SAI-GC bitacora eventos - J.json', 'application/json');
 });
 
 $('export-csv-btn').addEventListener('click', () => {
-  const csvContent = export_evidence(state.logs, 'csv');
-  downloadFile(csvContent, 'SAI_GC_BITACORA_V08.csv', 'text/csv;charset=utf-8;');
+  const evidence = buildEventEvidence(state.logs, state.executionId);
+  downloadFile(exportAuditCSV(evidence.records), 'SAI-GC bitacora eventos - J.csv', 'text/csv;charset=utf-8;');
 });
 
 $('clear-btn').addEventListener('click', () => {
+  if (state.logs.length && !confirm('Exporte la bitácora antes de limpiarla. ¿Continuar y abrir nueva sesión de prevalidación?')) return;
+  state.executionId = createAuditRunId();
   state.logs = [];
   renderTables();
 });
