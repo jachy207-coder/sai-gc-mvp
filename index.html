@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SAI-GC | Centro de Atención y Gestión de Capacidad (R02 - PRE-V5)</title>
+  <title>SAI-GC | Centro de Atención y Gestión de Capacidad (R02 Validación v1.0)</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
       Política activa: <strong id="header-policy-label">Actual (5u)</strong> ⇄
     </button>
     <span class="env">DEMO · DATOS SINTÉTICOS · A3_B5_C8_v1</span>
-    <span>Prototipo Académico · v0.8-r02-operacion-aprobada</span>
+    <span id="header-version-label">SAI-GC R02 Validación v1.0 · Preparación V5</span>
     <span class="avatar" title="Usuario Demostrativo">VD</span>
   </div>
 </header>
@@ -146,15 +146,18 @@
                 <div id="case-status-chip" class="case-status-chip PENDIENTE_REVISION">PENDIENTE</div>
               </div>
             </div>
-            <div style="margin-top:6px; font-size:11px; color:#5b6877;">
-              Huella de revisión: <code id="case-revision-token" class="rev-token">—</code>
+            <div style="margin-top:6px; font-size:11px; color:#5b6877; display:flex; flex-wrap:wrap; gap:8px 14px;">
+              <span>Huella de revisión: <code id="case-revision-token" class="rev-token">—</code></span>
+              <span>Lote: <code id="active-batch-id" class="rev-token">—</code></span>
+              <span>Ejecución: <code id="active-execution-id" class="rev-token">—</code></span>
+              <span>Latencia motor: <code id="case-latency-ms" class="rev-token">—</code></span>
             </div>
             <div class="keywords-box" id="keywords-box">
               <small>Términos detectados por el motor:</small>
               <div id="keywords-list" class="keywords-list"><span class="kw-chip muted">Sin procesar</span></div>
             </div>
             <p id="rule-reason" class="faint">Seleccione un caso y pulse “Procesar consulta”.</p>
-            <p class="disclosure">Nota metodológica: referencia de clasificación revisada por Operación, Calidad y Jefatura. Esta interfaz es una prevalidación técnica; la ejecución formal V5 aún requiere congelamiento de versión y evidencias humanas.</p>
+            <p class="disclosure">Nota metodológica (SAI-GC R02 Validación v1.0): referencia de clasificación revisada por Operación, Calidad y Jefatura. Esta interfaz corresponde a prevalidación técnica y preparación para la ejecución formal V5 (aún no concluida; la latencia medida corresponde a processCase() y no al TMO real).</p>
           </div>
         </article>
 
@@ -447,10 +450,26 @@
         <h1>Bitácora de auditoría de sesión local</h1>
         <p>Registro cronológico de eventos: caso, revisión, estado, clase, fuente KB, decisión humana, resultado de seguridad, motivo de bloqueo, asesor y política. Exportable a JSON y CSV.</p>
       </div>
-      <div class="btn-group">
+      <div class="btn-group" style="flex-wrap:wrap; align-items:center;">
         <button class="secondary" id="export-json-btn">⬇ Exportar JSON</button>
         <button class="secondary" id="export-csv-btn">⬇ Exportar CSV</button>
+        <button class="primary" id="new-batch-btn">＋ Nuevo lote de validación</button>
+        <button class="secondary" id="export-prev-batch-btn" style="display:none;">⬇ Exportar lote anterior</button>
         <button class="secondary" id="clear-btn">✕ Limpiar bitácora</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:12px;">
+      <div class="inner" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; font-size:12px;">
+        <div>
+          <strong>Lote de validación activo:</strong> <code id="log-batch-id" class="rev-token">—</code>
+          &nbsp;·&nbsp;
+          <span>Lotes archivados en sesión: <strong id="archived-batch-count">0</strong></span>
+        </div>
+        <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin:0;">
+          <input type="checkbox" id="auto-export-new-batch" checked>
+          <span>Exportar respaldo JSON/CSV automáticamente antes de abrir nuevo lote</span>
+        </label>
       </div>
     </div>
 
@@ -495,11 +514,13 @@
           <thead>
             <tr>
               <th>FECHA / HORA</th>
+              <th>ID EVENTO / EJECUCIÓN</th>
               <th>CASO</th>
               <th>REVISIÓN</th>
               <th>ESTADO</th>
               <th>EVENTO</th>
               <th>CLASE</th>
+              <th>ESCALAMIENTO</th>
               <th>RESULTADO</th>
               <th>DECISIÓN</th>
               <th>MOTIVO BLOQUEO / NOTA</th>
@@ -590,6 +611,15 @@
           <p>✗ <strong>Sin LLM ni RAG en producción:</strong> asistencia basada en recuperación controlada de plantillas.</p>
           <p>✗ <strong>Sin resultados To-Be inventados:</strong> la reducción causal del TMO requiere el piloto y simulación del Cap. V.</p>
         </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <div class="panelbar"><b>Historial de versiones del prototipo (SAI-GC R02 Validación v1.0)</b></div>
+      <div class="inner" style="margin-top:0;">
+        <ul id="version-history-list" style="margin:0; padding-left:18px; font-size:13px; line-height:1.6;">
+          <li>Cargando historial de versiones...</li>
+        </ul>
       </div>
     </div>
   </section>

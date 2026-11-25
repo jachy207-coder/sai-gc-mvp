@@ -17,7 +17,20 @@ import {
   log_event,
   export_evidence
 } from './logic.mjs';
-import { buildAuditRecord, createAuditRunId, validateV08Input, buildBatchEvidence, buildEventEvidence, exportAuditCSV, exportAuditJSON } from './audit-pre-v5.mjs';
+import {
+  VALIDATION_VERSION,
+  VERSION_HISTORY,
+  buildAuditRecord,
+  createBatchId,
+  createAuditRunId,
+  createEventId,
+  validateV08Input,
+  buildBatchEvidence,
+  buildEventEvidence,
+  exportAuditCSV,
+  exportAuditJSON,
+  startNewValidationBatch
+} from './audit-pre-v5.mjs';
 
 const $ = id => document.getElementById(id);
 const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -97,9 +110,40 @@ const state = {
   v08Dataset: structuredClone(V08_DATASET),
   v08Filter: 'ALL',
   counter: 0,
-  executionId: createAuditRunId(),
+  batchId: createBatchId('LOTE'),
+  batchStartedAt: new Date().toISOString(),
+  executionId: null,
+  eventSeq: 0,
+  archivedBatches: [],
   lastLatencyMs: null
 };
+
+function updateTraceIndicators() {
+  if ($('active-batch-id')) $('active-batch-id').textContent = state.batchId || '—';
+  if ($('active-execution-id')) $('active-execution-id').textContent = state.executionId || 'Sin ejecutar';
+  if ($('case-latency-ms')) {
+    $('case-latency-ms').textContent = Number.isFinite(state.lastLatencyMs)
+      ? `${state.lastLatencyMs.toFixed(3)} ms (processCase)`
+      : '—';
+  }
+  if ($('log-batch-id')) $('log-batch-id').textContent = state.batchId || '—';
+  if ($('archived-batch-count')) $('archived-batch-count').textContent = String(state.archivedBatches.length);
+  if ($('export-prev-batch-btn')) {
+    $('export-prev-batch-btn').style.display = state.archivedBatches.length > 0 ? 'inline-block' : 'none';
+  }
+}
+
+function renderVersionHistory() {
+  const list = $('version-history-list');
+  if (!list) return;
+  list.innerHTML = VERSION_HISTORY.map(v => `
+    <li>
+      <strong>${escapeHTML(v.version)}</strong> (${escapeHTML(v.label)})
+      · <code>${escapeHTML(v.commit)}</code>
+      · <em>${escapeHTML(v.status)}</em> — ${escapeHTML(v.notes)}
+    </li>
+  `).join('');
+}
 
 function navigate(name) {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === name));
@@ -180,6 +224,7 @@ function setCase(id) {
   if (!c) return;
   state.selected = c;
   state.output = null;
+  state.executionId = null;
   state.lastLatencyMs = null;
   state.ivrManualVerified = false;
   invalidateCurrentApproval('Cambio de caso activo');
@@ -203,6 +248,7 @@ function setCase(id) {
   $('validation').value = String(c.validated);
   $('branch').value = c.branch;
   updateContextBar();
+  updateTraceIndicators();
   renderChat();
   resetOutput();
   renderTables();
@@ -363,15 +409,23 @@ function addLog(type, action = '—', agent = '—', customCaseId = null, custom
     policy: state.policy,
     version: VERSION
   });
-  state.logs[0].extendedPreV5 = buildAuditRecord({
+  state.eventSeq += 1;
+  const eventId = createEventId(state.eventSeq, 'EVT');
+  const escalationPerformedForCase = state.escalatedCases.some(
+    e => e.caseId === (customCaseId || state.selected.id) &&
+      e.status === 'DERIVADO_SUPERVISOR' &&
+      (!state.executionId || !e.executionId || e.executionId === state.executionId)
+  );
+  const extended = buildAuditRecord({
+    batchId: state.batchId,
     runId: state.executionId,
-    eventId: 'EVT-' + String(state.logs.length).padStart(3,'0'),
+    eventId,
     recordedAt: state.logs[0].timestampIso,
     testCase: state.selected.v08Raw ? { ...state.selected.v08Raw, dataset_version: state.v08Dataset?.dataset_version } : state.selected,
     output: state.output,
     activePolicy: state.policy,
     decision: state.decisions[state.selected.id] || 'SIN_EJECUTAR',
-    escalationPerformed: state.escalatedCases.some(e => e.caseId === state.selected.id && e.status === 'DERIVADO_SUPERVISOR'),
+    escalationPerformed: escalationPerformedForCase,
     latencyMs: state.lastLatencyMs,
     finalResponse: $('suggestion')?.textContent || null,
     status: state.caseStatus,
@@ -380,6 +434,12 @@ function addLog(type, action = '—', agent = '—', customCaseId = null, custom
     actor: state.logs[0].actorRole,
     blockReason
   });
+  state.logs[0].extendedPreV5 = extended;
+  state.logs[0].batchId = extended.ID_Lote;
+  state.logs[0].runId = extended.ID_Ejecucion;
+  state.logs[0].eventId = extended.ID_Evento;
+  state.logs[0].escalationStatus = extended.Escalamiento_Realizado;
+  updateTraceIndicators();
   renderTables();
 }
 
@@ -452,6 +512,7 @@ function runCase() {
     branch: $('branch').value
   };
 
+  state.executionId = createAuditRunId('EJEC');
   const perfStart = performance.now();
   try {
     state.output = processCase(c, state.agents, state.policy);
@@ -459,10 +520,12 @@ function runCase() {
   } catch (err) {
     state.lastLatencyMs = performance.now() - perfStart;
     state.caseStatus = 'ERROR_TECNICO_NO_V5';
+    updateTraceIndicators();
     addLog('Error de procesamiento', 'No ejecutado', 'Motor', c.id, '—', 'P1', 'BLOQUEADO', String(err));
     alert('Error de procesamiento: ' + String(err));
     return;
   }
+  updateTraceIndicators();
   const o = state.output;
 
   delete state.approvedRevisions[c.id];
@@ -527,7 +590,10 @@ $('process-btn').addEventListener('click', runCase);
 
 $('reset-btn').addEventListener('click', () => {
   if (state.logs.length && !confirm('Las pruebas actuales se perderán del navegador. ¿Ya exportó la bitácora?')) return;
-  state.executionId = createAuditRunId();
+  state.batchId = createBatchId('LOTE');
+  state.batchStartedAt = new Date().toISOString();
+  state.executionId = null;
+  state.eventSeq = 0;
   state.lastLatencyMs = null;
   state.agents = structuredClone(AGENTS);
   state.logs = [];
@@ -674,13 +740,20 @@ $('btn-reject').addEventListener('click', () => {
 function executeEscalation() {
   if (!state.output) return;
   const cid = state.selected.id;
-  if (state.caseStatus === 'DERIVADO_SUPERVISOR' && state.escalatedCases.some(e => e.caseId === cid)) return;
+  if (state.caseStatus === 'DERIVADO_SUPERVISOR' && state.escalatedCases.some(e => e.caseId === cid && (!state.executionId || e.executionId === state.executionId))) return;
+  const level = state.output.classification.level;
+  const isUnexpected = level !== 'C';
+  const escReason = isUnexpected
+    ? `Incidencia: escalamiento inesperado en caso Clase ${level} (no requerido)`
+    : state.output.classification.reason;
   const esc = registerEscalation({
     caseData: state.selected,
     output: state.output,
-    reason: state.output.classification.reason,
+    reason: escReason,
     actorRole: 'Asesor WhatsApp'
   });
+  esc.executionId = state.executionId;
+  esc.unexpected = isUnexpected;
 
   document.querySelectorAll('.fourbtn button').forEach(b => b.classList.remove('active-choice'));
   $('btn-escalate').classList.add('active-choice');
@@ -695,19 +768,32 @@ function executeEscalation() {
   $('suggestion').style.outline = '';
   $('save-edit-btn').style.display = 'none';
   $('send-chat-btn').disabled = true;
-  $('chat-stage-badge').textContent = 'Estado: Escalado formal a Supervisor';
+  $('chat-stage-badge').textContent = isUnexpected
+    ? 'Estado: Incidencia · Escalamiento inesperado registrado'
+    : 'Estado: Escalado formal a Supervisor';
 
-  $('action-result').textContent = `⚠ Caso derivado formalmente a ${esc.targetQueue}. Envío ordinario bloqueado por seguridad.`;
+  $('action-result').textContent = isUnexpected
+    ? `⚠ Incidencia registrada: escalamiento inesperado en caso Clase ${level}. Derivado a ${esc.targetQueue}.`
+    : `⚠ Caso derivado formalmente a ${esc.targetQueue}. Envío ordinario bloqueado por seguridad.`;
   $('action-result').className = 'result escalated';
 
   if (!state.chatMessages[cid]) state.chatMessages[cid] = [];
   state.chatMessages[cid].push({
     type: 'escalation',
     time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
-    text: `Caso ${cid} (Clase ${state.output.classification.level}) derivado a supervisión. Motivo: ${esc.reason}. No se emite respuesta ordinaria al cliente.`
+    text: `Caso ${cid} (Clase ${level}) derivado a supervisión. Motivo: ${esc.reason}. No se emite respuesta ordinaria al cliente.`
   });
 
-  addLog('Escalamiento registrado', 'Derivado a Supervisor', esc.targetQueue, cid, state.output.classification.level, state.output.guidance.id, 'ESCALADO', esc.reason);
+  addLog(
+    isUnexpected ? 'Incidencia: escalamiento inesperado' : 'Escalamiento registrado',
+    'Derivado a Supervisor',
+    esc.targetQueue,
+    cid,
+    level,
+    state.output.guidance.id,
+    isUnexpected ? 'INCIDENCIA' : 'ESCALADO',
+    esc.reason
+  );
   updateAuthUI();
   renderChat();
 }
@@ -924,13 +1010,13 @@ $('v08-file-input')?.addEventListener('change', e => {
 });
 
 $('v08-export-json-btn')?.addEventListener('click', () => {
-  const report = buildBatchEvidence(state.v08Dataset, {runId:state.executionId, activePolicy:state.policy});
-  downloadFile(exportAuditJSON(report), 'SAI-GC prevalidacion lote - J.json', 'application/json');
+  const report = buildBatchEvidence(state.v08Dataset, { batchId: state.batchId, activePolicy: state.policy });
+  downloadFile(exportAuditJSON(report), `SAI-GC_validacion_v1_lote_${state.batchId}.json`, 'application/json');
 });
 
 $('v08-export-csv-btn')?.addEventListener('click', () => {
-  const report = buildBatchEvidence(state.v08Dataset, {runId:state.executionId, activePolicy:state.policy});
-  downloadFile(exportAuditCSV(report.records), 'SAI-GC prevalidacion lote - J.csv', 'text/csv;charset=utf-8;');
+  const report = buildBatchEvidence(state.v08Dataset, { batchId: state.batchId, activePolicy: state.policy });
+  downloadFile(exportAuditCSV(report.records), `SAI-GC_validacion_v1_lote_${state.batchId}.csv`, 'text/csv;charset=utf-8;');
 });
 
 function renderV08Table() {
@@ -1168,22 +1254,24 @@ function renderTables() {
     ? filteredLogs.map(r => `
         <tr>
           <td><small>${escapeHTML(r.time)}</small></td>
+          <td><code class="rev-token">${escapeHTML(r.eventId || r.extendedPreV5?.ID_Evento || '—')}</code><br><small style="color:#5b6877;">${escapeHTML(r.runId || r.extendedPreV5?.ID_Ejecucion || 'Sin corrida')}</small></td>
           <td><strong>${escapeHTML(r.case)}</strong></td>
           <td><code class="rev-token">${escapeHTML(r.revision || '—')}</code></td>
           <td><small>${escapeHTML(r.caseStatus || '—')}</small></td>
           <td>${escapeHTML(r.event)}</td>
           <td>${r.level !== '—' ? `<span class="classchip ${escapeHTML(r.level)}" style="min-width:24px;min-height:20px;font-size:11px;">${escapeHTML(r.level)}</span>` : '—'}</td>
+          <td><small><code>${escapeHTML(r.escalationStatus || r.extendedPreV5?.Escalamiento_Realizado || 'NO_EVALUADO')}</code></small></td>
           <td>
-            <span class="status ${r.result === 'PERMITIDO' ? 'ok' : (r.result === 'BLOQUEADO' ? 'bad' : 'wait')}"></span>
+            <span class="status ${r.result === 'PERMITIDO' ? 'ok' : (r.result === 'BLOQUEADO' || r.result === 'INCIDENCIA' ? 'bad' : 'wait')}"></span>
             <strong>${escapeHTML(r.result || 'PERMITIDO')}</strong>
           </td>
           <td>${escapeHTML(r.action)}</td>
-          <td><small style="color:${r.result === 'BLOQUEADO' ? '#c23934' : '#555'}">${escapeHTML(r.blockReason || '—')}</small></td>
+          <td><small style="color:${r.result === 'BLOQUEADO' || r.result === 'INCIDENCIA' ? '#c23934' : '#555'}">${escapeHTML(r.blockReason || '—')}</small></td>
           <td>${escapeHTML(r.agent)}</td>
           <td><small>${escapeHTML(r.policy)}</small></td>
         </tr>
       `).join('')
-    : '<tr><td colspan="11">No hay eventos para el filtro seleccionado. Procese consultas en “Atención asistida”.</td></tr>';
+    : '<tr><td colspan="13">No hay eventos para el filtro seleccionado. Procese consultas en “Atención asistida”.</td></tr>';
 
   // 5. Evaluación v0.8 (P7)
   renderV08Table();
@@ -1200,22 +1288,78 @@ function downloadFile(content, fileName, mimeType) {
 }
 
 $('export-json-btn').addEventListener('click', () => {
-  const evidence = buildEventEvidence(state.logs, state.executionId);
-  downloadFile(exportAuditJSON(evidence), 'SAI-GC bitacora eventos - J.json', 'application/json');
+  const evidence = buildEventEvidence(state.logs, state.batchId);
+  downloadFile(exportAuditJSON(evidence), `SAI-GC_bitacora_${state.batchId}.json`, 'application/json');
 });
 
 $('export-csv-btn').addEventListener('click', () => {
-  const evidence = buildEventEvidence(state.logs, state.executionId);
-  downloadFile(exportAuditCSV(evidence.records), 'SAI-GC bitacora eventos - J.csv', 'text/csv;charset=utf-8;');
+  const evidence = buildEventEvidence(state.logs, state.batchId);
+  downloadFile(exportAuditCSV(evidence.records), `SAI-GC_bitacora_${state.batchId}.csv`, 'text/csv;charset=utf-8;');
 });
 
-$('clear-btn').addEventListener('click', () => {
-  if (state.logs.length && !confirm('Exporte la bitácora antes de limpiarla. ¿Continuar y abrir nueva sesión de prevalidación?')) return;
-  state.executionId = createAuditRunId();
+$('new-batch-btn')?.addEventListener('click', () => {
+  const hasLogs = state.logs.length > 0;
+  const autoExport = $('auto-export-new-batch')?.checked;
+  if (hasLogs && autoExport) {
+    const prevEvidence = buildEventEvidence(state.logs, state.batchId);
+    downloadFile(exportAuditJSON(prevEvidence), `SAI-GC_bitacora_${state.batchId}.json`, 'application/json');
+    downloadFile(exportAuditCSV(prevEvidence.records), `SAI-GC_bitacora_${state.batchId}.csv`, 'text/csv;charset=utf-8;');
+  }
+  const nextSession = startNewValidationBatch({
+    batchId: state.batchId,
+    startedAt: state.batchStartedAt,
+    eventSeq: state.eventSeq,
+    logs: state.logs,
+    archivedBatches: state.archivedBatches
+  }, { preserveArchive: hasLogs });
+
+  state.batchId = nextSession.batchId;
+  state.batchStartedAt = nextSession.startedAt;
+  state.eventSeq = 0;
+  state.executionId = null;
+  state.lastLatencyMs = null;
   state.logs = [];
+  state.archivedBatches = nextSession.archivedBatches;
+  state.decisions = {};
+  state.approvedRevisions = {};
+  state.escalatedCases = [];
+  state.heldCases = [];
+  state.chatMessages = {};
+  state.assignments = structuredClone(INITIAL_WIP);
+  state.ivrManualVerified = false;
+  setCase(state.selected.id);
+  updateTraceIndicators();
   renderTables();
 });
 
+$('export-prev-batch-btn')?.addEventListener('click', () => {
+  const prev = state.archivedBatches[0];
+  if (!prev) return;
+  downloadFile(prev.json, `SAI-GC_bitacora_archivada_${prev.batchId}.json`, 'application/json');
+  downloadFile(prev.csv, `SAI-GC_bitacora_archivada_${prev.batchId}.csv`, 'text/csv;charset=utf-8;');
+});
+
+$('clear-btn').addEventListener('click', () => {
+  if (state.logs.length && !confirm('Exporte la bitácora antes de limpiarla. ¿Continuar y abrir un nuevo lote con bitácora independiente?')) return;
+  const nextSession = startNewValidationBatch({
+    batchId: state.batchId,
+    startedAt: state.batchStartedAt,
+    eventSeq: state.eventSeq,
+    logs: state.logs,
+    archivedBatches: state.archivedBatches
+  }, { preserveArchive: state.logs.length > 0 });
+  state.batchId = nextSession.batchId;
+  state.batchStartedAt = nextSession.startedAt;
+  state.eventSeq = 0;
+  state.executionId = null;
+  state.logs = [];
+  state.archivedBatches = nextSession.archivedBatches;
+  updateTraceIndicators();
+  renderTables();
+});
+
+renderVersionHistory();
 updateCalculator();
 setCase(CASES[0].id);
+updateTraceIndicators();
 renderTables();
